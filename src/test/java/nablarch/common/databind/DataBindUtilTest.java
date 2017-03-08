@@ -398,7 +398,7 @@ public class DataBindUtilTest {
             ignoreEmptyLine = false,
             requiredHeader = false,
             charset = "MS932",
-            nullToEmpty = false,
+            emptyToNull = false,
             quoteMode = CsvDataBindConfig.QuoteMode.NORMAL
     )
     public static class PersonCustomNormal {
@@ -429,7 +429,7 @@ public class DataBindUtilTest {
             ignoreEmptyLine = false,
             requiredHeader = false,
             charset = "MS932",
-            nullToEmpty = false,
+            emptyToNull = false,
             quoteMode = CsvDataBindConfig.QuoteMode.ALL)
     public static class PersonCustomAll {
         private Integer age;
@@ -459,7 +459,7 @@ public class DataBindUtilTest {
             ignoreEmptyLine = false,
             requiredHeader = false,
             charset = "MS932",
-            nullToEmpty = false,
+            emptyToNull = false,
             quoteMode = CsvDataBindConfig.QuoteMode.NOT_NUMERIC)
     public static class PersonCustomNotNumeric {
         private Integer age;
@@ -489,7 +489,7 @@ public class DataBindUtilTest {
             ignoreEmptyLine = false,
             requiredHeader = false,
             charset = "MS932",
-            nullToEmpty = false,
+            emptyToNull = false,
             quoteMode = CsvDataBindConfig.QuoteMode.CUSTOM)
     public static class PersonCustom {
         private Integer age;
@@ -520,7 +520,7 @@ public class DataBindUtilTest {
             ignoreEmptyLine = false,
             requiredHeader = false,
             charset = "MS932",
-            nullToEmpty = false,
+            emptyToNull = false,
             quoteMode = CsvDataBindConfig.QuoteMode.NORMAL)
     public static class PersonBoth {
         private Integer age;
@@ -550,7 +550,7 @@ public class DataBindUtilTest {
             ignoreEmptyLine = false,
             requiredHeader = true,
             charset = "MS932",
-            nullToEmpty = false,
+            emptyToNull = false,
             quoteMode = CsvDataBindConfig.QuoteMode.NORMAL)
     public static class PersonHeader {
         private Integer age;

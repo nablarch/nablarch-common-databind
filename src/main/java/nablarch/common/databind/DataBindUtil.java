@@ -94,7 +94,7 @@ public final class DataBindUtil {
                     .withIgnoreEmptyLine(csvFormat.ignoreEmptyLine())
                     .withRequiredHeader(csvFormat.requiredHeader())
                     .withCharset(csvFormat.charset())
-                    .withEmptyToNull(csvFormat.nullToEmpty())
+                    .withEmptyToNull(csvFormat.emptyToNull())
                     .withQuoteMode(csvFormat.quoteMode());
         }
 

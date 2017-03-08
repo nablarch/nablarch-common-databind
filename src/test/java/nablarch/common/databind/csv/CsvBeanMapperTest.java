@@ -591,7 +591,7 @@ public class CsvBeanMapperTest {
             requiredHeader = false,
             charset = "UTF-8",
             quoteMode = CsvDataBindConfig.QuoteMode.CUSTOM,
-            nullToEmpty = false)
+            emptyToNull = false)
     public static class PersonCustom {
         private Integer age;
         private String name;
@@ -622,7 +622,7 @@ public class CsvBeanMapperTest {
             requiredHeader = false,
             charset = "UTF-8",
             quoteMode = CsvDataBindConfig.QuoteMode.CUSTOM,
-            nullToEmpty = false)
+            emptyToNull = false)
     public static class PersonCustomAllString {
         private String age;
         private String name;
