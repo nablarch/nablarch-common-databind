@@ -1,10 +1,10 @@
 package nablarch.common.databind.csv;
 
 import static org.eclipse.persistence.jpa.jpql.Assert.fail;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.matchers.JUnitMatchers.containsString;
 
 import java.util.Map;
 

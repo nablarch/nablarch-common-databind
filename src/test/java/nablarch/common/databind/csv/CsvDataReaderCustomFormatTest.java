@@ -1,13 +1,11 @@
 package nablarch.common.databind.csv;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.collection.IsArrayContainingInOrder.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-import static org.junit.matchers.JUnitMatchers.containsString;
-
-import org.hamcrest.collection.IsArrayContainingInOrder;
 
 import nablarch.common.databind.InvalidDataFormatException;
 
