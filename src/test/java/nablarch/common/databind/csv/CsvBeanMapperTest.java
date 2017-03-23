@@ -1,6 +1,5 @@
 package nablarch.common.databind.csv;
 
-import static org.eclipse.persistence.jpa.jpql.Assert.fail;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.beans.HasPropertyWithValue.*;
 import static org.hamcrest.core.AllOf.allOf;
@@ -9,13 +8,13 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.hamcrest.text.IsEmptyString.isEmptyString;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import nablarch.common.databind.InvalidDataFormatException;
 import nablarch.common.databind.LineNumber;
 import nablarch.common.databind.ObjectMapper;
 import nablarch.common.databind.ObjectMapperFactory;
 import nablarch.core.beans.BeansException;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -414,7 +413,7 @@ public class CsvBeanMapperTest {
 
         try {
             mapper = ObjectMapperFactory.create(PersonWithDuplicateLineNumber.class, resource.createInputStream());
-            Assert.fail("BeanにLineNumberカラムが複数定義されているため、例外が発生。");
+            fail("BeanにLineNumberカラムが複数定義されているため、例外が発生。");
         } catch (Exception e) {
             assertThat(e.getMessage(), is("line number column should be defined only one. class = [nablarch.common.databind.csv.CsvBeanMapperTest$PersonWithDuplicateLineNumber]"));
 

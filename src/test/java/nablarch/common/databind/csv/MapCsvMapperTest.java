@@ -1,8 +1,8 @@
 package nablarch.common.databind.csv;
 
-import static org.eclipse.persistence.jpa.jpql.Assert.fail;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.io.Reader;
 import java.io.StringReader;

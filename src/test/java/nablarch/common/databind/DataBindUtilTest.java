@@ -1,8 +1,8 @@
 package nablarch.common.databind;
 
-import static org.eclipse.persistence.jpa.jpql.Assert.fail;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.nio.charset.Charset;
 import java.util.Collections;
