@@ -6,8 +6,6 @@ import static org.junit.Assert.assertThat;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
-import sun.nio.cs.FastCharsetProvider;
-
 import nablarch.common.databind.csv.CsvDataBindConfig.QuoteMode;
 
 import org.junit.Test;

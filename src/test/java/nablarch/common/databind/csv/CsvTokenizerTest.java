@@ -1,7 +1,6 @@
 package nablarch.common.databind.csv;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -9,8 +8,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.CharBuffer;
-
-import org.hamcrest.CoreMatchers;
 
 import org.junit.Test;
 
