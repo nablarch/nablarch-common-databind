@@ -1,5 +1,5 @@
 group = 'com.nablarch.framework'
-version = '1.1.0'
+version = '1.2.0'
 description = 'CSV/固定長ファイルとJavaBeanのバインディングを実現する'
 
 buildscript {
@@ -40,18 +40,17 @@ dependencies {
   compile "com.nablarch.framework:nablarch-core-beans:${nablarchCoreBeansVersion}"
 
   // test api
-  testCompile 'org.jmockit:jmockit:1.13'
+  testCompile 'org.jmockit:jmockit:1.33'
   testCompile 'junit:junit:4.12'
   testCompile 'org.hamcrest:hamcrest-all:1.3'
   testRuntime "com.nablarch.framework:nablarch-core-applog:${nablarchCoreApplogVersion}"
-  cobertura 'org.slf4j:slf4j-nop:1.7.12' // for cobertura
 }
 
 test {
   jvmArgs (
           '-XX:MaxPermSize=256m',
-          '-Xms128m',
-          '-Xmx128m',
+          '-Xms64m',
+          '-Xmx64m',
           '-Dfile.encoding=UTF-8',
           '-XX:-UseSplitVerifier'
   )

@@ -106,7 +106,7 @@ public class MapCsvMapperTest {
 
         try {
             ObjectMapperFactory.create(Map.class, writer,
-                    CsvDataBindConfig.DEFAULT.withRequiredHeader(true).withHeaderTitles(null));
+                    CsvDataBindConfig.DEFAULT.withRequiredHeader(true).withHeaderTitles((String[]) null));
             fail("ヘッダなしが設定されたため、例外が発生");
         } catch (IllegalArgumentException e) {
             assertThat(e.getMessage(), is("csv header is required."));

@@ -30,10 +30,10 @@ import nablarch.core.util.annotation.Published;
  * @author Hisaaki Shioiri
  */
 @Published(tag = "architect")
-public class ObjectMapperFactory {
+public abstract class ObjectMapperFactory {
 
     /** 唯一のインスタンス */
-    private static final ObjectMapperFactory FACTORY = new ObjectMapperFactory();
+    private static final ObjectMapperFactory FACTORY = new BasicObjectMapperFactory();
 
     // -------------------------------------------------- static factory method
     /**
@@ -206,8 +206,6 @@ public class ObjectMapperFactory {
         return factory.createMapper(clazz, writer, dataBindConfig);
     }
 
-    // -------------------------------------------------- instance factory method
-
     /**
      * {@link ObjectMapper}を生成する。
      *
@@ -216,21 +214,7 @@ public class ObjectMapperFactory {
      * @param <T> バインディング対象のJavaのクラス
      * @return データとJava ObjectのMapper
      */
-    @SuppressWarnings("unchecked")
-    public <T> ObjectMapper<T> createMapper(
-            final Class<T> clazz, final InputStream stream) {
-        final DataBindConfig dataBindConfig = DataBindUtil.createDataBindConfig(clazz);
-        final MapperType type = toMapperType(clazz, dataBindConfig);
-
-        if (type == MapperType.CSV_BEAN) {
-            final CsvDataBindConfig config = CsvDataBindConfig.class.cast(dataBindConfig);
-            return new CsvBeanMapper<T>(clazz, config, stream);
-        }
-
-        // 到達しない
-        throw new IllegalArgumentException("Unsupported config or class. class = [" + toFQCN(clazz) + "],"
-                + " config = [" + toFQCN(dataBindConfig) + ']');
-    }
+    public abstract <T> ObjectMapper<T> createMapper(final Class<T> clazz, final InputStream stream);
 
     /**
      * {@link ObjectMapper}を生成する。
@@ -241,21 +225,7 @@ public class ObjectMapperFactory {
      * @param <T> バインディング対象のJavaのクラス
      * @return データとJava ObjectのMapper
      */
-    @SuppressWarnings("unchecked")
-    public <T> ObjectMapper<T> createMapper(
-            final Class<T> clazz, final InputStream stream, final DataBindConfig dataBindConfig) {
-        final MapperType type = toMapperType(clazz, dataBindConfig);
-
-        if (type == MapperType.CSV_BEAN) {
-            throw new IllegalArgumentException("this class should not be set config. class = [" + toFQCN(clazz) + ']');
-        } else if (type == MapperType.CSV_MAP) {
-            final CsvDataBindConfig config = CsvDataBindConfig.class.cast(dataBindConfig);
-            return (ObjectMapper<T>) new CsvMapMapper(config, stream);
-        }
-        // 到達しない
-        throw new IllegalArgumentException("Unsupported config or class. class = [" + toFQCN(clazz) + "],"
-                + " config = [" + toFQCN(dataBindConfig) + ']');
-    }
+    public abstract <T> ObjectMapper<T> createMapper(final Class<T> clazz, final InputStream stream, final DataBindConfig dataBindConfig);
 
     /**
      * {@link ObjectMapper}を生成する。
@@ -265,20 +235,7 @@ public class ObjectMapperFactory {
      * @param <T> バインディング対象のJavaのクラス
      * @return データとJava ObjectのMapper
      */
-    @SuppressWarnings("unchecked")
-    public <T> ObjectMapper<T> createMapper(
-            final Class<T> clazz, final Reader reader) {
-        final DataBindConfig dataBindConfig = DataBindUtil.createDataBindConfig(clazz);
-        final MapperType type = toMapperType(clazz, dataBindConfig);
-
-        if (type == MapperType.CSV_BEAN) {
-            final CsvDataBindConfig config = CsvDataBindConfig.class.cast(dataBindConfig);
-            return new CsvBeanMapper<T>(clazz, config, reader);
-        }
-        // 到達しない
-        throw new IllegalArgumentException("Unsupported config or class. class = [" + toFQCN(clazz) + "],"
-                + " config = [" + toFQCN(dataBindConfig) + ']');
-    }
+    public abstract <T> ObjectMapper<T> createMapper(final Class<T> clazz, final Reader reader);
 
     /**
      * {@link ObjectMapper}を生成する。
@@ -289,21 +246,7 @@ public class ObjectMapperFactory {
      * @param <T> バインディング対象のJavaのクラス
      * @return データとJava ObjectのMapper
      */
-    @SuppressWarnings("unchecked")
-    public <T> ObjectMapper<T> createMapper(
-            final Class<T> clazz, final Reader reader, final DataBindConfig dataBindConfig) {
-        final MapperType type = toMapperType(clazz, dataBindConfig);
-
-        if (type == MapperType.CSV_BEAN) {
-            throw new IllegalArgumentException("this class should not be set config. class = [" + toFQCN(clazz) + ']');
-        } else if (type == MapperType.CSV_MAP) {
-            final CsvDataBindConfig config = CsvDataBindConfig.class.cast(dataBindConfig);
-            return (ObjectMapper<T>) new CsvMapMapper(config, reader);
-        }
-        // 到達しない
-        throw new IllegalArgumentException("Unsupported config or class. class = [" + toFQCN(clazz) + "],"
-                + " config = [" + toFQCN(dataBindConfig) + ']');
-    }
+    public abstract <T> ObjectMapper<T> createMapper(final Class<T> clazz, final Reader reader, final DataBindConfig dataBindConfig);
 
     /**
      * {@link ObjectMapper}を生成する。
@@ -313,21 +256,8 @@ public class ObjectMapperFactory {
      * @param <T> バインディング対象のJavaのクラス
      * @return データとJava ObjectのMapper
      */
-    @SuppressWarnings("unchecked")
-    public <T> ObjectMapper<T> createMapper(
-            final Class<T> clazz, final OutputStream stream) {
-        final DataBindConfig dataBindConfig = DataBindUtil.createDataBindConfig(clazz);
-        final MapperType type = toMapperType(clazz, dataBindConfig);
-
-        if (type == MapperType.CSV_BEAN) {
-            final CsvDataBindConfig config = CsvDataBindConfig.class.cast(dataBindConfig);
-            return new BeanCsvMapper<T>(clazz, config, stream);
-        }
-        // 到達しない
-        throw new IllegalArgumentException("Unsupported config or class. class = [" + toFQCN(clazz) + "],"
-                + " config = [" + toFQCN(dataBindConfig) + ']');
-    }
-
+    public abstract <T> ObjectMapper<T> createMapper(final Class<T> clazz, final OutputStream stream);
+    
     /**
      * {@link ObjectMapper}を生成する。
      *
@@ -337,21 +267,7 @@ public class ObjectMapperFactory {
      * @param <T> バインディング対象のJavaのクラス
      * @return データとJava ObjectのMapper
      */
-    @SuppressWarnings("unchecked")
-    public <T> ObjectMapper<T> createMapper(
-            final Class<T> clazz, final OutputStream stream, final DataBindConfig dataBindConfig) {
-        final MapperType type = toMapperType(clazz, dataBindConfig);
-
-        if (type == MapperType.CSV_BEAN) {
-            throw new IllegalArgumentException("this class should not be set config. class = [" + toFQCN(clazz) + ']');
-        } else if (type == MapperType.CSV_MAP) {
-            final CsvDataBindConfig config = CsvDataBindConfig.class.cast(dataBindConfig);
-            return (ObjectMapper<T>) new MapCsvMapper(config, stream);
-        }
-        // 到達しない
-        throw new IllegalArgumentException("Unsupported config or class. class = [" + toFQCN(clazz) + "],"
-                + " config = [" + toFQCN(dataBindConfig) + ']');
-    }
+    public abstract <T> ObjectMapper<T> createMapper(final Class<T> clazz, final OutputStream stream, final DataBindConfig dataBindConfig);
 
     /**
      * {@link ObjectMapper}を生成する。
@@ -361,20 +277,7 @@ public class ObjectMapperFactory {
      * @param <T> バインディング対象のJavaのクラス
      * @return データとJava ObjectのMapper
      */
-    @SuppressWarnings("unchecked")
-    public <T> ObjectMapper<T> createMapper(
-            final Class<T> clazz, final Writer writer) {
-        final DataBindConfig dataBindConfig = DataBindUtil.createDataBindConfig(clazz);
-        final MapperType type = toMapperType(clazz, dataBindConfig);
-
-        if (type == MapperType.CSV_BEAN) {
-            final CsvDataBindConfig config = CsvDataBindConfig.class.cast(dataBindConfig);
-            return new BeanCsvMapper<T>(clazz, config, writer);
-        }
-        // 到達しない
-        throw new IllegalArgumentException("Unsupported config or class. class = [" + toFQCN(clazz) + "],"
-                + " config = [" + toFQCN(dataBindConfig) + ']');
-    }
+    public abstract <T> ObjectMapper<T> createMapper(final Class<T> clazz, final Writer writer);
 
     /**
      * {@link ObjectMapper}を生成する。
@@ -385,68 +288,7 @@ public class ObjectMapperFactory {
      * @param <T> バインディング対象のJavaのクラス
      * @return データとJava ObjectのMapper
      */
-    @SuppressWarnings("unchecked")
-    public <T> ObjectMapper<T> createMapper(
-            final Class<T> clazz, final Writer writer, final DataBindConfig dataBindConfig) {
-        final MapperType type = toMapperType(clazz, dataBindConfig);
-
-        if (type == MapperType.CSV_BEAN) {
-            throw new IllegalArgumentException("this class should not be set config. class = [" + toFQCN(clazz) + ']');
-        } else if (type == MapperType.CSV_MAP) {
-            final CsvDataBindConfig config = CsvDataBindConfig.class.cast(dataBindConfig);
-            return (ObjectMapper<T>) new MapCsvMapper(config, writer);
-        }
-        // 到達しない
-        throw new IllegalArgumentException("Unsupported config or class. class = [" + toFQCN(clazz) + "],"
-                + " config = [" + toFQCN(dataBindConfig) + ']');
-    }
-
-    /**
-     * マッパーのタイプを返す。
-     *
-     * @param clazz クラス
-     * @param dataBindConfig 設定情報
-     * @return マッパーのタイプ
-     */
-    protected static MapperType toMapperType(final Class<?> clazz, final DataBindConfig dataBindConfig) {
-        if (Map.class.isAssignableFrom(clazz) && dataBindConfig instanceof CsvDataBindConfig) {
-            return MapperType.CSV_MAP;
-        } else if (dataBindConfig instanceof CsvDataBindConfig) {
-            return MapperType.CSV_BEAN;
-        }
-        throw new IllegalArgumentException("Unsupported config or class. class = [" + toFQCN(clazz) + "],"
-                + " config = [" + toFQCN(dataBindConfig) + ']');
-    }
-
-    /**
-     * クラスからFQCNを返す。
-     * <p/>
-     * nullの場合は、文字列のnullを
-     *
-     * @param object オブジェクト
-     * @return FQCN
-     */
-    private static String toFQCN(final Object object) {
-        if (object == null) {
-            return "null";
-        }
-        if (object instanceof Class) {
-            return ((Class<?>) object).getName();
-        } else {
-            return object.getClass()
-                    .getName();
-        }
-    }
-
-    /**
-     * マッパータイプ。
-     */
-    enum MapperType {
-        /** CSVとBeanとのマッパー */
-        CSV_BEAN,
-        /** CSVとMapとのマッパー */
-        CSV_MAP
-    }
+    public abstract <T> ObjectMapper<T> createMapper(final Class<T> clazz, final Writer writer, final DataBindConfig dataBindConfig);
 
     /**
      * {@code ObjectMapperFactory}を生成する。
