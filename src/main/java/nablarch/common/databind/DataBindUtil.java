@@ -2,15 +2,13 @@ package nablarch.common.databind;
 
 import java.beans.PropertyDescriptor;
 import java.text.MessageFormat;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
 import nablarch.common.databind.csv.Csv;
-import nablarch.common.databind.csv.CsvDataBindConfig;
-import nablarch.common.databind.csv.CsvFormat;
-import nablarch.common.databind.csv.Quoted;
+import nablarch.common.databind.csv.CsvDataBindConfigConverter;
 import nablarch.core.beans.BeanUtil;
 import nablarch.core.beans.BeansException;
 import nablarch.core.util.annotation.Published;
@@ -23,8 +21,12 @@ import nablarch.core.util.annotation.Published;
 public final class DataBindUtil {
 
     /** 隠蔽コンストラクタ */
-    private DataBindUtil(){
+    private DataBindUtil() {
     }
+
+    /** 対応している形式のリスト */
+    private static final List<DataBindConfigConverter<?>> CONVERTERS = Arrays.<DataBindConfigConverter<?>>asList(
+            new CsvDataBindConfigConverter());
 
     /** {@link Csv#properties()}に設定されているプロパティ名配列のキャッシュ */
     private static final Map<Class<?>, String[]> CSV_PROPERTY_NAMES_MAP = new WeakHashMap<Class<?>, String[]>();
@@ -42,7 +44,7 @@ public final class DataBindUtil {
         String[] propertyNames = CSV_PROPERTY_NAMES_MAP.get(clazz);
         if (propertyNames == null) {
             propertyNames = clazz.getAnnotation(Csv.class)
-                    .properties();
+                                 .properties();
             CSV_PROPERTY_NAMES_MAP.put(clazz, propertyNames);
         }
         return propertyNames;
@@ -61,7 +63,8 @@ public final class DataBindUtil {
             if (hasLineNumberProperty(pd)) {
                 if (propertyName != null) {
                     // ファイル行数を保持するプロパティは0個か1個であるべき
-                    throw new IllegalStateException("line number column should be defined only one. class = [" + clazz.getName() + "]");
+                    throw new IllegalStateException(
+                            "line number column should be defined only one. class = [" + clazz.getName() + "]");
                 }
                 propertyName = pd.getName();
             }
@@ -76,42 +79,13 @@ public final class DataBindUtil {
      * @param <T> 総称型
      * @return {@link DataBindConfig}オブジェクト
      */
-    public static <T> DataBindConfig createDataBindConfig(Class<T> clazz) {
-        final Csv csv = clazz.getAnnotation(Csv.class);
-        verifyCsvConfig(clazz, csv);
-
-        CsvFormat csvFormat = clazz.getAnnotation(CsvFormat.class);
-        verifyCsvFormat(clazz, csv, csvFormat);
-
-        CsvDataBindConfig config;
-        if (csvFormat == null) {
-            config = (CsvDataBindConfig) csv.type().getConfig();
-        } else {
-            config = CsvDataBindConfig.DEFAULT
-                    .withFieldSeparator(csvFormat.fieldSeparator())
-                    .withLineSeparator(csvFormat.lineSeparator())
-                    .withQuote(csvFormat.quote())
-                    .withIgnoreEmptyLine(csvFormat.ignoreEmptyLine())
-                    .withRequiredHeader(csvFormat.requiredHeader())
-                    .withCharset(csvFormat.charset())
-                    .withEmptyToNull(csvFormat.emptyToNull())
-                    .withQuoteMode(csvFormat.quoteMode());
-        }
-
-        if (config.getQuoteMode() == CsvDataBindConfig.QuoteMode.CUSTOM) {
-            config = config.withQuotedColumnNames(findQuotedItemList(clazz));
-        }
-
-        if (config.isRequiredHeader()) {
-            if (csv.headers().length == csv.properties().length) {
-                config = config.withHeaderTitles(csv.headers());
-            } else {
-                throw new IllegalStateException(MessageFormat.format(
-                        "headers and properties size does not match. class = [{0}]", clazz.getName()));
+    public static <T> DataBindConfig createDataBindConfig(final Class<T> clazz) {
+        for (final DataBindConfigConverter<?> converter : CONVERTERS) {
+            if (clazz.getAnnotation(converter.getType()) != null) {
+                return converter.convert(clazz);
             }
         }
-
-        return config;
+        throw new IllegalStateException(MessageFormat.format("can not find config. class = [{0}]", clazz.getName()));
     }
 
     /**
@@ -150,7 +124,8 @@ public final class DataBindUtil {
      * @return Beanのインスタンス
      */
     @Published(tag = "architect")
-    public static <T> T getInstanceWithLineNumber(Class<T> clazz, String[] propertyNames, String[] values, String lineNumberPropertyName, long lineNumber) {
+    public static <T> T getInstanceWithLineNumber(Class<T> clazz, String[] propertyNames, String[] values,
+            String lineNumberPropertyName, long lineNumber) {
 
         T bean;
         try {
@@ -174,57 +149,8 @@ public final class DataBindUtil {
      * @param pd Beanの{@link PropertyDescriptor}
      * @return {@link LineNumber}アノテーションが設定されたプロパティが存在する場合は{@code true}
      */
-    private static boolean hasLineNumberProperty(PropertyDescriptor pd){
-        return pd.getReadMethod() != null && pd.getReadMethod().getAnnotation(LineNumber.class) != null;
+    private static boolean hasLineNumberProperty(PropertyDescriptor pd) {
+        return pd.getReadMethod() != null && pd.getReadMethod()
+                                               .getAnnotation(LineNumber.class) != null;
     }
-
-    /**
-     * クォート文字で囲む対象の項目リストを取得する。
-     * @param clazz Beanクラス
-     * @param <T> Beanクラスの型
-     * @return クォート文字で囲む対象の項目
-     */
-    private static <T> String[] findQuotedItemList(final Class<T> clazz) {
-        final List<String> quotedColumnNames = new ArrayList<String>();
-        PropertyDescriptor[] pds = BeanUtil.getPropertyDescriptors(clazz);
-        for (PropertyDescriptor pd : pds) {
-            if (pd.getReadMethod().getAnnotation(Quoted.class) != null) {
-                quotedColumnNames.add(pd.getName());
-            }
-        }
-        return quotedColumnNames.toArray(new String[quotedColumnNames.size()]);
-    }
-
-    /**
-     * CSVフォーマットの設定が正しいことを検証する。
-     * @param clazz Beanクラス
-     * @param csv CSV設定
-     * @param csvFormat CSVフォーマット
-     * @param <T> Beanクラスの型
-     */
-    private static <T> void verifyCsvFormat(Class<T> clazz, Csv csv, CsvFormat csvFormat) {
-        if (csv.type() != Csv.CsvType.CUSTOM && csvFormat != null) {
-            throw new IllegalStateException(MessageFormat.format(
-                    "CsvFormat annotation can not defined because CsvType is not CUSTOM. class = [{0}]", clazz.getName()));
-        }
-    }
-
-    /**
-     * CSVの設定が正しいことを検証する。
-     * @param clazz Beanクラス
-     * @param csv CSV設定
-     * @param <T> Beanクラスの型
-     */
-    private static <T> void verifyCsvConfig(Class<T> clazz, Csv csv) {
-        if (csv == null) {
-            throw new IllegalStateException(MessageFormat.format(
-                    "can not find config. class = [{0}]", clazz.getName()));
-        }
-
-        if (csv.properties().length == 0) {
-            throw new IllegalStateException(MessageFormat.format(
-                    "properties is required. class = [{0}]", clazz.getName()));
-        }
-    }
-
 }
