@@ -9,6 +9,7 @@ import java.util.WeakHashMap;
 
 import nablarch.common.databind.csv.Csv;
 import nablarch.common.databind.csv.CsvDataBindConfigConverter;
+import nablarch.common.databind.fixedlength.FixedLengthDataBindConfigConverter;
 import nablarch.core.beans.BeanUtil;
 import nablarch.core.beans.BeansException;
 import nablarch.core.util.annotation.Published;
@@ -26,7 +27,7 @@ public final class DataBindUtil {
 
     /** 対応している形式のリスト */
     private static final List<DataBindConfigConverter<?>> CONVERTERS = Arrays.<DataBindConfigConverter<?>>asList(
-            new CsvDataBindConfigConverter());
+            new CsvDataBindConfigConverter(), new FixedLengthDataBindConfigConverter());
 
     /** {@link Csv#properties()}に設定されているプロパティ名配列のキャッシュ */
     private static final Map<Class<?>, String[]> CSV_PROPERTY_NAMES_MAP = new WeakHashMap<Class<?>, String[]>();
@@ -100,16 +101,20 @@ public final class DataBindUtil {
     @Published(tag = "architect")
     public static <T> T getInstance(Class<T> clazz, String[] propertyNames, String[] values) {
         T bean;
-        try {
-            bean = clazz.newInstance();
-        } catch (Exception e) {
-            throw new BeansException(e);
-        }
+        bean = newInstance(clazz);
 
         for (int i = 0; i < values.length; i++) {
             BeanUtil.setProperty(bean, propertyNames[i], values[i]);
         }
         return bean;
+    }
+
+    public static <T> T newInstance(Class<T> clazz) {
+        try {
+            return clazz.getConstructor().newInstance();
+        } catch (Exception e) {
+            throw new BeansException(e);
+        }
     }
 
     /**
