@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import mockit.Expectations;
+import mockit.Injectable;
 import mockit.Mocked;
 
 /**
@@ -186,7 +187,7 @@ public class BeanCsvMapperTest {
      * 書き込み用オブジェクトなのでリードは失敗すること。
      */
     @Test(expected = UnsupportedOperationException.class)
-    public void testRead(@Mocked final Writer mockWriter) throws Exception {
+    public void testRead(@Injectable final Writer mockWriter) throws Exception {
         final ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, mockWriter);
         mapper.read();
     }
