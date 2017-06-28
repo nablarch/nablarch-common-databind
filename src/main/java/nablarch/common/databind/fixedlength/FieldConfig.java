@@ -1,5 +1,7 @@
 package nablarch.common.databind.fixedlength;
 
+import java.util.Arrays;
+
 /**
  * フィールドの定義をあらわすクラス。
  *
@@ -55,4 +57,19 @@ public class FieldConfig {
     public int getLength() {
         return length;
     }
+
+    /**
+     * バイト配列から自身のフィールド部分を抜き出し返却する。
+     * 
+     * @param record レコード情報
+     * @param fixedLengthDataBindConfig 固定長の設定値
+     * @return 読み込んだ値
+     */
+    public Object readValue(final byte[] record, final FixedLengthDataBindConfig fixedLengthDataBindConfig) {
+        final int zeroOffset = offset - 1;
+        final byte[] fieldValue = Arrays.copyOfRange(record, zeroOffset, zeroOffset + length);
+        return new String(fieldValue, fixedLengthDataBindConfig.getCharset());
+    }
+    
+    
 }

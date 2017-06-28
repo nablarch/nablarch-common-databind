@@ -7,6 +7,7 @@ import java.io.Writer;
 import java.util.Map;
 
 import nablarch.common.databind.csv.CsvDataBindConfig;
+import nablarch.common.databind.fixedlength.FixedLengthDataBindConfig;
 
 /**
  * {@link ObjectMapperFactory}の基本実装クラス。
@@ -29,7 +30,7 @@ public class BasicObjectMapperFactory extends ObjectMapperFactory {
         final DataBindConfig dataBindConfig = DataBindUtil.createDataBindConfig(clazz);
         final MapperType type = toMapperType(clazz, dataBindConfig);
 
-        if (type == MapperType.CSV_BEAN) {
+        if (type == MapperType.CSV_BEAN || type == MapperType.FIXED_LENGTH_BEAN) {
             return type.createMapper(clazz, dataBindConfig, stream);
         }
 
@@ -212,6 +213,9 @@ public class BasicObjectMapperFactory extends ObjectMapperFactory {
             return MapperType.CSV_MAP;
         } else if (dataBindConfig instanceof CsvDataBindConfig) {
             return MapperType.CSV_BEAN;
+        } else if (dataBindConfig instanceof FixedLengthDataBindConfig) {
+            return MapperType.FIXED_LENGTH_BEAN;
+
         }
         throw new IllegalArgumentException("Unsupported config or class. class = [" + toFQCN(clazz) + "],"
                 + " config = [" + toFQCN(dataBindConfig) + ']');
