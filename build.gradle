@@ -48,6 +48,7 @@ dependencies {
   testCompile 'org.hamcrest:hamcrest-all:1.3'
   testRuntime "com.nablarch.framework:nablarch-core-applog:${nablarchCoreApplogVersion}"
   testCompile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  testCompile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 }
 
 test {

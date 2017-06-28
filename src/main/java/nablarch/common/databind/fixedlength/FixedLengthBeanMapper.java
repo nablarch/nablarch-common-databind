@@ -34,7 +34,7 @@ public class FixedLengthBeanMapper<T> implements ObjectMapper<T> {
     }
 
     @Override
-    public void write(T object) {
+    public void write(final T object) {
         throw new UnsupportedOperationException("unsupported write method.");
     }
 

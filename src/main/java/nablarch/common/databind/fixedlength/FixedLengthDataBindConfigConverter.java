@@ -1,6 +1,7 @@
 package nablarch.common.databind.fixedlength;
 
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.List;
 
 import nablarch.common.databind.DataBindConfig;
 import nablarch.common.databind.DataBindConfigConverter;
+import nablarch.common.databind.DataBindUtil;
 import nablarch.core.beans.BeanUtil;
 
 /**
@@ -34,23 +36,50 @@ public class FixedLengthDataBindConfigConverter implements DataBindConfigConvert
 
     /**
      * レコードの定義を生成する。
+     *
      * @param beanClass レコードの定義を生成するBean
      * @return レコードの定義
      */
     private RecordConfig createRecordConfig(final Class<?> beanClass) {
         final PropertyDescriptor[] descriptors = BeanUtil.getPropertyDescriptors(beanClass);
         final List<FieldConfig> fieldDefinitions = new ArrayList<FieldConfig>(descriptors.length);
-        
+
         for (final PropertyDescriptor descriptor : descriptors) {
             final Method method = descriptor.getReadMethod();
             final Field field = method.getAnnotation(Field.class);
-            if (field != null) {
-                fieldDefinitions.add(new FieldConfig(descriptor.getName(), field.offset(), field.length()));
+            if (field == null) {
+                continue;
             }
+
+            final FieldConverterConfig fieldConverterConfig = getFieldConverter(descriptor);
+            fieldDefinitions.add(
+                    new FieldConfig(descriptor.getName(), field.offset(), field.length(), fieldConverterConfig));
         }
 
         Collections.sort(fieldDefinitions, new FieldConfigComparator());
         return new RecordConfig(fieldDefinitions);
+    }
+
+    /**
+     * 設定されているフィールドコンバータを返す。
+     *
+     * @param propertyDescriptor 対象のフィールド
+     * @return フィールドコンバータ
+     */
+    private FieldConverterConfig getFieldConverter(final PropertyDescriptor propertyDescriptor) {
+        FieldConverterConfig fieldConverterConfig = null;
+        for (final Annotation annotation : propertyDescriptor.getReadMethod().getAnnotations()) {
+            final FieldConvert fieldConvert = annotation.annotationType()
+                                                        .getAnnotation(FieldConvert.class);
+            if (fieldConvert != null) {
+                if (fieldConverterConfig != null) {
+                    throw new IllegalStateException("multiple field converters can not be set. field_name:" + propertyDescriptor.getName());
+                }
+                fieldConverterConfig = new FieldConverterConfig(annotation,
+                        DataBindUtil.newInstance(fieldConvert.value()));
+            }
+        }
+        return fieldConverterConfig;
     }
 
     @Override

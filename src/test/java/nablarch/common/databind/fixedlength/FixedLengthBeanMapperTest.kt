@@ -2,6 +2,7 @@ package nablarch.common.databind.fixedlength
 
 import nablarch.common.databind.InvalidDataFormatException
 import nablarch.common.databind.ObjectMapperFactory
+import nablarch.common.databind.fixedlength.converter.*
 import org.hamcrest.Matchers.*
 import org.junit.Assert.assertThat
 import org.junit.Rule
@@ -24,24 +25,27 @@ class FixedLengthBeanMapperTest {
         @FixedLength(length = 11, charset = "MS932", lineSeparator = "\r\n")
         data class TestBean(
             @get:Field(offset = 1, length = 4)
+            @get:Rpad
             var name: String? = null,
             @get:Field(offset = 5, length = 4)
+            @get:Rpad('　')
             var text: String? = null,
             @get:Field(offset = 9, length = 3)
+            @get:Lpad
             var age: Int? = null
         ) {
             constructor() : this(null, null, null)
         }
 
         val inputStream = listOf(
-            "abcdあい123",
-            "efghかき234"
+            "ab  あい003",
+            "efg か　000"
         ).joinToString("\r\n").byteInputStream(MS932())
 
         ObjectMapperFactory.create<TestBean>(TestBean::class.java, inputStream).use { sut ->
             assertThat(sut, instanceOf<Any>(FixedLengthBeanMapper::class.java))
-            assertThat(sut.read(), `is`(TestBean("abcd", "あい", 123)))
-            assertThat(sut.read(), `is`(TestBean("efgh", "かき", 234)))
+            assertThat(sut.read(), `is`(TestBean("ab", "あい", 3)))
+            assertThat(sut.read(), `is`(TestBean("efg", "か", null)))
             assertThat(sut.read(), `is`(nullValue()))
         }
     }
