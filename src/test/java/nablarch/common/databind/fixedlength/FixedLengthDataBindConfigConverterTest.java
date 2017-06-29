@@ -9,7 +9,11 @@ import static org.junit.Assert.assertThat;
 
 import java.nio.charset.Charset;
 
+import kotlin.reflect.jvm.internal.impl.javax.inject.Named;
+
 import nablarch.common.databind.DataBindConfig;
+import nablarch.common.databind.fixedlength.converter.Lpad;
+import nablarch.common.databind.fixedlength.converter.Rpad;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -95,6 +99,13 @@ public class FixedLengthDataBindConfigConverterTest {
         sut.convert(InvalidLengthField.class);
     }
 
+    @Test
+    public void 複数のフィールドコンバータを設定した場合例外が送出されること() throws Exception {
+        expectedException.expect(IllegalStateException.class);
+        expectedException.expectMessage("multiple field converters can not be set. field_name:name");
+        sut.convert(MultipleConverter.class);
+    }
+
     @FixedLength(length = 1024, charset = "MS932", lineSeparator = "\n")
     public static class FixedLengthBean {
 
@@ -104,11 +115,13 @@ public class FixedLengthDataBindConfigConverterTest {
         private String notField;
 
         @Field(offset = 1, length = 10)
+        @Rpad
         public String getType() {
             return type;
         }
 
         @Field(offset = 11, length = 1014)
+        @Lpad
         public String getOther() {
             return other;
         }
@@ -174,6 +187,18 @@ public class FixedLengthDataBindConfigConverterTest {
         @Field(offset = 1, length = 10)
         public String getType() {
             return type;
+        }
+    }
+
+    @FixedLength(length = 1024, charset = "MS932", lineSeparator = "\n")
+    public class MultipleConverter {
+        private String name;
+
+        @Field(offset = 1, length = 1024)
+        @Rpad
+        @Lpad
+        public String getName() {
+            return name;
         }
     }
 }
