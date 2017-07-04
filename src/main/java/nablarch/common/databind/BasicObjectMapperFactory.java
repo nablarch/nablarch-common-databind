@@ -57,6 +57,8 @@ public class BasicObjectMapperFactory extends ObjectMapperFactory {
             throw new IllegalArgumentException("this class should not be set config. class = [" + toFQCN(clazz) + ']');
         } else if (type == MapperType.CSV_MAP) {
             return type.createMapper(clazz, dataBindConfig, stream);
+        } else if (type == MapperType.FIXED_LENGTH_MAP) {
+            return type.createMapper(clazz, dataBindConfig, stream);
         }
         // 到達しない
         throw new IllegalArgumentException("Unsupported config or class. class = [" + toFQCN(clazz) + "],"
@@ -213,9 +215,10 @@ public class BasicObjectMapperFactory extends ObjectMapperFactory {
             return MapperType.CSV_MAP;
         } else if (dataBindConfig instanceof CsvDataBindConfig) {
             return MapperType.CSV_BEAN;
+        } else if (Map.class.isAssignableFrom(clazz) && dataBindConfig instanceof FixedLengthDataBindConfig) {
+            return MapperType.FIXED_LENGTH_MAP;
         } else if (dataBindConfig instanceof FixedLengthDataBindConfig) {
             return MapperType.FIXED_LENGTH_BEAN;
-
         }
         throw new IllegalArgumentException("Unsupported config or class. class = [" + toFQCN(clazz) + "],"
                 + " config = [" + toFQCN(dataBindConfig) + ']');
