@@ -4,9 +4,7 @@ import java.io.InputStream;
 import java.util.Map;
 
 import nablarch.common.databind.ObjectMapper;
-import nablarch.common.databind.fixedlength.FixedLengthReader.Record;
 import nablarch.core.beans.BeanUtil;
-import nablarch.core.util.FileUtil;
 
 /**
  * 固定長をBeanにマッピングする{@link ObjectMapper}
@@ -14,42 +12,14 @@ import nablarch.core.util.FileUtil;
  * @author Naoki Yamamoto
  * @param <T> 読み取る型
  */
-public class FixedLengthBeanMapper<T> implements ObjectMapper<T> {
+public class FixedLengthBeanMapper<T> extends FixedLengthMapperSupport<T> {
 
-    /** レコードをマッピングするクラス */
-    private final Class<T> clazz;
-
-    /** 固定長のリーダ */
-    private final FixedLengthReader reader;
-
-    /**
-     * 固定長データをBeanにマッピングするクラスを構築する。
-     * @param clazz マッピング対象のBeanクラス
-     * @param config 固定長の設定情報
-     * @param stream 固定長データ
-     */
-    public FixedLengthBeanMapper(final Class<T> clazz, final FixedLengthDataBindConfig config, final InputStream stream) {
-        this.clazz = clazz;
-        reader = new FixedLengthReader(stream, config);
+    public FixedLengthBeanMapper(Class<T> clazz, FixedLengthDataBindConfig config, InputStream stream) {
+        super(clazz, config, stream);
     }
 
     @Override
-    public void write(final T object) {
-        throw new UnsupportedOperationException("unsupported write method.");
-    }
-
-    @Override
-    public T read() {
-        final Record record = reader.readRecord();
-        if (record == null) {
-            return null;
-        }
-        final Map<String, Object> fields = record.readFields();
+    T createObject(Class<T> clazz, Map<String, Object> fields) {
         return BeanUtil.createAndCopy(clazz, fields);
-    }
-
-    @Override
-    public void close() {
-        FileUtil.closeQuietly(reader);
     }
 }

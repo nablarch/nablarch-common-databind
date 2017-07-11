@@ -1,5 +1,6 @@
 package nablarch.common.databind.fixedlength;
 
+import nablarch.common.databind.DataBindConfig;
 import nablarch.common.databind.InvalidDataFormatException;
 import nablarch.common.databind.ObjectMapper;
 import nablarch.common.databind.ObjectMapperFactory;
@@ -12,6 +13,9 @@ import org.junit.rules.ExpectedException;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.annotation.Annotation;
+import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
@@ -28,10 +32,65 @@ public class FixedLengthMapMapperTest {
     @Test
     public void シンプルな固定長をMapに変換できること() throws UnsupportedEncodingException {
         final InputStream inputStream = createInputStream("ab  あい003\r\nefg か　000", "MS932");
+
+        final DataBindConfig dataBindConfig =
+                FixedLengthDataBindConfigBuilder
+                        .newBuilder()
+                        .length(11)
+                        .charset(Charset.forName("MS932"))
+                        .lineSeparator("\r\n")
+                        // アノテーションで設定
+                        .addRecord(
+                                new RecordConfig(
+                                        Arrays.asList(
+                                                new FieldConfig("name", 1, 4,
+                                                        new FieldConverterConfig(new Rpad() {
+
+                                                            @Override
+                                                            public Class<? extends Annotation> annotationType() {
+                                                                return Rpad.class;
+                                                            }
+
+                                                            @Override
+                                                            public char value() {
+                                                                return ' ';
+                                                            }
+                                                        }, new Rpad.RpadConverter())),
+                                                new FieldConfig("text", 5, 4,
+                                                        new FieldConverterConfig(new Rpad() {
+
+                                                            @Override
+                                                            public Class<? extends Annotation> annotationType() {
+                                                                return Rpad.class;
+                                                            }
+
+                                                            @Override
+                                                            public char value() {
+                                                                return '　';
+                                                            }
+                                                        }, new Rpad.RpadConverter())),
+                                                new FieldConfig("age", 9, 3,
+                                                        new FieldConverterConfig(new Lpad() {
+
+                                                            @Override
+                                                            public Class<? extends Annotation> annotationType() {
+                                                                return null;
+                                                            }
+
+                                                            @Override
+                                                            public char value() {
+                                                                return '0';
+                                                            }
+                                                        }, new Lpad.LpadConverter()))
+                                        )
+                                )
+                        )
+                        .build();
+
         final ObjectMapper<Map> sut = ObjectMapperFactory.create(
                 Map.class,
                 inputStream,
-                new FixedLengthDataBindConfigConverter().convert(TestBean.class)
+                dataBindConfig
         );
         Map<String, ?> map = sut.read();
         assertThat(map.get("name").toString(), is("ab"));
@@ -48,11 +107,33 @@ public class FixedLengthMapMapperTest {
     @Test
     public void 改行コードの存在しないデータでもMapに変換できること() throws Exception {
         final InputStream inputStream = createInputStream("ab  あい003efg か　000", "MS932");
+
+        final DataBindConfig dataBindConfig =
+                FixedLengthDataBindConfigBuilder
+                        .newBuilder()
+                        .length(11)
+                        .charset(Charset.forName("MS932"))
+                        .lineSeparator("")
+                        .addRecord(
+                                new RecordConfig(
+                                        Arrays.asList(
+                                                new FieldConfig("name", 1, 4,
+                                                        new RpadConverterConfig(' ')),
+                                                new FieldConfig("text", 5, 4,
+                                                        new RpadConverterConfig('　')),
+                                                new FieldConfig("age", 9, 3,
+                                                        new LpadConverterConfig('0'))
+                                        )
+                                )
+                        )
+                        .build();
+
         final ObjectMapper<Map> sut = ObjectMapperFactory.create(
                 Map.class,
                 inputStream,
-                new FixedLengthDataBindConfigConverter().convert(TestBeanWithoutLineSeparator.class)
+                dataBindConfig
         );
+
         Map<String, ?> map = sut.read();
         assertThat(map.get("name").toString(), is("ab"));
         assertThat(map.get("text").toString(), is("あい"));
@@ -68,21 +149,61 @@ public class FixedLengthMapMapperTest {
     @Test
     public void 空のInputStreamでも読みこめること() throws Exception {
         final InputStream inputStream = createInputStream("", "MS932");
-        final ObjectMapper<Map> sut =
-                ObjectMapperFactory.create(
-                        Map.class,
-                        inputStream,
-                        new FixedLengthDataBindConfigConverter().convert(TestBean.class));
+
+        final DataBindConfig dataBindConfig =
+                FixedLengthDataBindConfigBuilder
+                        .newBuilder()
+                        .length(11)
+                        .charset(Charset.forName("MS932"))
+                        .lineSeparator("\r\n")
+                        .addRecord(
+                                new RecordConfig(
+                                        Arrays.asList(
+                                                new FieldConfig("name", 1, 4,
+                                                        new RpadConverterConfig(' ')),
+                                                new FieldConfig("text", 5, 4,
+                                                        new RpadConverterConfig('　')),
+                                                new FieldConfig("age", 9, 3,
+                                                        new LpadConverterConfig('0'))
+                                        )
+                                )
+                        )
+                        .build();
+        final ObjectMapper<Map> sut = ObjectMapperFactory.create(
+                Map.class,
+                inputStream,
+                dataBindConfig);
         assertThat(sut.read(), is(nullValue()));
     }
 
     @Test
     public void 末尾に改行コードがあっても読みこめてMapに変換できること() throws UnsupportedEncodingException {
         final InputStream inputStream = createInputStream("ab  あい003\r\nefg か　000\r\n", "MS932");
+
+        final DataBindConfig dataBindConfig =
+                FixedLengthDataBindConfigBuilder
+                        .newBuilder()
+                        .length(11)
+                        .charset(Charset.forName("MS932"))
+                        .lineSeparator("\r\n")
+                        .addRecord(
+                                new RecordConfig(
+                                        Arrays.asList(
+                                                new FieldConfig("name", 1, 4,
+                                                        new RpadConverterConfig(' ')),
+                                                new FieldConfig("text", 5, 4,
+                                                        new RpadConverterConfig('　')),
+                                                new FieldConfig("age", 9, 3,
+                                                        new LpadConverterConfig('0'))
+                                        )
+                                )
+                        )
+                        .build();
+
         final ObjectMapper<Map> sut = ObjectMapperFactory.create(
                 Map.class,
                 inputStream,
-                new FixedLengthDataBindConfigConverter().convert(TestBean.class)
+                dataBindConfig
         );
         Map<String, ?> map = sut.read();
         assertThat(map.get("name").toString(), is("ab"));
@@ -99,10 +220,31 @@ public class FixedLengthMapMapperTest {
     @Test
     public void レコードの途中でEOFになる場合は例外が送出されること() throws Exception {
         final InputStream inputStream = createInputStream("ab  あい003\r\ninvalid", "MS932");
+
+        final DataBindConfig dataBindConfig =
+                FixedLengthDataBindConfigBuilder
+                        .newBuilder()
+                        .length(11)
+                        .charset(Charset.forName("MS932"))
+                        .lineSeparator("\r\n")
+                        .addRecord(
+                                new RecordConfig(
+                                        Arrays.asList(
+                                                new FieldConfig("name", 1, 4,
+                                                        new RpadConverterConfig(' ')),
+                                                new FieldConfig("text", 5, 4,
+                                                        new RpadConverterConfig('　')),
+                                                new FieldConfig("age", 9, 3,
+                                                        new LpadConverterConfig('0'))
+                                        )
+                                )
+                        )
+                        .build();
+
         final ObjectMapper<Map> sut = ObjectMapperFactory.create(
                 Map.class,
                 inputStream,
-                new FixedLengthDataBindConfigConverter().convert(TestBean.class)
+                dataBindConfig
         );
         sut.read();
         expectedException.expect(InvalidDataFormatException.class);
@@ -114,10 +256,29 @@ public class FixedLengthMapMapperTest {
     public void 実際の改行コードが設定と異なる場合は例外が送出されること() throws Exception {
         // 改行コード部分に\r\nではなく、「--」を設定
         final InputStream inputStream = createInputStream("ab  あい003--efg か　000", "MS932");
+        final DataBindConfig dataBindConfig =
+                FixedLengthDataBindConfigBuilder
+                        .newBuilder()
+                        .length(11)
+                        .charset(Charset.forName("MS932"))
+                        .lineSeparator("\r\n")
+                        .addRecord(
+                                new RecordConfig(
+                                        Arrays.asList(
+                                                new FieldConfig("name", 1, 4,
+                                                        new RpadConverterConfig(' ')),
+                                                new FieldConfig("text", 5, 4,
+                                                        new RpadConverterConfig('　')),
+                                                new FieldConfig("age", 9, 3,
+                                                        new LpadConverterConfig('0'))
+                                        )
+                                )
+                        )
+                        .build();
         final ObjectMapper<Map> sut = ObjectMapperFactory.create(
                 Map.class,
                 inputStream,
-                new FixedLengthDataBindConfigConverter().convert(TestBean.class)
+                dataBindConfig
         );
         expectedException.expect(InvalidDataFormatException.class);
         expectedException.expectMessage("data format is invalid. line separator is invalid. line number = [1]");
@@ -127,10 +288,31 @@ public class FixedLengthMapMapperTest {
     @Test
     public void 最終レコードの改行が実際より短い場合は例外が送出されること() throws Exception {
         final InputStream inputStream = createInputStream("ab  あい003\r\nefg か　000\n", "MS932");
+
+        final DataBindConfig dataBindConfig =
+                FixedLengthDataBindConfigBuilder
+                        .newBuilder()
+                        .length(11)
+                        .charset(Charset.forName("MS932"))
+                        .lineSeparator("\r\n")
+                        .addRecord(
+                                new RecordConfig(
+                                        Arrays.asList(
+                                                new FieldConfig("name", 1, 4,
+                                                        new RpadConverterConfig(' ')),
+                                                new FieldConfig("text", 5, 4,
+                                                        new RpadConverterConfig('　')),
+                                                new FieldConfig("age", 9, 3,
+                                                        new LpadConverterConfig('0'))
+                                        )
+                                )
+                        )
+                        .build();
+
         final ObjectMapper<Map> sut = ObjectMapperFactory.create(
                 Map.class,
                 inputStream,
-                new FixedLengthDataBindConfigConverter().convert(TestBean.class)
+                dataBindConfig
         );
         Map<String, ?> map = sut.read();
         assertThat(map.get("name").toString(), is("ab"));
@@ -144,10 +326,31 @@ public class FixedLengthMapMapperTest {
     @Test
     public void writerメソッドはサポートしない例外が送出されること() throws Exception {
         final InputStream inputStream = createInputStream("ab  あい003\r\nefg か　000\r\n", "MS932");
+
+        final DataBindConfig dataBindConfig =
+                FixedLengthDataBindConfigBuilder
+                        .newBuilder()
+                        .length(11)
+                        .charset(Charset.forName("MS932"))
+                        .lineSeparator("\r\n")
+                        .addRecord(
+                                new RecordConfig(
+                                        Arrays.asList(
+                                                new FieldConfig("name", 1, 4,
+                                                        new RpadConverterConfig(' ')),
+                                                new FieldConfig("text", 5, 4,
+                                                        new RpadConverterConfig('　')),
+                                                new FieldConfig("age", 9, 3,
+                                                        new LpadConverterConfig('0'))
+                                        )
+                                )
+                        )
+                        .build();
+
         final ObjectMapper<Map> sut = ObjectMapperFactory.create(
                 Map.class,
                 inputStream,
-                new FixedLengthDataBindConfigConverter().convert(TestBean.class)
+                dataBindConfig
         );
         expectedException.expect(UnsupportedOperationException.class);
         expectedException.expectMessage("unsupported write method.");
@@ -156,81 +359,5 @@ public class FixedLengthMapMapperTest {
 
     private InputStream createInputStream(String text, String charset) throws UnsupportedEncodingException {
         return new ByteArrayInputStream(text.getBytes(charset));
-    }
-}
-
-@FixedLength(length = 11, charset = "MS932", lineSeparator = "\r\n")
-class TestBean {
-
-    private String name;
-    private String text;
-    private int age;
-
-    @Field(offset = 1, length = 4)
-    @Rpad
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Field(offset = 5, length = 4)
-    @Rpad('　')
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    @Field(offset = 9, length = 3)
-    @Lpad
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-}
-
-@FixedLength(length = 11, charset = "MS932", lineSeparator = "")
-class TestBeanWithoutLineSeparator {
-
-    private String name;
-    private String text;
-    private int age;
-
-    @Field(offset = 1, length = 4)
-    @Rpad
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Field(offset = 5, length = 4)
-    @Rpad('　')
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    @Field(offset = 9, length = 3)
-    @Lpad
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
     }
 }
