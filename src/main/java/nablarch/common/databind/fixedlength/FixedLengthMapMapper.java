@@ -4,23 +4,40 @@ import java.io.InputStream;
 import java.util.Map;
 
 import nablarch.common.databind.ObjectMapper;
-import nablarch.common.databind.fixedlength.FixedLengthReader.Record;
-import nablarch.core.util.FileUtil;
 
 /**
  * 固定長をMapにマッピングする{@link ObjectMapper}
  *
  * @author MAENO Daisuke.
  */
-public class FixedLengthMapMapper extends FixedLengthMapperSupport {
+public class FixedLengthMapMapper implements ObjectMapper<Map<String, ?>> {
 
+    /** マッピングサポートクラス */
+    private final FixedLengthMapperSupport<Map<String, ?>> fixedLengthMapperSupport;
+
+    /**
+     * 固定長をMapにマッピングするクラスを構築する。
+     *
+     * @param config 固定長の設定情報
+     * @param stream 固定長データ
+     */
     public FixedLengthMapMapper(FixedLengthDataBindConfig config, InputStream stream) {
-        super(null, config, stream);
+        fixedLengthMapperSupport = new FixedLengthMapperSupport<Map<String, ?>>(config, stream);
     }
 
     @Override
-    Object createObject(Class clazz, Map fields) {
-        // レコード情報がそのままMapに格納されているため、そのまま返す
-        return fields;
+    public void write(Map<String, ?> object) {
+        fixedLengthMapperSupport.write(object);
+    }
+
+    @Override
+    public Map<String, ?> read() {
+        // Mapで返却されるため、そのまま渡す
+        return fixedLengthMapperSupport.read();
+    }
+
+    @Override
+    public void close() {
+        fixedLengthMapperSupport.close();
     }
 }

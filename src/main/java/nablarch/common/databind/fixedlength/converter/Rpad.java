@@ -1,17 +1,17 @@
 package nablarch.common.databind.fixedlength.converter;
 
+import nablarch.common.databind.fixedlength.FieldConfig;
+import nablarch.common.databind.fixedlength.FieldConvert;
+import nablarch.common.databind.fixedlength.FixedLengthDataBindConfig;
+import nablarch.common.databind.fixedlength.converter.Rpad.RpadConverter;
+import nablarch.core.util.StringUtil;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
-
-import nablarch.common.databind.fixedlength.FieldConfig;
-import nablarch.common.databind.fixedlength.FieldConvert;
-import nablarch.common.databind.fixedlength.FixedLengthDataBindConfig;
-import nablarch.common.databind.fixedlength.converter.Rpad.RpadConverter;
-import nablarch.core.util.StringUtil;
 
 /**
  * 値の末尾に指定の文字を付加(読み込み時は除去)することを示す。
@@ -37,6 +37,15 @@ public @interface Rpad {
      */
     class RpadConverter implements FieldConvert.FieldConverter<Rpad, String> {
 
+        private char padChar = ' ';
+
+        public RpadConverter() {
+        }
+
+        public RpadConverter(final char padChar) {
+            this.padChar = padChar;
+        }
+
         @Override
         public String convertOfRead(
                 final FixedLengthDataBindConfig fixedLengthDataBindConfig,
@@ -45,7 +54,9 @@ public @interface Rpad {
                 final byte[] input) {
 
             final String value = StringUtil.toString(input, fixedLengthDataBindConfig.getCharset());
-            final char padChar = converterConfig.value();
+            if (converterConfig != null) {
+                padChar = converterConfig.value();
+            }
             int chopPos = value.length() - 1;
             while ((chopPos >= 0) && (value.charAt(chopPos) == padChar)) {
                 chopPos--;

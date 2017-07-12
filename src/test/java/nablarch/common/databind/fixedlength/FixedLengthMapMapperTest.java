@@ -39,49 +39,15 @@ public class FixedLengthMapMapperTest {
                         .length(11)
                         .charset(Charset.forName("MS932"))
                         .lineSeparator("\r\n")
-                        // アノテーションで設定
                         .addRecord(
                                 new RecordConfig(
                                         Arrays.asList(
                                                 new FieldConfig("name", 1, 4,
-                                                        new FieldConverterConfig(new Rpad() {
-
-                                                            @Override
-                                                            public Class<? extends Annotation> annotationType() {
-                                                                return Rpad.class;
-                                                            }
-
-                                                            @Override
-                                                            public char value() {
-                                                                return ' ';
-                                                            }
-                                                        }, new Rpad.RpadConverter())),
+                                                        new Rpad.RpadConverter(' ')),
                                                 new FieldConfig("text", 5, 4,
-                                                        new FieldConverterConfig(new Rpad() {
-
-                                                            @Override
-                                                            public Class<? extends Annotation> annotationType() {
-                                                                return Rpad.class;
-                                                            }
-
-                                                            @Override
-                                                            public char value() {
-                                                                return '　';
-                                                            }
-                                                        }, new Rpad.RpadConverter())),
+                                                        new Rpad.RpadConverter('　')),
                                                 new FieldConfig("age", 9, 3,
-                                                        new FieldConverterConfig(new Lpad() {
-
-                                                            @Override
-                                                            public Class<? extends Annotation> annotationType() {
-                                                                return null;
-                                                            }
-
-                                                            @Override
-                                                            public char value() {
-                                                                return '0';
-                                                            }
-                                                        }, new Lpad.LpadConverter()))
+                                                        new Lpad.LpadConverter('0'))
                                         )
                                 )
                         )
@@ -118,11 +84,11 @@ public class FixedLengthMapMapperTest {
                                 new RecordConfig(
                                         Arrays.asList(
                                                 new FieldConfig("name", 1, 4,
-                                                        new RpadConverterConfig(' ')),
+                                                        new Rpad.RpadConverter(' ')),
                                                 new FieldConfig("text", 5, 4,
-                                                        new RpadConverterConfig('　')),
+                                                        new Rpad.RpadConverter('　')),
                                                 new FieldConfig("age", 9, 3,
-                                                        new LpadConverterConfig('0'))
+                                                        new Lpad.LpadConverter('0'))
                                         )
                                 )
                         )
@@ -160,11 +126,11 @@ public class FixedLengthMapMapperTest {
                                 new RecordConfig(
                                         Arrays.asList(
                                                 new FieldConfig("name", 1, 4,
-                                                        new RpadConverterConfig(' ')),
+                                                        new Rpad.RpadConverter(' ')),
                                                 new FieldConfig("text", 5, 4,
-                                                        new RpadConverterConfig('　')),
+                                                        new Rpad.RpadConverter('　')),
                                                 new FieldConfig("age", 9, 3,
-                                                        new LpadConverterConfig('0'))
+                                                        new Lpad.LpadConverter('0'))
                                         )
                                 )
                         )
@@ -190,11 +156,11 @@ public class FixedLengthMapMapperTest {
                                 new RecordConfig(
                                         Arrays.asList(
                                                 new FieldConfig("name", 1, 4,
-                                                        new RpadConverterConfig(' ')),
+                                                        new Rpad.RpadConverter(' ')),
                                                 new FieldConfig("text", 5, 4,
-                                                        new RpadConverterConfig('　')),
+                                                        new Rpad.RpadConverter('　')),
                                                 new FieldConfig("age", 9, 3,
-                                                        new LpadConverterConfig('0'))
+                                                        new Lpad.LpadConverter('0'))
                                         )
                                 )
                         )
@@ -231,11 +197,11 @@ public class FixedLengthMapMapperTest {
                                 new RecordConfig(
                                         Arrays.asList(
                                                 new FieldConfig("name", 1, 4,
-                                                        new RpadConverterConfig(' ')),
+                                                        new Rpad.RpadConverter(' ')),
                                                 new FieldConfig("text", 5, 4,
-                                                        new RpadConverterConfig('　')),
+                                                        new Rpad.RpadConverter('　')),
                                                 new FieldConfig("age", 9, 3,
-                                                        new LpadConverterConfig('0'))
+                                                        new Lpad.LpadConverter('0'))
                                         )
                                 )
                         )
@@ -266,11 +232,11 @@ public class FixedLengthMapMapperTest {
                                 new RecordConfig(
                                         Arrays.asList(
                                                 new FieldConfig("name", 1, 4,
-                                                        new RpadConverterConfig(' ')),
+                                                        new Rpad.RpadConverter(' ')),
                                                 new FieldConfig("text", 5, 4,
-                                                        new RpadConverterConfig('　')),
+                                                        new Rpad.RpadConverter('　')),
                                                 new FieldConfig("age", 9, 3,
-                                                        new LpadConverterConfig('0'))
+                                                        new Lpad.LpadConverter('0'))
                                         )
                                 )
                         )
@@ -299,11 +265,11 @@ public class FixedLengthMapMapperTest {
                                 new RecordConfig(
                                         Arrays.asList(
                                                 new FieldConfig("name", 1, 4,
-                                                        new RpadConverterConfig(' ')),
+                                                        new Rpad.RpadConverter(' ')),
                                                 new FieldConfig("text", 5, 4,
-                                                        new RpadConverterConfig('　')),
+                                                        new Rpad.RpadConverter('　')),
                                                 new FieldConfig("age", 9, 3,
-                                                        new LpadConverterConfig('0'))
+                                                        new Lpad.LpadConverter('0'))
                                         )
                                 )
                         )
@@ -337,11 +303,11 @@ public class FixedLengthMapMapperTest {
                                 new RecordConfig(
                                         Arrays.asList(
                                                 new FieldConfig("name", 1, 4,
-                                                        new RpadConverterConfig(' ')),
+                                                        new Rpad.RpadConverter(' ')),
                                                 new FieldConfig("text", 5, 4,
-                                                        new RpadConverterConfig('　')),
+                                                        new Rpad.RpadConverter('　')),
                                                 new FieldConfig("age", 9, 3,
-                                                        new LpadConverterConfig('0'))
+                                                        new Lpad.LpadConverter('0'))
                                         )
                                 )
                         )

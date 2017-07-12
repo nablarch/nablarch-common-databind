@@ -20,8 +20,12 @@ public class FieldConfig {
     /** 長さ(バイト数) */
     private final int length;
 
+    /** コンバータ設定情報 */
+    private FieldConverterConfig converterConfig = null;
+
     /** コンバータ */
-    private final FieldConverterConfig converterConfig;
+    private FieldConvert.FieldConverter fieldConverter = null;
+
 
     /**
      * フィールド定義を構築する。
@@ -29,7 +33,7 @@ public class FieldConfig {
      * @param name フィールド名
      * @param offset 開始位置(1始まり)
      * @param length 長さ(バイト数)
-     * @param converterConfig 入出力時の変換を行うコンバータ
+     * @param converterConfig 入出力時の変換を行うコンバータ設定情報
      */
     public FieldConfig(
             final String name, final int offset, final int length, final FieldConverterConfig converterConfig) {
@@ -37,6 +41,22 @@ public class FieldConfig {
         this.offset = offset;
         this.length = length;
         this.converterConfig = converterConfig;
+    }
+
+    /**
+     * フィールド定義を構築する。
+     *
+     * @param name フィールド名
+     * @param offset 開始位置(1始まり)
+     * @param length 長さ(バイト数)
+     * @param fieldConverter 入出力時の変換を行うコンバータ
+     */
+    public FieldConfig(
+            final String name, final int offset, final int length, final FieldConvert.FieldConverter fieldConverter) {
+        this.name = name;
+        this.offset = offset;
+        this.length = length;
+        this.fieldConverter = fieldConverter;
     }
 
     /**
@@ -78,7 +98,10 @@ public class FieldConfig {
         final byte[] fieldValue = Arrays.copyOfRange(record, zeroOffset, zeroOffset + length);
         if (converterConfig != null) {
             return converterConfig.convertOfRead(fixedLengthDataBindConfig, this, fieldValue);
-        } else {
+        } else if (fieldConverter != null) {
+            return fieldConverter.convertOfRead(fixedLengthDataBindConfig, this, null, fieldValue);
+        }
+        else {
             return StringUtil.toString(fieldValue, fixedLengthDataBindConfig.getCharset());
         }
     }
