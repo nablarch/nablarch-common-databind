@@ -12,7 +12,7 @@ import nablarch.common.databind.fixedlength.FieldConvert.FieldConverter;
 public class FieldConverterConfig {
 
     /** 値変換の設定を持つアノテーション */
-    private final Annotation converterConfig;
+    private final Annotation annotationConfig;
 
     /** コンバータ */
     @SuppressWarnings("rawtypes")
@@ -20,11 +20,11 @@ public class FieldConverterConfig {
 
     /**
      * 値変換の設定情報を構築する。
-     * @param converterConfig 値変換の設定情報を持つアノテーション
+     * @param annotationConfig 値変換の設定情報を持つアノテーション
      * @param fieldConverter コンバータ
      */
-    public FieldConverterConfig(final Annotation converterConfig, final FieldConverter<?, ?> fieldConverter) {
-        this.converterConfig = converterConfig;
+    public FieldConverterConfig(final Annotation annotationConfig, final FieldConverter<?> fieldConverter) {
+        this.annotationConfig = annotationConfig;
         this.fieldConverter = fieldConverter;
     }
 
@@ -38,6 +38,14 @@ public class FieldConverterConfig {
     @SuppressWarnings("unchecked")
     public Object convertOfRead(
             final FixedLengthDataBindConfig fixedLengthDataBindConfig, final FieldConfig fieldConfig, final byte[] value) {
-        return fieldConverter.convertOfRead(fixedLengthDataBindConfig, fieldConfig, converterConfig, value);
+        return fieldConverter.convertOfRead(fixedLengthDataBindConfig, fieldConfig, value);
+    }
+
+    /**
+     * 値変換の設定を持つアノテーションを返す。
+     * @return アノテーション
+     */
+    public Annotation getAnnotationConfig() {
+        return annotationConfig;
     }
 }

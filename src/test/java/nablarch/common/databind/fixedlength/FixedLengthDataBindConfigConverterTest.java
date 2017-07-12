@@ -9,8 +9,6 @@ import static org.junit.Assert.assertThat;
 
 import java.nio.charset.Charset;
 
-import kotlin.reflect.jvm.internal.impl.javax.inject.Named;
-
 import nablarch.common.databind.DataBindConfig;
 import nablarch.common.databind.fixedlength.converter.Lpad;
 import nablarch.common.databind.fixedlength.converter.Rpad;

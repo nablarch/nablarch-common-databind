@@ -6,6 +6,7 @@ import nablarch.common.databind.ObjectMapper;
 import nablarch.common.databind.ObjectMapperFactory;
 import nablarch.common.databind.fixedlength.converter.Lpad;
 import nablarch.common.databind.fixedlength.converter.Rpad;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -13,7 +14,6 @@ import org.junit.rules.ExpectedException;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.annotation.Annotation;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Map;
@@ -29,9 +29,19 @@ public class FixedLengthMapMapperTest {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
+    private InputStream inputStream;
+
+    private ObjectMapper<Map> sut;
+
+    @After
+    public void tearDown() throws Exception {
+        inputStream.close();
+        sut.close();
+    }
+
     @Test
     public void シンプルな固定長をMapに変換できること() throws UnsupportedEncodingException {
-        final InputStream inputStream = createInputStream("ab  あい003\r\nefg か　000", "MS932");
+        inputStream = new ByteArrayInputStream("ab  あい003\r\nefg か　000".getBytes("MS932"));
 
         final DataBindConfig dataBindConfig =
                 FixedLengthDataBindConfigBuilder
@@ -53,7 +63,7 @@ public class FixedLengthMapMapperTest {
                         )
                         .build();
 
-        final ObjectMapper<Map> sut = ObjectMapperFactory.create(
+        sut = ObjectMapperFactory.create(
                 Map.class,
                 inputStream,
                 dataBindConfig
@@ -61,18 +71,21 @@ public class FixedLengthMapMapperTest {
         Map<String, ?> map = sut.read();
         assertThat(map.get("name").toString(), is("ab"));
         assertThat(map.get("text").toString(), is("あい"));
-        assertThat(Integer.valueOf(map.get("age").toString()), is(3));
+        assertThat(map.get("age").toString(), is("3"));
 
         map = sut.read();
         assertThat(map.get("name").toString(), is("efg"));
         assertThat(map.get("text").toString(), is("か"));
         assertThat(map.get("age").toString(), isEmptyString());
+
+        map = sut.read();
+        assertThat(map, nullValue());
         sut.close();
     }
 
     @Test
     public void 改行コードの存在しないデータでもMapに変換できること() throws Exception {
-        final InputStream inputStream = createInputStream("ab  あい003efg か　000", "MS932");
+        inputStream = new ByteArrayInputStream("ab  あい003efg か　000".getBytes("MS932"));
 
         final DataBindConfig dataBindConfig =
                 FixedLengthDataBindConfigBuilder
@@ -94,7 +107,7 @@ public class FixedLengthMapMapperTest {
                         )
                         .build();
 
-        final ObjectMapper<Map> sut = ObjectMapperFactory.create(
+        sut = ObjectMapperFactory.create(
                 Map.class,
                 inputStream,
                 dataBindConfig
@@ -103,7 +116,7 @@ public class FixedLengthMapMapperTest {
         Map<String, ?> map = sut.read();
         assertThat(map.get("name").toString(), is("ab"));
         assertThat(map.get("text").toString(), is("あい"));
-        assertThat(Integer.valueOf(map.get("age").toString()), is(3));
+        assertThat(map.get("age").toString(), is("3"));
 
         map = sut.read();
         assertThat(map.get("name").toString(), is("efg"));
@@ -114,7 +127,7 @@ public class FixedLengthMapMapperTest {
 
     @Test
     public void 空のInputStreamでも読みこめること() throws Exception {
-        final InputStream inputStream = createInputStream("", "MS932");
+        inputStream = new ByteArrayInputStream("".getBytes("MS932"));
 
         final DataBindConfig dataBindConfig =
                 FixedLengthDataBindConfigBuilder
@@ -135,7 +148,7 @@ public class FixedLengthMapMapperTest {
                                 )
                         )
                         .build();
-        final ObjectMapper<Map> sut = ObjectMapperFactory.create(
+        sut = ObjectMapperFactory.create(
                 Map.class,
                 inputStream,
                 dataBindConfig);
@@ -144,7 +157,7 @@ public class FixedLengthMapMapperTest {
 
     @Test
     public void 末尾に改行コードがあっても読みこめてMapに変換できること() throws UnsupportedEncodingException {
-        final InputStream inputStream = createInputStream("ab  あい003\r\nefg か　000\r\n", "MS932");
+        inputStream = new ByteArrayInputStream("ab  あい003\r\nefg か　000\r\n".getBytes("MS932"));
 
         final DataBindConfig dataBindConfig =
                 FixedLengthDataBindConfigBuilder
@@ -166,7 +179,7 @@ public class FixedLengthMapMapperTest {
                         )
                         .build();
 
-        final ObjectMapper<Map> sut = ObjectMapperFactory.create(
+        sut = ObjectMapperFactory.create(
                 Map.class,
                 inputStream,
                 dataBindConfig
@@ -174,7 +187,7 @@ public class FixedLengthMapMapperTest {
         Map<String, ?> map = sut.read();
         assertThat(map.get("name").toString(), is("ab"));
         assertThat(map.get("text").toString(), is("あい"));
-        assertThat(Integer.valueOf(map.get("age").toString()), is(3));
+        assertThat(map.get("age").toString(), is("3"));
 
         map = sut.read();
         assertThat(map.get("name").toString(), is("efg"));
@@ -185,7 +198,7 @@ public class FixedLengthMapMapperTest {
 
     @Test
     public void レコードの途中でEOFになる場合は例外が送出されること() throws Exception {
-        final InputStream inputStream = createInputStream("ab  あい003\r\ninvalid", "MS932");
+        inputStream = new ByteArrayInputStream("ab  あい003\r\ninvalid".getBytes("MS932"));
 
         final DataBindConfig dataBindConfig =
                 FixedLengthDataBindConfigBuilder
@@ -207,7 +220,7 @@ public class FixedLengthMapMapperTest {
                         )
                         .build();
 
-        final ObjectMapper<Map> sut = ObjectMapperFactory.create(
+        sut = ObjectMapperFactory.create(
                 Map.class,
                 inputStream,
                 dataBindConfig
@@ -221,7 +234,7 @@ public class FixedLengthMapMapperTest {
     @Test
     public void 実際の改行コードが設定と異なる場合は例外が送出されること() throws Exception {
         // 改行コード部分に\r\nではなく、「--」を設定
-        final InputStream inputStream = createInputStream("ab  あい003--efg か　000", "MS932");
+        inputStream = new ByteArrayInputStream("ab  あい003--efg か　000".getBytes("MS932"));
         final DataBindConfig dataBindConfig =
                 FixedLengthDataBindConfigBuilder
                         .newBuilder()
@@ -241,7 +254,7 @@ public class FixedLengthMapMapperTest {
                                 )
                         )
                         .build();
-        final ObjectMapper<Map> sut = ObjectMapperFactory.create(
+        sut = ObjectMapperFactory.create(
                 Map.class,
                 inputStream,
                 dataBindConfig
@@ -253,7 +266,7 @@ public class FixedLengthMapMapperTest {
 
     @Test
     public void 最終レコードの改行が実際より短い場合は例外が送出されること() throws Exception {
-        final InputStream inputStream = createInputStream("ab  あい003\r\nefg か　000\n", "MS932");
+        inputStream = new ByteArrayInputStream("ab  あい003\r\nefg か　000\n".getBytes("MS932"));
 
         final DataBindConfig dataBindConfig =
                 FixedLengthDataBindConfigBuilder
@@ -275,7 +288,7 @@ public class FixedLengthMapMapperTest {
                         )
                         .build();
 
-        final ObjectMapper<Map> sut = ObjectMapperFactory.create(
+        sut = ObjectMapperFactory.create(
                 Map.class,
                 inputStream,
                 dataBindConfig
@@ -283,7 +296,7 @@ public class FixedLengthMapMapperTest {
         Map<String, ?> map = sut.read();
         assertThat(map.get("name").toString(), is("ab"));
         assertThat(map.get("text").toString(), is("あい"));
-        assertThat(Integer.valueOf(map.get("age").toString()), is(3));
+        assertThat(map.get("age").toString(), is("3"));
         expectedException.expect(InvalidDataFormatException.class);
         expectedException.expectMessage("data format is invalid. line separator is invalid. line number = [2]");
         sut.read();
@@ -291,7 +304,7 @@ public class FixedLengthMapMapperTest {
 
     @Test
     public void writerメソッドはサポートしない例外が送出されること() throws Exception {
-        final InputStream inputStream = createInputStream("ab  あい003\r\nefg か　000\r\n", "MS932");
+        inputStream = new ByteArrayInputStream(("ab  あい003\r\nefg か　000\r\n").getBytes("MS932"));
 
         final DataBindConfig dataBindConfig =
                 FixedLengthDataBindConfigBuilder
@@ -313,7 +326,7 @@ public class FixedLengthMapMapperTest {
                         )
                         .build();
 
-        final ObjectMapper<Map> sut = ObjectMapperFactory.create(
+        sut = ObjectMapperFactory.create(
                 Map.class,
                 inputStream,
                 dataBindConfig
@@ -321,9 +334,5 @@ public class FixedLengthMapMapperTest {
         expectedException.expect(UnsupportedOperationException.class);
         expectedException.expectMessage("unsupported write method.");
         sut.write(null);
-    }
-
-    private InputStream createInputStream(String text, String charset) throws UnsupportedEncodingException {
-        return new ByteArrayInputStream(text.getBytes(charset));
     }
 }

@@ -17,8 +17,8 @@ public class FixedLengthBeanMapper<T> implements ObjectMapper<T> {
     /** レコードをマッピングするクラス */
     private final Class<T> clazz;
 
-    /** マッピングサポートクラス */
-    private final FixedLengthMapperSupport<T> fixedLengthMapperSupport;
+    /** 固定長をMapに変換するクラス */
+    private final FixedLengthMapMapper fixedLengthMapMapper;
 
     /**
      * 固定長をBeanにマッピングするクラスを構築する。
@@ -29,17 +29,17 @@ public class FixedLengthBeanMapper<T> implements ObjectMapper<T> {
      */
     public FixedLengthBeanMapper(Class<T> clazz, FixedLengthDataBindConfig config, InputStream stream) {
         this.clazz = clazz;
-        fixedLengthMapperSupport = new FixedLengthMapperSupport<T>(config, stream);
+        fixedLengthMapMapper = new FixedLengthMapMapper(config, stream);
     }
 
     @Override
     public void write(T object) {
-        fixedLengthMapperSupport.write(object);
+        throw new UnsupportedOperationException("unsupported write method.");
     }
 
     @Override
     public T read() {
-        final Map<String, Object> read = fixedLengthMapperSupport.read();
+        final Map<String, ?> read = fixedLengthMapMapper.read();
         if (read == null) {
             return null;
         }
@@ -48,6 +48,6 @@ public class FixedLengthBeanMapper<T> implements ObjectMapper<T> {
 
     @Override
     public void close() {
-        fixedLengthMapperSupport.close();
+        fixedLengthMapMapper.close();
     }
 }

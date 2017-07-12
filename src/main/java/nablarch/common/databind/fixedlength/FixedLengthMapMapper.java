@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.Map;
 
 import nablarch.common.databind.ObjectMapper;
+import nablarch.core.util.FileUtil;
 
 /**
  * 固定長をMapにマッピングする{@link ObjectMapper}
@@ -12,8 +13,8 @@ import nablarch.common.databind.ObjectMapper;
  */
 public class FixedLengthMapMapper implements ObjectMapper<Map<String, ?>> {
 
-    /** マッピングサポートクラス */
-    private final FixedLengthMapperSupport<Map<String, ?>> fixedLengthMapperSupport;
+    /** 固定長のリーダ */
+    private final FixedLengthReader reader;
 
     /**
      * 固定長をMapにマッピングするクラスを構築する。
@@ -22,22 +23,25 @@ public class FixedLengthMapMapper implements ObjectMapper<Map<String, ?>> {
      * @param stream 固定長データ
      */
     public FixedLengthMapMapper(FixedLengthDataBindConfig config, InputStream stream) {
-        fixedLengthMapperSupport = new FixedLengthMapperSupport<Map<String, ?>>(config, stream);
+        reader = new FixedLengthReader(stream, config);
     }
 
     @Override
     public void write(Map<String, ?> object) {
-        fixedLengthMapperSupport.write(object);
+        throw new UnsupportedOperationException("unsupported write method.");
     }
 
     @Override
     public Map<String, ?> read() {
-        // Mapで返却されるため、そのまま渡す
-        return fixedLengthMapperSupport.read();
+        final FixedLengthReader.Record record = reader.readRecord();
+        if (record == null) {
+            return null;
+        }
+        return record.readFields();
     }
 
     @Override
     public void close() {
-        fixedLengthMapperSupport.close();
+        FileUtil.closeQuietly(reader);
     }
 }

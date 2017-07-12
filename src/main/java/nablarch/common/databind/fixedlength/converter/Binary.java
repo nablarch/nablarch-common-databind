@@ -22,19 +22,17 @@ public @interface Binary {
     /**
      * バイナリのため変換を行わずそのまま移送する。
      */
-    class BinaryConverter implements FieldConvert.FieldConverter<Binary, byte[]> {
+    class BinaryConverter implements FieldConvert.FieldConverter<byte[]> {
 
         @Override
         public byte[] convertOfRead(final FixedLengthDataBindConfig fixedLengthDataBindConfig,
-                final FieldConfig fieldConfig,
-                final Binary converterConfig, final byte[] input) {
+                final FieldConfig fieldConfig, final byte[] input) {
             return input;
         }
 
         @Override
         public byte[] convertOfWrite(final FixedLengthDataBindConfig fixedLengthDataBindConfig,
-                final FieldConfig fieldConfig,
-                final Binary converterConfig, final byte[] output) {
+                final FieldConfig fieldConfig, final byte[] output) {
             return output;
         }
     }

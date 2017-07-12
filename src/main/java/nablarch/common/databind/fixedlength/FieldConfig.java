@@ -87,6 +87,15 @@ public class FieldConfig {
     }
 
     /**
+     * コンバータ設定情報を返す
+     *
+     * @return コンバータ設定情報
+     */
+    public FieldConverterConfig getConverterConfig() {
+        return converterConfig;
+    }
+
+    /**
      * バイト配列から自身のフィールド部分を抜き出し返却する。
      *
      * @param record レコード情報
@@ -99,9 +108,8 @@ public class FieldConfig {
         if (converterConfig != null) {
             return converterConfig.convertOfRead(fixedLengthDataBindConfig, this, fieldValue);
         } else if (fieldConverter != null) {
-            return fieldConverter.convertOfRead(fixedLengthDataBindConfig, this, null, fieldValue);
-        }
-        else {
+            return fieldConverter.convertOfRead(fixedLengthDataBindConfig, this, fieldValue);
+        } else {
             return StringUtil.toString(fieldValue, fixedLengthDataBindConfig.getCharset());
         }
     }
