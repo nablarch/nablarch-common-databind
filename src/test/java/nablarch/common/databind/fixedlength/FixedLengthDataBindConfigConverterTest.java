@@ -5,11 +5,14 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.theInstance;
 import static org.junit.Assert.assertThat;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.nio.charset.Charset;
-
-import kotlin.reflect.jvm.internal.impl.javax.inject.Named;
 
 import nablarch.common.databind.DataBindConfig;
 import nablarch.common.databind.fixedlength.converter.Lpad;
@@ -106,6 +109,23 @@ public class FixedLengthDataBindConfigConverterTest {
         sut.convert(MultipleConverter.class);
     }
 
+    @Test
+    public void アノテーションを引数に取るコンストラクタを持たないフィールドコンバータを設定した場合例外が送出されること() throws Exception {
+        expectedException.expect(IllegalStateException.class);
+        expectedException.expectMessage("no constructor is defined for class with argument. " +
+                "class:nablarch.common.databind.fixedlength.FixedLengthDataBindConfigConverterTest$NoConstructor$NoConstructorConverter, " +
+                "argument:nablarch.common.databind.fixedlength.FixedLengthDataBindConfigConverterTest$NoConstructor");
+        sut.convert(NoConstructorConverter.class);
+    }
+
+    @Test
+    public void フィールドコンバータのインスタンス生成に失敗した場合例外が送出されること() throws Exception {
+        expectedException.expect(IllegalStateException.class);
+        expectedException.expectMessage("instance creation failed. " +
+                "class:nablarch.common.databind.fixedlength.FixedLengthDataBindConfigConverterTest$NewInstanceFail$NewInstanceFailConverter");
+        sut.convert(NewInstanceFailConverter.class);
+    }
+
     @FixedLength(length = 1024, charset = "MS932", lineSeparator = "\n")
     public static class FixedLengthBean {
 
@@ -199,6 +219,70 @@ public class FixedLengthDataBindConfigConverterTest {
         @Lpad
         public String getName() {
             return name;
+        }
+    }
+
+    @FixedLength(length = 1024, charset = "MS932", lineSeparator = "\n")
+    public class NoConstructorConverter {
+        private String name;
+
+        @Field(offset = 1, length = 1024)
+        @NoConstructor
+        public String getName() {
+            return name;
+        }
+    }
+
+    @FieldConvert(NoConstructor.NoConstructorConverter.class)
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface NoConstructor {
+
+        class NoConstructorConverter implements FieldConvert.FieldConverter {
+
+            @Override
+            public Object convertOfRead(final FixedLengthDataBindConfig fixedLengthDataBindConfig, final FieldConfig fieldConfig, final byte[] input) {
+                return input;
+            }
+
+            @Override
+            public byte[] convertOfWrite(final FixedLengthDataBindConfig fixedLengthDataBindConfig, final FieldConfig fieldConfig, final Object output) {
+                return (byte[]) output;
+            }
+        }
+    }
+
+    @FixedLength(length = 1024, charset = "MS932", lineSeparator = "\n")
+    public class NewInstanceFailConverter {
+        private String name;
+
+        @Field(offset = 1, length = 1024)
+        @NewInstanceFail
+        public String getName() {
+            return name;
+        }
+    }
+
+    @FieldConvert(NewInstanceFail.NewInstanceFailConverter.class)
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface NewInstanceFail {
+
+        class NewInstanceFailConverter implements FieldConvert.FieldConverter {
+
+            public NewInstanceFailConverter(final NewInstanceFail newInstanceFail) {
+                throw new RuntimeException("fail");
+            }
+
+            @Override
+            public Object convertOfRead(final FixedLengthDataBindConfig fixedLengthDataBindConfig, final FieldConfig fieldConfig, final byte[] input) {
+                return input;
+            }
+
+            @Override
+            public byte[] convertOfWrite(final FixedLengthDataBindConfig fixedLengthDataBindConfig, final FieldConfig fieldConfig, final Object output) {
+                return (byte[]) output;
+            }
         }
     }
 }

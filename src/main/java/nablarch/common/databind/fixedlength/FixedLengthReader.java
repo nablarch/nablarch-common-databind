@@ -45,7 +45,7 @@ public class FixedLengthReader implements Closeable {
      *
      * @return レコード
      */
-    public Record readRecord() {
+    public Map<String, Object> readRecord() {
         final ByteBuffer buffer = ByteBuffer.allocate(config.getLength());
         try {
             final int readLength = readableChannel.read(buffer);
@@ -59,7 +59,12 @@ public class FixedLengthReader implements Closeable {
             skipLineSeparator();
 
             lineNumber++;
-            return new Record(config, buffer.array());
+            final Map<String, Object> fields = new HashMap<String, Object>();
+            final List<FieldConfig> fieldConfigList = config.getRecordConfig().getFieldConfigList();
+            for (final FieldConfig fieldConfig : fieldConfigList) {
+                fields.put(fieldConfig.getName(), fieldConfig.readValue(buffer.array(), config));
+            }
+            return fields;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -92,46 +97,5 @@ public class FixedLengthReader implements Closeable {
     @Override
     public void close() throws IOException {
         readableChannel.close();
-    }
-
-    /**
-     * 1レコード文のデータを保持する。
-     */
-    public static class Record {
-
-        /** 固定長データの設定値 */
-        private final FixedLengthDataBindConfig fixedLengthDataBindConfig;
-
-        /** フィールド情報 */
-        private final List<FieldConfig> fieldConfigList;
-
-        /** レコードの値 */
-        private final byte[] record;
-
-        /**
-         * レコードを構築する。
-         *
-         * @param fixedLengthDataBindConfig 固定長の設定値
-         * @param record レコードの値
-         */
-        Record(final FixedLengthDataBindConfig fixedLengthDataBindConfig, final byte[] record) {
-            this.fixedLengthDataBindConfig = fixedLengthDataBindConfig;
-            this.record = record;
-            fieldConfigList = fixedLengthDataBindConfig.getRecordConfig()
-                                                       .getFieldConfigList();
-        }
-
-        /**
-         * レコード内のフィールドを読み取りMapで返す。
-         *
-         * @return レコード内のフィールドの値
-         */
-        public Map<String, Object> readFields() {
-            final Map<String, Object> fields = new HashMap<String, Object>();
-            for (final FieldConfig fieldConfig : fieldConfigList) {
-                fields.put(fieldConfig.getName(), fieldConfig.readValue(record, fixedLengthDataBindConfig));
-            }
-            return fields;
-        }
     }
 }

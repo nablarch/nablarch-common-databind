@@ -20,37 +20,41 @@ class RpadConverterTest {
      */
     class ConvertOfRead {
 
-        val sut = Rpad.RpadConverter()
         private val fixedLengthDataBindConfig = FixedLengthDataBindConfig(5, MS932(), "", mutableMapOf())
 
         @Test
         fun トリム対象の文字がない場合はそのまま戻されること() {
-            val rpad = AnnotationConfigs.getRpad("default")
-            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 5, null), rpad, "12345".toByteArray(MS932()))
-            assertThat(actual, `is`("12345"))
+            val sut = Rpad.RpadConverter(AnnotationConfigs.getRpad("default"))
+            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 5, sut), "12345".toByteArray(MS932()))
+            assertThat(actual, `is`<Any>("12345"))
         }
 
         @Test
         fun デフォルトでは半角スペースがトリムされること() {
-            val rpad = AnnotationConfigs.getRpad("default")
-
-            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 5, null), rpad, "12   ".toByteArray(MS932()))
-            assertThat(actual, `is`("12"))
+            val sut = Rpad.RpadConverter(AnnotationConfigs.getRpad("default"))
+            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 5, sut), "12   ".toByteArray(MS932()))
+            assertThat(actual, `is`<Any>("12"))
         }
 
         @Test
         fun カスタムな値を設定した場合その値がトリムされること() {
-            val rpad = AnnotationConfigs.getRpad("custom")
-            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 10, null), rpad, "あいう　　".toByteArray(MS932()))
-            assertThat(actual, `is`("あいう"))
+            val sut = Rpad.RpadConverter(AnnotationConfigs.getRpad("custom"))
+            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 10, sut), "あいう　　".toByteArray(MS932()))
+            assertThat(actual, `is`<Any>("あいう"))
         }
 
         @Test
         fun 全てトリム対象の場合長さゼロの文字列となること() {
-            val rpad = AnnotationConfigs.getRpad("default")
+            val sut = Rpad.RpadConverter(AnnotationConfigs.getRpad("default"))
+            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 10, sut), "     ".toByteArray(MS932()))
+            assertThat(actual, `is`<Any>(""))
+        }
 
-            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 10, null), rpad, "     ".toByteArray(MS932()))
-            assertThat(actual, isEmptyString())
+        @Test
+        fun アノテーション情報が無い場合でも指定した値でトリムされること() {
+            val sut = Rpad.RpadConverter('　')
+            val actual = sut.convertOfRead(fixedLengthDataBindConfig,FieldConfig("name", 1, 10,sut), "あいう　　".toByteArray(MS932()))
+            assertThat(actual, `is`<Any>("あいう"))
         }
     }
 
@@ -62,37 +66,35 @@ class RpadConverterTest {
         @get:Rule
         val expectedException: ExpectedException = ExpectedException.none()
 
-        val sut = Rpad.RpadConverter()
         private val fixedLengthDataBindConfig = FixedLengthDataBindConfig(5, MS932(), "", mutableMapOf())
 
         @Test
         fun パディングの必要が無い場合値がそのまま返されること() {
-            val rpad = AnnotationConfigs.getRpad("default")
-            val actual = sut.convertOfWrite(fixedLengthDataBindConfig, FieldConfig("name", 1, 5, null), rpad, "12345")
+            val sut = Rpad.RpadConverter(AnnotationConfigs.getRpad("default"))
+            val actual = sut.convertOfWrite(fixedLengthDataBindConfig, FieldConfig("name", 1, 5, sut), "12345")
             assertThat(actual, `is`("12345".toByteArray(MS932())))
         }
 
         @Test
         fun デフォルトの設定の場合半角スペースがパディングされること() {
-            val rpad = AnnotationConfigs.getRpad("default")
-            val actual = sut.convertOfWrite(fixedLengthDataBindConfig, FieldConfig("name", 1, 5, null), rpad, "1")
+            val sut = Rpad.RpadConverter(AnnotationConfigs.getRpad("default"))
+            val actual = sut.convertOfWrite(fixedLengthDataBindConfig, FieldConfig("name", 1, 5, sut), "1")
             assertThat(actual, `is`("1    ".toByteArray(MS932())))
         }
 
         @Test
         fun カスタムの設定の場合指定した値がパディングされること() {
-            val rpad = AnnotationConfigs.getRpad("custom")
-            val actual = sut.convertOfWrite(fixedLengthDataBindConfig, FieldConfig("name", 1, 6, null), rpad, "あい")
+            val sut = Rpad.RpadConverter(AnnotationConfigs.getRpad("custom"))
+            val actual = sut.convertOfWrite(fixedLengthDataBindConfig, FieldConfig("name", 1, 6, sut), "あい")
             assertThat(actual, `is`("あい　".toByteArray(MS932())))
         }
 
         @Test
         fun パディング時にサイズを超えた場合は例外が送出されること() {
-            val rpad = AnnotationConfigs.getRpad("custom")
-
+            val sut = Rpad.RpadConverter(AnnotationConfigs.getRpad("custom"))
             expectedException.expect(IllegalArgumentException::class.java)
             expectedException.expectMessage("length after padding is invalid. expected length 5 but was actual length 6. field_name: name output value: あい padding_char: 　")
-            sut.convertOfWrite(fixedLengthDataBindConfig, FieldConfig("name", 1, 5, null), rpad, "あい")
+            sut.convertOfWrite(fixedLengthDataBindConfig, FieldConfig("name", 1, 5, sut), "あい")
         }
     }
 

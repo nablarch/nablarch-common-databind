@@ -2,8 +2,6 @@ package nablarch.common.databind.fixedlength;
 
 import java.util.Arrays;
 
-import nablarch.core.util.StringUtil;
-
 /**
  * フィールドの定義をあらわすクラス。
  *
@@ -21,7 +19,7 @@ public class FieldConfig {
     private final int length;
 
     /** コンバータ */
-    private final FieldConverterConfig converterConfig;
+    private final FieldConvert.FieldConverter fieldConverter;
 
     /**
      * フィールド定義を構築する。
@@ -29,14 +27,14 @@ public class FieldConfig {
      * @param name フィールド名
      * @param offset 開始位置(1始まり)
      * @param length 長さ(バイト数)
-     * @param converterConfig 入出力時の変換を行うコンバータ
+     * @param fieldConverter 入出力時の変換を行うコンバータ
      */
     public FieldConfig(
-            final String name, final int offset, final int length, final FieldConverterConfig converterConfig) {
+            final String name, final int offset, final int length, final FieldConvert.FieldConverter fieldConverter) {
         this.name = name;
         this.offset = offset;
         this.length = length;
-        this.converterConfig = converterConfig;
+        this.fieldConverter = fieldConverter;
     }
 
     /**
@@ -76,10 +74,6 @@ public class FieldConfig {
     public Object readValue(final byte[] record, final FixedLengthDataBindConfig fixedLengthDataBindConfig) {
         final int zeroOffset = offset - 1;
         final byte[] fieldValue = Arrays.copyOfRange(record, zeroOffset, zeroOffset + length);
-        if (converterConfig != null) {
-            return converterConfig.convertOfRead(fixedLengthDataBindConfig, this, fieldValue);
-        } else {
-            return StringUtil.toString(fieldValue, fixedLengthDataBindConfig.getCharset());
-        }
+        return fieldConverter.convertOfRead(fixedLengthDataBindConfig, this, fieldValue);
     }
 }

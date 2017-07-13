@@ -35,17 +35,37 @@ public @interface Rpad {
     /**
      * 値の変換処理を行う。
      */
-    class RpadConverter implements FieldConvert.FieldConverter<Rpad, String> {
+    class RpadConverter implements FieldConvert.FieldConverter {
+
+        /**
+         * 値の先頭に設定する文字
+         */
+        private final char padChar;
+
+        /**
+         * 指定された値を用いて値の変換処理を行うクラスを構築する。
+         *
+         * @param padChar 値の末尾に設定する文字
+         */
+        public RpadConverter(final char padChar) {
+            this.padChar = padChar;
+        }
+
+        /**
+         * {@link Rpad}に設定された値をもとにインスタンスを生成する。
+         * @param rpad Rpad
+         */
+        public RpadConverter(final Rpad rpad) {
+            padChar = rpad.value();
+        }
 
         @Override
-        public String convertOfRead(
+        public Object convertOfRead(
                 final FixedLengthDataBindConfig fixedLengthDataBindConfig,
                 final FieldConfig fieldConfig,
-                final Rpad converterConfig,
                 final byte[] input) {
 
             final String value = StringUtil.toString(input, fixedLengthDataBindConfig.getCharset());
-            final char padChar = converterConfig.value();
             int chopPos = value.length() - 1;
             while ((chopPos >= 0) && (value.charAt(chopPos) == padChar)) {
                 chopPos--;
@@ -57,14 +77,13 @@ public @interface Rpad {
         public byte[] convertOfWrite(
                 final FixedLengthDataBindConfig fixedLengthDataBindConfig,
                 final FieldConfig fieldConfig,
-                final Rpad converterConfig,
-                final String output) {
+                final Object output) {
 
             final byte[] paddingChar = StringUtil.getBytes(
-                    Character.toString(converterConfig.value()), fixedLengthDataBindConfig.getCharset());
+                    Character.toString(padChar), fixedLengthDataBindConfig.getCharset());
             
             final ByteBuffer buffer = ByteBuffer.allocate(fieldConfig.getLength());
-            buffer.put(StringUtil.getBytes(output, fixedLengthDataBindConfig.getCharset()));
+            buffer.put(StringUtil.getBytes(output.toString(), fixedLengthDataBindConfig.getCharset()));
             
             while (buffer.position() < buffer.limit()) {
                 try {
@@ -75,7 +94,7 @@ public @interface Rpad {
                             + " but was actual length " + (buffer.position() + paddingChar.length) + '.'
                             + " field_name: " + fieldConfig.getName()
                             + " output value: " + output
-                            + " padding_char: " + converterConfig.value(), e);
+                            + " padding_char: " + padChar, e);
                 }
             }
             return buffer.array();

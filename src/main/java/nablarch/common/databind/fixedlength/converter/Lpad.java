@@ -35,16 +35,37 @@ public @interface Lpad {
     /**
      * 値の変換を行う。
      */
-    class LpadConverter implements FieldConvert.FieldConverter<Lpad, String> {
+    class LpadConverter implements FieldConvert.FieldConverter {
+
+        /**
+         * 値の先頭に設定する文字
+         */
+        private final char padChar;
+
+        /**
+         * 指定された値を用いて値の変換処理を行うクラスを構築する。
+         *
+         * @param padChar 値の先頭に設定する文字
+         */
+        public LpadConverter(final char padChar) {
+            this.padChar = padChar;
+        }
+
+        /**
+         * {@link Lpad}に設定された値をもとにインスタンスを生成する。
+         * @param lpad Lpad
+         */
+        public LpadConverter(final Lpad lpad) {
+            padChar = lpad.value();
+        }
 
         @Override
-        public String convertOfRead(
+        public Object convertOfRead(
                 final FixedLengthDataBindConfig fixedLengthDataBindConfig,
                 final FieldConfig fieldConfig,
-                final Lpad converterConfig, final byte[] input) {
-            final String value = StringUtil.toString(input, fixedLengthDataBindConfig.getCharset());
+                final byte[] input) {
 
-            final char padChar = converterConfig.value();
+            final String value = StringUtil.toString(input, fixedLengthDataBindConfig.getCharset());
             int charPos = 0;
             for (; charPos < value.length(); charPos++) {
                 if (value.charAt(charPos) != padChar) {
@@ -55,16 +76,17 @@ public @interface Lpad {
         }
 
         @Override
-        public byte[] convertOfWrite(final FixedLengthDataBindConfig fixedLengthDataBindConfig,
+        public byte[] convertOfWrite(
+                final FixedLengthDataBindConfig fixedLengthDataBindConfig,
                 final FieldConfig fieldConfig,
-                final Lpad converterConfig, final String output) {
+                final Object output) {
 
             final byte[] paddingChar = StringUtil.getBytes(
-                    Character.toString(converterConfig.value()), fixedLengthDataBindConfig.getCharset());
+                    Character.toString(padChar), fixedLengthDataBindConfig.getCharset());
             
             final ByteBuffer buffer = ByteBuffer.allocate(fieldConfig.getLength());
 
-            final byte[] value = StringUtil.getBytes(output, fixedLengthDataBindConfig.getCharset());
+            final byte[] value = StringUtil.getBytes(output.toString(), fixedLengthDataBindConfig.getCharset());
             while (buffer.position() < fieldConfig.getLength() - value.length) {
                 buffer.put(paddingChar);
             }
@@ -76,7 +98,7 @@ public @interface Lpad {
                         + " but was actual length " + (buffer.position() + value.length) + '.'
                         + " field_name: " + fieldConfig.getName()
                         + " output value: " + output
-                        + " padding_char: " + converterConfig.value(), e);
+                        + " padding_char: " + padChar, e);
             }
             return buffer.array();
         }
