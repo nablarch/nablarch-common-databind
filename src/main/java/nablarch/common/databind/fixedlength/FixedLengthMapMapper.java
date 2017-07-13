@@ -33,11 +33,7 @@ public class FixedLengthMapMapper implements ObjectMapper<Map<String, ?>> {
 
     @Override
     public Map<String, ?> read() {
-        final FixedLengthReader.Record record = reader.readRecord();
-        if (record == null) {
-            return null;
-        }
-        return record.readFields();
+        return reader.readRecord();
     }
 
     @Override

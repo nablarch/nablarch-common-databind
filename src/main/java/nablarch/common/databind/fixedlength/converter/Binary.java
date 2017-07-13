@@ -22,18 +22,35 @@ public @interface Binary {
     /**
      * バイナリのため変換を行わずそのまま移送する。
      */
-    class BinaryConverter implements FieldConvert.FieldConverter<byte[]> {
+    class BinaryConverter implements FieldConvert.FieldConverter {
+
+        /**
+         * デフォルトコンストラクタ。
+         */
+        public BinaryConverter() {
+        }
+
+        /**
+         * {@link Binary}を引数に取るコンストラクタ。
+         * @param binary バイナリ
+         */
+        public BinaryConverter(final Binary binary) {
+        }
 
         @Override
-        public byte[] convertOfRead(final FixedLengthDataBindConfig fixedLengthDataBindConfig,
+        public Object convertOfRead(final FixedLengthDataBindConfig fixedLengthDataBindConfig,
                 final FieldConfig fieldConfig, final byte[] input) {
             return input;
         }
 
         @Override
         public byte[] convertOfWrite(final FixedLengthDataBindConfig fixedLengthDataBindConfig,
-                final FieldConfig fieldConfig, final byte[] output) {
-            return output;
+                final FieldConfig fieldConfig, final Object output) {
+            if (output instanceof byte[]) {
+                return ((byte[]) output);
+            } else {
+                throw new IllegalArgumentException("output is byte array only.");
+            }
         }
     }
 }

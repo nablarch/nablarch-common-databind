@@ -21,12 +21,12 @@ public @interface FieldConvert {
      *
      * @return 値の変換を行うクラス。
      */
-    Class<? extends FieldConverter<?>> value();
+    Class<? extends FieldConverter> value();
 
     /**
      * 値を変換するインタフェース。
      */
-    interface FieldConverter<T> {
+    interface FieldConverter {
 
         /**
          * 読み込み時の変換を行う。
@@ -36,7 +36,7 @@ public @interface FieldConvert {
          * @param input 入力値
          * @return 変換後の値
          */
-        T convertOfRead(
+        Object convertOfRead(
                 FixedLengthDataBindConfig fixedLengthDataBindConfig, FieldConfig fieldConfig, byte[] input);
 
         /**
@@ -48,6 +48,6 @@ public @interface FieldConvert {
          * @return 出力後の値
          */
         byte[] convertOfWrite(
-                FixedLengthDataBindConfig fixedLengthDataBindConfig, FieldConfig fieldConfig, T output);
+                FixedLengthDataBindConfig fixedLengthDataBindConfig, FieldConfig fieldConfig, Object output);
     }
 }

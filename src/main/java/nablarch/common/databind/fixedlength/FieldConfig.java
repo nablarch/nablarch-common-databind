@@ -2,8 +2,6 @@ package nablarch.common.databind.fixedlength;
 
 import java.util.Arrays;
 
-import nablarch.core.util.StringUtil;
-
 /**
  * フィールドの定義をあらわすクラス。
  *
@@ -20,28 +18,8 @@ public class FieldConfig {
     /** 長さ(バイト数) */
     private final int length;
 
-    /** コンバータ設定情報 */
-    private FieldConverterConfig converterConfig = null;
-
     /** コンバータ */
-    private FieldConvert.FieldConverter fieldConverter = null;
-
-
-    /**
-     * フィールド定義を構築する。
-     *
-     * @param name フィールド名
-     * @param offset 開始位置(1始まり)
-     * @param length 長さ(バイト数)
-     * @param converterConfig 入出力時の変換を行うコンバータ設定情報
-     */
-    public FieldConfig(
-            final String name, final int offset, final int length, final FieldConverterConfig converterConfig) {
-        this.name = name;
-        this.offset = offset;
-        this.length = length;
-        this.converterConfig = converterConfig;
-    }
+    private final FieldConvert.FieldConverter fieldConverter;
 
     /**
      * フィールド定義を構築する。
@@ -87,15 +65,6 @@ public class FieldConfig {
     }
 
     /**
-     * コンバータ設定情報を返す
-     *
-     * @return コンバータ設定情報
-     */
-    public FieldConverterConfig getConverterConfig() {
-        return converterConfig;
-    }
-
-    /**
      * バイト配列から自身のフィールド部分を抜き出し返却する。
      *
      * @param record レコード情報
@@ -105,12 +74,6 @@ public class FieldConfig {
     public Object readValue(final byte[] record, final FixedLengthDataBindConfig fixedLengthDataBindConfig) {
         final int zeroOffset = offset - 1;
         final byte[] fieldValue = Arrays.copyOfRange(record, zeroOffset, zeroOffset + length);
-        if (converterConfig != null) {
-            return converterConfig.convertOfRead(fixedLengthDataBindConfig, this, fieldValue);
-        } else if (fieldConverter != null) {
-            return fieldConverter.convertOfRead(fixedLengthDataBindConfig, this, fieldValue);
-        } else {
-            return StringUtil.toString(fieldValue, fixedLengthDataBindConfig.getCharset());
-        }
+        return fieldConverter.convertOfRead(fixedLengthDataBindConfig, this, fieldValue);
     }
 }

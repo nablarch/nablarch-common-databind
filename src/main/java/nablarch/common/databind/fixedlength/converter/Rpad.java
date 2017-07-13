@@ -1,18 +1,17 @@
 package nablarch.common.databind.fixedlength.converter;
 
-import nablarch.common.databind.fixedlength.FieldConfig;
-import nablarch.common.databind.fixedlength.FieldConvert;
-import nablarch.common.databind.fixedlength.FieldConverterConfig;
-import nablarch.common.databind.fixedlength.FixedLengthDataBindConfig;
-import nablarch.common.databind.fixedlength.converter.Rpad.RpadConverter;
-import nablarch.core.util.StringUtil;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
+
+import nablarch.common.databind.fixedlength.FieldConfig;
+import nablarch.common.databind.fixedlength.FieldConvert;
+import nablarch.common.databind.fixedlength.FixedLengthDataBindConfig;
+import nablarch.common.databind.fixedlength.converter.Rpad.RpadConverter;
+import nablarch.core.util.StringUtil;
 
 /**
  * 値の末尾に指定の文字を付加(読み込み時は除去)することを示す。
@@ -36,20 +35,12 @@ public @interface Rpad {
     /**
      * 値の変換処理を行う。
      */
-    class RpadConverter implements FieldConvert.FieldConverter<String> {
+    class RpadConverter implements FieldConvert.FieldConverter {
 
         /**
          * 値の先頭に設定する文字
-         * <p>
-         * デフォルトは半角スペース
          */
-        private char padChar = ' ';
-
-        /**
-         * 値の変換処理を行うクラスを構築する。
-         */
-        public RpadConverter() {
-        }
+        private final char padChar;
 
         /**
          * 指定された値を用いて値の変換処理を行うクラスを構築する。
@@ -60,18 +51,19 @@ public @interface Rpad {
             this.padChar = padChar;
         }
 
+        /**
+         * {@link Rpad}に設定された値をもとにインスタンスを生成する。
+         * @param rpad Rpad
+         */
+        public RpadConverter(final Rpad rpad) {
+            padChar = rpad.value();
+        }
+
         @Override
-        public String convertOfRead(
+        public Object convertOfRead(
                 final FixedLengthDataBindConfig fixedLengthDataBindConfig,
                 final FieldConfig fieldConfig,
                 final byte[] input) {
-            final FieldConverterConfig fieldConverterConfig = fieldConfig.getConverterConfig();
-            if (fieldConverterConfig != null) {
-                final Rpad rpad = (Rpad) fieldConverterConfig.getAnnotationConfig();
-                if (rpad != null) {
-                    padChar= rpad.value();
-                }
-            }
 
             final String value = StringUtil.toString(input, fixedLengthDataBindConfig.getCharset());
             int chopPos = value.length() - 1;
@@ -85,20 +77,13 @@ public @interface Rpad {
         public byte[] convertOfWrite(
                 final FixedLengthDataBindConfig fixedLengthDataBindConfig,
                 final FieldConfig fieldConfig,
-                final String output) {
-            final FieldConverterConfig fieldConverterConfig = fieldConfig.getConverterConfig();
-            if (fieldConverterConfig != null) {
-                final Rpad rpad = (Rpad) fieldConverterConfig.getAnnotationConfig();
-                if (rpad != null) {
-                    padChar= rpad.value();
-                }
-            }
+                final Object output) {
 
             final byte[] paddingChar = StringUtil.getBytes(
                     Character.toString(padChar), fixedLengthDataBindConfig.getCharset());
             
             final ByteBuffer buffer = ByteBuffer.allocate(fieldConfig.getLength());
-            buffer.put(StringUtil.getBytes(output, fixedLengthDataBindConfig.getCharset()));
+            buffer.put(StringUtil.getBytes(output.toString(), fixedLengthDataBindConfig.getCharset()));
             
             while (buffer.position() < buffer.limit()) {
                 try {
