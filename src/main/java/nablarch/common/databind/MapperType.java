@@ -10,9 +10,11 @@ import nablarch.common.databind.csv.CsvBeanMapper;
 import nablarch.common.databind.csv.CsvDataBindConfig;
 import nablarch.common.databind.csv.CsvMapMapper;
 import nablarch.common.databind.csv.MapCsvMapper;
+import nablarch.common.databind.fixedlength.BeanFixedLengthMapper;
 import nablarch.common.databind.fixedlength.FixedLengthBeanMapper;
 import nablarch.common.databind.fixedlength.FixedLengthDataBindConfig;
 import nablarch.common.databind.fixedlength.FixedLengthMapMapper;
+import nablarch.common.databind.fixedlength.MapFixedLengthMapper;
 
 /**
  * マッパータイプ。
@@ -89,7 +91,8 @@ enum MapperType {
 
         @Override
         <T> ObjectMapper<T> createMapper(Class<T> clazz, DataBindConfig config, OutputStream stream) {
-            return null;
+            final FixedLengthDataBindConfig fixedLengthDataBindConfig = FixedLengthDataBindConfig.class.cast(config);
+            return (ObjectMapper<T>) new BeanFixedLengthMapper(clazz, fixedLengthDataBindConfig, stream);
         }
 
         @Override
@@ -111,7 +114,8 @@ enum MapperType {
 
         @Override
         <T> ObjectMapper<T> createMapper(Class<T> clazz, DataBindConfig config, OutputStream stream) {
-            return null;
+            final FixedLengthDataBindConfig fixedLengthDataBindConfig = FixedLengthDataBindConfig.class.cast(config);
+            return (ObjectMapper<T>) new MapFixedLengthMapper(fixedLengthDataBindConfig, stream);
         }
 
         @Override
