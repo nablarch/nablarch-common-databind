@@ -10,6 +10,7 @@ import org.junit.Test
 import org.junit.rules.ExpectedException
 import sun.nio.cs.ext.MS932
 import java.io.ByteArrayOutputStream
+import java.nio.BufferOverflowException
 
 /**
  * {@link MapFixedLengthMapper}のテスト
@@ -40,10 +41,10 @@ class MapFixedLengthMapperTest {
         ObjectMapperFactory.create(Map::class.java, stream, config).use { sut ->
             assertThat(sut, Matchers.instanceOf(MapFixedLengthMapper::class.java))
             sut.write(mapOf("name" to "testname", "text" to "testtext", "age" to 100))
-            assertThat(stream.toString(), Matchers.`is`("testnametesttext100\r\n"))
+            assertThat(stream.toString(), Matchers.`is`("testnametesttext100"))
 
             sut.write(mapOf("name" to "name", "text" to "text", "age" to 12))
-            assertThat(stream.toString(), Matchers.`is`("testnametesttext100\r\nname    text    012\r\n"))
+            assertThat(stream.toString(), Matchers.`is`("testnametesttext100\r\nname    text    012"))
             sut.close()
         }
     }
@@ -71,6 +72,7 @@ class MapFixedLengthMapperTest {
 
             expectedException.expect(IllegalArgumentException::class.java)
             expectedException.expectMessage("record length is invalid. expected_length:19, actual_length:20")
+            expectedException.expectCause(Matchers.instanceOf(BufferOverflowException::class.java))
             sut.write(mapOf("name" to "testname", "text" to "testtext", "age" to 1000))
 
         }

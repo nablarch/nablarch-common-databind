@@ -22,6 +22,12 @@ public class FixedLengthWriter implements Closeable {
     /** 固定長データの設定情報 */
     private final FixedLengthDataBindConfig config;
 
+    /** 改行コードの{@link ByteBuffer} */
+    private final ByteBuffer lineSeparatorByteBuffer;
+
+    /** 改行コードを書き込む必要があるか否か */
+    private boolean needLineSeparator;
+
     /**
      * 固定長データのライタを構築する。
      * @param stream 出力ストリーム
@@ -29,6 +35,8 @@ public class FixedLengthWriter implements Closeable {
      */
     public FixedLengthWriter(final OutputStream stream, final FixedLengthDataBindConfig config) {
         writableByteChannel = Channels.newChannel(stream);
+        lineSeparatorByteBuffer = ByteBuffer.allocate(config.getLineSeparator().length());
+        lineSeparatorByteBuffer.put(config.getLineSeparator().getBytes(config.getCharset()));
         this.config = config;
     }
 
@@ -37,6 +45,11 @@ public class FixedLengthWriter implements Closeable {
      * @param map 出力データ
      */
     public void writeRecord(final Map<String, ?> map) {
+
+        if (needLineSeparator) {
+            write(lineSeparatorByteBuffer);
+        }
+
         final int configLength = config.getLength();
         final ByteBuffer byteBuffer = ByteBuffer.allocate(configLength);
         final List<FieldConfig> fieldConfigList = config.getRecordConfig().getFieldConfigList();
@@ -45,42 +58,29 @@ public class FixedLengthWriter implements Closeable {
             try {
                 byteBuffer.put(value);
             } catch (BufferOverflowException e) {
-                throwInvalidLengthException(configLength, byteBuffer.position() + value.length);
+                throw new IllegalArgumentException(
+                        "record length is invalid. expected_length:" + configLength + ", actual_length:" + (byteBuffer.position() + value.length), e);
             }
         }
         if (byteBuffer.position() < configLength) {
-            throwInvalidLengthException(configLength, byteBuffer.position());
+            throw new IllegalArgumentException(
+                    "record length is invalid. expected_length:" + configLength + ", actual_length:" + byteBuffer.position());
         }
+        write(byteBuffer);
+        needLineSeparator = true;
+    }
 
+    /**
+     * 指定された{@link ByteBuffer}を書き込む。
+     * @param byteBuffer バイトバッファ
+     */
+    private void write(final ByteBuffer byteBuffer) {
         byteBuffer.rewind();
         try {
             writableByteChannel.write(byteBuffer);
-            writeLineSeparator();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * 出力されるレコードの長さが設定情報より異なることを示す例外を送出する。
-     *
-     * @param configLength 設定情報に定義されたレコードの長さ
-     * @param actualLength 実際のレコードの長さ
-     */
-    private void throwInvalidLengthException(final int configLength, final int actualLength) {
-        throw new IllegalArgumentException(
-                "record length is invalid. expected_length:" + configLength + ", actual_length:" + actualLength);
-    }
-
-    /**
-     * 改行コードを出力する。
-     * @throws IOException 出力に失敗した場合
-     */
-    private void writeLineSeparator() throws IOException {
-        final ByteBuffer byteBuffer = ByteBuffer.allocate(config.getLineSeparator().length());
-        byteBuffer.put(config.getLineSeparator().getBytes(config.getCharset()));
-        byteBuffer.rewind();
-        writableByteChannel.write(byteBuffer);
     }
 
     @Override
