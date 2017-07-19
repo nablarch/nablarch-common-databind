@@ -15,7 +15,7 @@ import nablarch.common.databind.fixedlength.converter.DefaultConverter;
 public class RecordBuilder {
 
     /** フィールド定義のリスト */
-    private List<FieldConfig> fieldConfigList = new ArrayList<FieldConfig>();
+    private final List<FieldConfig> fieldConfigList = new ArrayList<FieldConfig>();
 
     /**
      * フィールドを追加する。
@@ -24,7 +24,7 @@ public class RecordBuilder {
      * @param length 長さ
      * @return 本インスタンス
      */
-    public RecordBuilder addField(String name, int offset, int length) {
+    public RecordBuilder addField(final String name, final int offset, final int length) {
         return addField(name, offset, length, new DefaultConverter());
     }
 
@@ -36,7 +36,7 @@ public class RecordBuilder {
      * @param converter フィールドコンバータ
      * @return 本インスタンス
      */
-    public RecordBuilder addField(String name, int offset, int length, FieldConvert.FieldConverter converter) {
+    public RecordBuilder addField(final String name, final int offset, final int length, final FieldConvert.FieldConverter converter) {
         fieldConfigList.add(new FieldConfig(name, offset, length, converter));
         return this;
     }
