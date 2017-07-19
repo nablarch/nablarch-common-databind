@@ -81,12 +81,13 @@ public @interface Lpad {
                 final FieldConfig fieldConfig,
                 final Object output) {
 
+            final String strValue = output != null ? output.toString() : "";
             final byte[] paddingChar = StringUtil.getBytes(
                     Character.toString(padChar), fixedLengthDataBindConfig.getCharset());
             
             final ByteBuffer buffer = ByteBuffer.allocate(fieldConfig.getLength());
 
-            final byte[] value = StringUtil.getBytes(output.toString(), fixedLengthDataBindConfig.getCharset());
+            final byte[] value = StringUtil.getBytes(strValue, fixedLengthDataBindConfig.getCharset());
             while (buffer.position() < fieldConfig.getLength() - value.length) {
                 buffer.put(paddingChar);
             }
@@ -97,7 +98,7 @@ public @interface Lpad {
                         + " expected length " + fieldConfig.getLength()
                         + " but was actual length " + (buffer.position() + value.length) + '.'
                         + " field_name: " + fieldConfig.getName()
-                        + " output value: " + output
+                        + " output value: " + strValue
                         + " padding_char: " + padChar, e);
             }
             return buffer.array();

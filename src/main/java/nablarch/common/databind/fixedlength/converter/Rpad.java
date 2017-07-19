@@ -79,11 +79,12 @@ public @interface Rpad {
                 final FieldConfig fieldConfig,
                 final Object output) {
 
+            final String value = output != null ? output.toString() : "";
             final byte[] paddingChar = StringUtil.getBytes(
                     Character.toString(padChar), fixedLengthDataBindConfig.getCharset());
             
             final ByteBuffer buffer = ByteBuffer.allocate(fieldConfig.getLength());
-            buffer.put(StringUtil.getBytes(output.toString(), fixedLengthDataBindConfig.getCharset()));
+            buffer.put(StringUtil.getBytes(value, fixedLengthDataBindConfig.getCharset()));
             
             while (buffer.position() < buffer.limit()) {
                 try {

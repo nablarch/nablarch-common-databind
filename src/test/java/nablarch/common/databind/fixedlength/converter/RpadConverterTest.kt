@@ -96,6 +96,13 @@ class RpadConverterTest {
             expectedException.expectMessage("length after padding is invalid. expected length 5 but was actual length 6. field_name: name output value: あい padding_char: 　")
             sut.convertOfWrite(fixedLengthDataBindConfig, FieldConfig("name", 1, 5, sut), "あい")
         }
+
+        @Test
+        fun `nullの場合、空文字に変換してパディングされること`() {
+            val sut = Rpad.RpadConverter(AnnotationConfigs.getRpad("default"))
+            val actual = sut.convertOfWrite(fixedLengthDataBindConfig, FieldConfig("name", 1, 5, sut),null)
+            assertThat(actual, `is`("     ".toByteArray(MS932())))
+        }
     }
 
     private object AnnotationConfigs {

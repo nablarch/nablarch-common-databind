@@ -96,7 +96,12 @@ class LpadConverterTest {
             sut.convertOfWrite(fixedLengthDataBindConfig, FieldConfig("name", 1, 5, sut), "あい")
         }
 
-
+        @Test
+        fun `nullの場合、空文字に変換してパディングされること`() {
+            val sut = Lpad.LpadConverter(AnnotationConfigs.getLpad("default"))
+            val actual = sut.convertOfWrite(fixedLengthDataBindConfig, FieldConfig("name", 1, 5, sut),null)
+            assertThat(actual, `is`("00000".toByteArray(MS932())))
+        }
     }
 
     private object AnnotationConfigs {

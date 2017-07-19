@@ -18,6 +18,7 @@ public class DefaultConverter implements FieldConvert.FieldConverter {
 
     @Override
     public byte[] convertOfWrite(final FixedLengthDataBindConfig fixedLengthDataBindConfig, final FieldConfig fieldConfig, final Object output) {
-        return StringUtil.getBytes(output.toString(), fixedLengthDataBindConfig.getCharset());
+        final String value = output != null ? output.toString() : "";
+        return StringUtil.getBytes(value, fixedLengthDataBindConfig.getCharset());
     }
 }
