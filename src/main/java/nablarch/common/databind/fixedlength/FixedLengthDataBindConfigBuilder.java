@@ -109,6 +109,10 @@ public class FixedLengthDataBindConfigBuilder {
      * レコード定義の正しさを検証する。
      */
     private void verifyRecordConfig() {
+        if (recordConfigMap.isEmpty()) {
+            throw new IllegalStateException("record config is undefined.");
+        }
+
         for (final Map.Entry<String, RecordConfig> entry : recordConfigMap.entrySet()) {
             final String recordName = entry.getKey();
             final RecordConfig recordConfig = entry.getValue();
