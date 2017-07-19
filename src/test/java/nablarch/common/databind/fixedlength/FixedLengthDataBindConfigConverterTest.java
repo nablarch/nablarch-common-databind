@@ -5,19 +5,19 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.theInstance;
 import static org.junit.Assert.assertThat;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 
 import nablarch.common.databind.DataBindConfig;
 import nablarch.common.databind.fixedlength.converter.Lpad;
 import nablarch.common.databind.fixedlength.converter.Rpad;
-
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -115,6 +115,7 @@ public class FixedLengthDataBindConfigConverterTest {
         expectedException.expectMessage("no constructor is defined for class with argument. " +
                 "class:nablarch.common.databind.fixedlength.FixedLengthDataBindConfigConverterTest$NoConstructor$NoConstructorConverter, " +
                 "argument:nablarch.common.databind.fixedlength.FixedLengthDataBindConfigConverterTest$NoConstructor");
+        expectedException.expectCause(Matchers.<Throwable>instanceOf(NoSuchMethodException.class));
         sut.convert(NoConstructorConverter.class);
     }
 
@@ -123,6 +124,7 @@ public class FixedLengthDataBindConfigConverterTest {
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage("instance creation failed. " +
                 "class:nablarch.common.databind.fixedlength.FixedLengthDataBindConfigConverterTest$NewInstanceFail$NewInstanceFailConverter");
+        expectedException.expectCause(Matchers.<Throwable>instanceOf(InvocationTargetException.class));
         sut.convert(NewInstanceFailConverter.class);
     }
 

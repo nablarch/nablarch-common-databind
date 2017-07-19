@@ -81,13 +81,13 @@ public class FixedLengthDataBindConfigConverter implements DataBindConfigConvert
                     constructor = fieldConverterClass.getConstructor(annotation.annotationType());
                 } catch (NoSuchMethodException e) {
                     throw new IllegalStateException("no constructor is defined for class with argument. " +
-                            "class:" + fieldConvert.value().getName() + ", argument:" + annotation.annotationType().getName());
+                            "class:" + fieldConvert.value().getName() + ", argument:" + annotation.annotationType().getName(), e);
                 }
 
                 try {
                     fieldConverter = constructor.newInstance(annotation);
                 } catch (Exception e) {
-                    throw new IllegalStateException("instance creation failed. class:" + fieldConvert.value().getName());
+                    throw new IllegalStateException("instance creation failed. class:" + fieldConvert.value().getName(), e);
                 }
             }
         }
