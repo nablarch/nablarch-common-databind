@@ -54,7 +54,7 @@ public class FixedLengthWriter implements Closeable {
         final ByteBuffer byteBuffer = ByteBuffer.allocate(configLength);
         final List<FieldConfig> fieldConfigList = config.getRecordConfig().getFieldConfigList();
         for (final FieldConfig fieldConfig : fieldConfigList) {
-            final byte[] value = fieldConfig.convertWriteValue(map.get(fieldConfig.getName()), config);
+            final byte[] value = fieldConfig.getFieldConverter().convertOfWrite(config, fieldConfig, map.get(fieldConfig.getName()));
             try {
                 byteBuffer.put(value);
             } catch (BufferOverflowException e) {
