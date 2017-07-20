@@ -47,7 +47,14 @@ public @interface Binary {
         public byte[] convertOfWrite(final FixedLengthDataBindConfig fixedLengthDataBindConfig,
                 final FieldConfig fieldConfig, final Object output) {
             if (output instanceof byte[]) {
-                return ((byte[]) output);
+                final byte[] bytes = (byte[]) output;
+                if (bytes.length != fieldConfig.getLength()) {
+                    throw new IllegalArgumentException("length is invalid."
+                            + " expected length " + fieldConfig.getLength()
+                            + " but was actual length " + bytes.length + '.'
+                            + " field_name: " + fieldConfig.getName());
+                }
+                return bytes;
             } else {
                 throw new IllegalArgumentException("output is byte array only.");
             }

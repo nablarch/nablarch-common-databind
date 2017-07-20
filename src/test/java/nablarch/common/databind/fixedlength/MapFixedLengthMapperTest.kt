@@ -10,6 +10,10 @@ import org.junit.Test
 import org.junit.rules.ExpectedException
 import sun.nio.cs.ext.MS932
 import java.io.ByteArrayOutputStream
+import java.lang.annotation.ElementType
+import java.lang.annotation.Retention
+import java.lang.annotation.RetentionPolicy
+import java.lang.annotation.Target
 import java.nio.BufferOverflowException
 
 /**
@@ -54,9 +58,9 @@ class MapFixedLengthMapperTest {
 
         val stream = ByteArrayOutputStream()
         val recordConfig = RecordBuilder()
-                .addField("name", 1, 8)
-                .addField("text", 9, 8)
-                .addField("age", 17, 3)
+                .addField("name", 1, 8, CustomConverter())
+                .addField("text", 9, 8, CustomConverter())
+                .addField("age", 17, 3, CustomConverter())
                 .build()
 
         val config = FixedLengthDataBindConfigBuilder
@@ -83,9 +87,9 @@ class MapFixedLengthMapperTest {
 
         val stream = ByteArrayOutputStream()
         val recordConfig = RecordBuilder()
-                .addField("name", 1, 8)
-                .addField("text", 9, 8)
-                .addField("age", 17, 3)
+                .addField("name", 1, 8, CustomConverter())
+                .addField("text", 9, 8, CustomConverter())
+                .addField("age", 17, 3, CustomConverter())
                 .build()
 
         val config = FixedLengthDataBindConfigBuilder
@@ -127,6 +131,26 @@ class MapFixedLengthMapperTest {
             expectedException.expect(UnsupportedOperationException::class.java)
             expectedException.expectMessage("unsupported read method.")
             sut.read()
+        }
+    }
+
+    @FieldConvert(CustomConverter::class)
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    annotation class Custom
+
+    class CustomConverter : FieldConvert.FieldConverter {
+
+        constructor()
+
+        constructor(custom: Custom)
+
+        override fun convertOfRead(fixedLengthDataBindConfig: FixedLengthDataBindConfig, fieldConfig: FieldConfig, input: ByteArray): Any {
+            return input
+        }
+
+        override fun convertOfWrite(fixedLengthDataBindConfig: FixedLengthDataBindConfig, fieldConfig: FieldConfig, output: Any): ByteArray {
+            return output.toString().toByteArray()
         }
     }
 }

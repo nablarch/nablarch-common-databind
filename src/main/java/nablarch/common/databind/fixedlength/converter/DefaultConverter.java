@@ -19,6 +19,13 @@ public class DefaultConverter implements FieldConvert.FieldConverter {
     @Override
     public byte[] convertOfWrite(final FixedLengthDataBindConfig fixedLengthDataBindConfig, final FieldConfig fieldConfig, final Object output) {
         final String value = output != null ? output.toString() : "";
+        if (value.length() != fieldConfig.getLength()) {
+            throw new IllegalArgumentException("length is invalid."
+                    + " expected length " + fieldConfig.getLength()
+                    + " but was actual length " + value.length() + '.'
+                    + " field_name: " + fieldConfig.getName()
+                    + " output value: " + value);
+        }
         return StringUtil.getBytes(value, fixedLengthDataBindConfig.getCharset());
     }
 }

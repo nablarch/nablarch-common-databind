@@ -8,8 +8,11 @@ import org.junit.Assert.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
-import sun.nio.cs.ext.MS932
 import java.io.ByteArrayOutputStream
+import java.lang.annotation.ElementType
+import java.lang.annotation.Retention
+import java.lang.annotation.RetentionPolicy
+import java.lang.annotation.Target
 import java.nio.BufferOverflowException
 
 /**
@@ -59,10 +62,13 @@ class BeanFixedLengthMapperTest {
         @FixedLength(length = 19, charset = "MS932", lineSeparator = "\r\n")
         data class TestBean(
                 @get:Field(offset = 1, length = 8)
+                @get:Custom
                 var name: String? = null,
                 @get:Field(offset = 9, length = 8)
+                @get:Custom
                 var text: String? = null,
                 @get:Field(offset = 17, length = 3)
+                @get:Custom
                 var age: Int? = null
         ) {
             constructor() : this(null, null, null)
@@ -87,10 +93,13 @@ class BeanFixedLengthMapperTest {
         @FixedLength(length = 19, charset = "MS932", lineSeparator = "\r\n")
         data class TestBean(
                 @get:Field(offset = 1, length = 8)
+                @get:Custom
                 var name: String? = null,
                 @get:Field(offset = 9, length = 8)
+                @get:Custom
                 var text: String? = null,
                 @get:Field(offset = 17, length = 3)
+                @get:Custom
                 var age: Int? = null
         ) {
             constructor() : this(null, null, null)
@@ -123,6 +132,24 @@ class BeanFixedLengthMapperTest {
             expectedException.expect(UnsupportedOperationException::class.java)
             expectedException.expectMessage("unsupported read method.")
             sut.read()
+        }
+    }
+
+    @FieldConvert(CustomConverter::class)
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    annotation class Custom
+
+    class CustomConverter : FieldConvert.FieldConverter {
+
+        constructor(custom: Custom)
+
+        override fun convertOfRead(fixedLengthDataBindConfig: FixedLengthDataBindConfig, fieldConfig: FieldConfig, input: ByteArray): Any {
+            return input
+        }
+
+        override fun convertOfWrite(fixedLengthDataBindConfig: FixedLengthDataBindConfig, fieldConfig: FieldConfig, output: Any): ByteArray {
+            return output.toString().toByteArray()
         }
     }
 }
