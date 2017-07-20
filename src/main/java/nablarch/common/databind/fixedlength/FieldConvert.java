@@ -1,5 +1,6 @@
 package nablarch.common.databind.fixedlength;
 
+import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -26,7 +27,13 @@ public @interface FieldConvert {
     /**
      * 値を変換するインタフェース。
      */
-    interface FieldConverter {
+    interface FieldConverter<T extends Annotation> {
+
+        /**
+         * アノテーションの設定値をもとに初期化を行う。
+         * @param annotation アノテーション
+         */
+        void initialize(T annotation);
 
         /**
          * 読み込み時の変換を行う。

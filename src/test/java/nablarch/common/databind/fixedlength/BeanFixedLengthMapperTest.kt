@@ -140,9 +140,9 @@ class BeanFixedLengthMapperTest {
     @Retention(RetentionPolicy.RUNTIME)
     annotation class Custom
 
-    class CustomConverter : FieldConvert.FieldConverter {
-
-        constructor(custom: Custom)
+    class CustomConverter : FieldConvert.FieldConverter<Custom> {
+        override fun initialize(annotation: Custom?) {
+        }
 
         override fun convertOfRead(fixedLengthDataBindConfig: FixedLengthDataBindConfig, fieldConfig: FieldConfig, input: ByteArray): Any {
             return input

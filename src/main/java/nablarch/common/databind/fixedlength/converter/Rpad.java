@@ -35,12 +35,18 @@ public @interface Rpad {
     /**
      * 値の変換処理を行う。
      */
-    class RpadConverter implements FieldConvert.FieldConverter {
+    class RpadConverter implements FieldConvert.FieldConverter<Rpad> {
 
         /**
          * 値の先頭に設定する文字
          */
-        private final char padChar;
+        private char padChar;
+
+        /**
+         * 値の変換処理を行うクラスを構築する。
+         */
+        public RpadConverter() {
+        }
 
         /**
          * 指定された値を用いて値の変換処理を行うクラスを構築する。
@@ -51,12 +57,9 @@ public @interface Rpad {
             this.padChar = padChar;
         }
 
-        /**
-         * {@link Rpad}に設定された値をもとにインスタンスを生成する。
-         * @param rpad Rpad
-         */
-        public RpadConverter(final Rpad rpad) {
-            padChar = rpad.value();
+        @Override
+        public void initialize(final Rpad annotation) {
+            padChar = annotation.value();
         }
 
         @Override

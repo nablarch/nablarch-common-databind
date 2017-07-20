@@ -35,12 +35,18 @@ public @interface Lpad {
     /**
      * 値の変換を行う。
      */
-    class LpadConverter implements FieldConvert.FieldConverter {
+    class LpadConverter implements FieldConvert.FieldConverter<Lpad> {
 
         /**
          * 値の先頭に設定する文字
          */
-        private final char padChar;
+        private char padChar;
+
+        /**
+         * 値の変換処理を行うクラスを構築する。
+         */
+        public LpadConverter() {
+        }
 
         /**
          * 指定された値を用いて値の変換処理を行うクラスを構築する。
@@ -51,12 +57,9 @@ public @interface Lpad {
             this.padChar = padChar;
         }
 
-        /**
-         * {@link Lpad}に設定された値をもとにインスタンスを生成する。
-         * @param lpad Lpad
-         */
-        public LpadConverter(final Lpad lpad) {
-            padChar = lpad.value();
+        @Override
+        public void initialize(final Lpad annotation) {
+            padChar = annotation.value();
         }
 
         @Override

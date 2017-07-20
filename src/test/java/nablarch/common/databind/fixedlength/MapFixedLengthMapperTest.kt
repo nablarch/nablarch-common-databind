@@ -1,6 +1,7 @@
 package nablarch.common.databind.fixedlength
 
 import nablarch.common.databind.ObjectMapperFactory
+import nablarch.common.databind.fixedlength.FieldConvert.FieldConverter
 import nablarch.common.databind.fixedlength.converter.Lpad
 import nablarch.common.databind.fixedlength.converter.Rpad
 import org.hamcrest.Matchers
@@ -139,11 +140,9 @@ class MapFixedLengthMapperTest {
     @Retention(RetentionPolicy.RUNTIME)
     annotation class Custom
 
-    class CustomConverter : FieldConvert.FieldConverter {
-
-        constructor()
-
-        constructor(custom: Custom)
+    class CustomConverter : FieldConvert.FieldConverter<Custom> {
+        override fun initialize(annotation: Custom?) {
+        }
 
         override fun convertOfRead(fixedLengthDataBindConfig: FixedLengthDataBindConfig, fieldConfig: FieldConfig, input: ByteArray): Any {
             return input

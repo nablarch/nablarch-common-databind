@@ -22,19 +22,10 @@ public @interface Binary {
     /**
      * バイナリのため変換を行わずそのまま移送する。
      */
-    class BinaryConverter implements FieldConvert.FieldConverter {
+    class BinaryConverter implements FieldConvert.FieldConverter<Binary> {
 
-        /**
-         * デフォルトコンストラクタ。
-         */
-        public BinaryConverter() {
-        }
-
-        /**
-         * {@link Binary}を引数に取るコンストラクタ。
-         * @param binary バイナリ
-         */
-        public BinaryConverter(final Binary binary) {
+        @Override
+        public void initialize(final Binary annotation) {
         }
 
         @Override

@@ -11,12 +11,12 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 
 import nablarch.common.databind.DataBindConfig;
 import nablarch.common.databind.fixedlength.converter.Lpad;
 import nablarch.common.databind.fixedlength.converter.Rpad;
+import nablarch.core.beans.BeansException;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -110,21 +110,11 @@ public class FixedLengthDataBindConfigConverterTest {
     }
 
     @Test
-    public void アノテーションを引数に取るコンストラクタを持たないフィールドコンバータを設定した場合例外が送出されること() throws Exception {
-        expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage("no constructor is defined for class with argument. " +
-                "class:nablarch.common.databind.fixedlength.FixedLengthDataBindConfigConverterTest$NoConstructor$NoConstructorConverter, " +
-                "argument:nablarch.common.databind.fixedlength.FixedLengthDataBindConfigConverterTest$NoConstructor");
-        expectedException.expectCause(Matchers.<Throwable>instanceOf(NoSuchMethodException.class));
-        sut.convert(NoConstructorConverter.class);
-    }
-
-    @Test
     public void フィールドコンバータのインスタンス生成に失敗した場合例外が送出されること() throws Exception {
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage("instance creation failed. " +
                 "class:nablarch.common.databind.fixedlength.FixedLengthDataBindConfigConverterTest$NewInstanceFail$NewInstanceFailConverter");
-        expectedException.expectCause(Matchers.<Throwable>instanceOf(InvocationTargetException.class));
+        expectedException.expectCause(Matchers.<Throwable>instanceOf(BeansException.class));
         sut.convert(NewInstanceFailConverter.class);
     }
 
@@ -240,7 +230,11 @@ public class FixedLengthDataBindConfigConverterTest {
     @Retention(RetentionPolicy.RUNTIME)
     public @interface NoConstructor {
 
-        class NoConstructorConverter implements FieldConvert.FieldConverter {
+        class NoConstructorConverter implements FieldConvert.FieldConverter<NoConstructor> {
+
+
+            @Override
+            public void initialize(NoConstructor annotation) {}
 
             @Override
             public Object convertOfRead(final FixedLengthDataBindConfig fixedLengthDataBindConfig, final FieldConfig fieldConfig, final byte[] input) {
@@ -270,10 +264,15 @@ public class FixedLengthDataBindConfigConverterTest {
     @Retention(RetentionPolicy.RUNTIME)
     public @interface NewInstanceFail {
 
-        class NewInstanceFailConverter implements FieldConvert.FieldConverter {
+        class NewInstanceFailConverter implements FieldConvert.FieldConverter<NewInstanceFail> {
 
-            public NewInstanceFailConverter(final NewInstanceFail newInstanceFail) {
+            public NewInstanceFailConverter() {
                 throw new RuntimeException("fail");
+            }
+
+            @Override
+            public void initialize(NewInstanceFail annotation) {
+
             }
 
             @Override
