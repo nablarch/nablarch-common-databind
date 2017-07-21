@@ -46,10 +46,10 @@ class BeanFixedLengthMapperTest {
         ObjectMapperFactory.create(TestBean::class.java, stream).use { sut ->
             assertThat(sut, Matchers.instanceOf(BeanFixedLengthMapper::class.java))
             sut.write(TestBean("testname", "testtext", 100))
-            assertThat(stream.toString(), Matchers.`is`("testnametesttext100"))
+            assertThat(stream.toString(), Matchers.`is`("testnametesttext100\r\n"))
 
             sut.write(TestBean("name", "text", 12))
-            assertThat(stream.toString(), Matchers.`is`("testnametesttext100\r\nname    textaaaa012"))
+            assertThat(stream.toString(), Matchers.`is`("testnametesttext100\r\nname    textaaaa012\r\n"))
             sut.close()
         }
     }

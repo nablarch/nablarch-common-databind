@@ -25,9 +25,6 @@ public class FixedLengthWriter implements Closeable {
     /** 改行コードの{@link ByteBuffer} */
     private final ByteBuffer lineSeparatorByteBuffer;
 
-    /** 改行コードを書き込む必要があるか否か */
-    private boolean needLineSeparator;
-
     /**
      * 固定長データのライタを構築する。
      * @param stream 出力ストリーム
@@ -45,11 +42,6 @@ public class FixedLengthWriter implements Closeable {
      * @param map 出力データ
      */
     public void writeRecord(final Map<String, ?> map) {
-
-        if (needLineSeparator) {
-            write(lineSeparatorByteBuffer);
-        }
-
         final int configLength = config.getLength();
         final ByteBuffer byteBuffer = ByteBuffer.allocate(configLength);
         final List<FieldConfig> fieldConfigList = config.getRecordConfig().getFieldConfigList();
@@ -67,7 +59,7 @@ public class FixedLengthWriter implements Closeable {
                     "record length is invalid. expected_length:" + configLength + ", actual_length:" + byteBuffer.position());
         }
         write(byteBuffer);
-        needLineSeparator = true;
+        write(lineSeparatorByteBuffer);
     }
 
     /**

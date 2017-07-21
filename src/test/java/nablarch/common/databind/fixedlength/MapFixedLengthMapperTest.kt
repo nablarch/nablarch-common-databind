@@ -1,7 +1,6 @@
 package nablarch.common.databind.fixedlength
 
 import nablarch.common.databind.ObjectMapperFactory
-import nablarch.common.databind.fixedlength.FieldConvert.FieldConverter
 import nablarch.common.databind.fixedlength.converter.Lpad
 import nablarch.common.databind.fixedlength.converter.Rpad
 import org.hamcrest.Matchers
@@ -46,10 +45,10 @@ class MapFixedLengthMapperTest {
         ObjectMapperFactory.create(Map::class.java, stream, config).use { sut ->
             assertThat(sut, Matchers.instanceOf(MapFixedLengthMapper::class.java))
             sut.write(mapOf("name" to "testname", "text" to "testtext", "age" to 100))
-            assertThat(stream.toString(), Matchers.`is`("testnametesttext100"))
+            assertThat(stream.toString(), Matchers.`is`("testnametesttext100\r\n"))
 
             sut.write(mapOf("name" to "name", "text" to "text", "age" to 12))
-            assertThat(stream.toString(), Matchers.`is`("testnametesttext100\r\nname    text    012"))
+            assertThat(stream.toString(), Matchers.`is`("testnametesttext100\r\nname    text    012\r\n"))
             sut.close()
         }
     }
