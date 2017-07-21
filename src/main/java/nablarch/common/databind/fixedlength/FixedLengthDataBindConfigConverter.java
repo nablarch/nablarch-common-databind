@@ -66,6 +66,7 @@ public class FixedLengthDataBindConfigConverter implements DataBindConfigConvert
      * @param propertyDescriptor 対象のフィールド
      * @return フィールドコンバータ
      */
+    @SuppressWarnings("rawtypes")
     private FieldConvert.FieldConverter getFieldConverter(final PropertyDescriptor propertyDescriptor) {
         FieldConvert.FieldConverter fieldConverter = null;
         for (final Annotation annotation : propertyDescriptor.getReadMethod().getAnnotations()) {
