@@ -25,7 +25,7 @@ public class DefaultConverter implements FieldConvert.FieldConverter<Annotation>
 
     @Override
     public byte[] convertOfWrite(final FixedLengthDataBindConfig fixedLengthDataBindConfig, final FieldConfig fieldConfig, final Object output) {
-        final String value = output != null ? output.toString() : "";
+        final String value = output != null ? StringUtil.toString(output) : "";
         if (value.length() != fieldConfig.getLength()) {
             throw new IllegalArgumentException("length is invalid."
                     + " expected length " + fieldConfig.getLength()

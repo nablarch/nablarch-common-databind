@@ -84,7 +84,7 @@ public @interface Lpad {
                 final FieldConfig fieldConfig,
                 final Object output) {
 
-            final String strValue = output != null ? output.toString() : "";
+            final String strValue = output != null ? StringUtil.toString(output) : "";
             final byte[] paddingChar = StringUtil.getBytes(
                     Character.toString(padChar), fixedLengthDataBindConfig.getCharset());
             

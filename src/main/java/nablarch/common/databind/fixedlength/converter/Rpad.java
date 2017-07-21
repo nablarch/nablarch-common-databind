@@ -82,7 +82,7 @@ public @interface Rpad {
                 final FieldConfig fieldConfig,
                 final Object output) {
 
-            final String value = output != null ? output.toString() : "";
+            final String value = output != null ? StringUtil.toString(output) : "";
             final byte[] paddingChar = StringUtil.getBytes(
                     Character.toString(padChar), fixedLengthDataBindConfig.getCharset());
             
