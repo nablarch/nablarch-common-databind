@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +63,7 @@ public class FixedLengthReader implements Closeable {
             final Map<String, Object> fields = new HashMap<String, Object>();
             final List<FieldConfig> fieldConfigList = config.getRecordConfig().getFieldConfigList();
             for (final FieldConfig fieldConfig : fieldConfigList) {
-                fields.put(fieldConfig.getName(), fieldConfig.readValue(buffer.array(), config));
+                fields.put(fieldConfig.getName(), readValue(buffer.array(), config, fieldConfig));
             }
             return fields;
         } catch (IOException e) {
@@ -92,6 +93,21 @@ public class FixedLengthReader implements Closeable {
         } else if (!new String(buffer.array(), config.getCharset()).equals(config.getLineSeparator())) {
             throw new InvalidDataFormatException("line separator is invalid.", lineNumber);
         }
+    }
+
+    /**
+     * バイト配列から自身のフィールド部分を抜き出し返却する。
+     *
+     * @param record レコード情報
+     * @param fixedLengthDataBindConfig 固定長の設定値
+     * @param fieldConfig フィールドの設定値
+     *
+     * @return 読み込んだ値
+     */
+    public Object readValue(final byte[] record, final FixedLengthDataBindConfig fixedLengthDataBindConfig, final FieldConfig fieldConfig) {
+        final int zeroOffset = fieldConfig.getOffset() - 1;
+        final byte[] fieldValue = Arrays.copyOfRange(record, zeroOffset, zeroOffset + fieldConfig.getLength());
+        return fieldConfig.getFieldConverter().convertOfRead(fixedLengthDataBindConfig, fieldConfig, fieldValue);
     }
 
     @Override

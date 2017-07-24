@@ -1,6 +1,6 @@
 package nablarch.common.databind.fixedlength;
 
-import java.util.Arrays;
+import nablarch.common.databind.fixedlength.FieldConvert.FieldConverter;
 
 /**
  * フィールドの定義をあらわすクラス。
@@ -65,15 +65,11 @@ public class FieldConfig {
     }
 
     /**
-     * バイト配列から自身のフィールド部分を抜き出し返却する。
+     * フィールドコンバータを返す。
      *
-     * @param record レコード情報
-     * @param fixedLengthDataBindConfig 固定長の設定値
-     * @return 読み込んだ値
+     * @return フィールドコンバータ
      */
-    public Object readValue(final byte[] record, final FixedLengthDataBindConfig fixedLengthDataBindConfig) {
-        final int zeroOffset = offset - 1;
-        final byte[] fieldValue = Arrays.copyOfRange(record, zeroOffset, zeroOffset + length);
-        return fieldConverter.convertOfRead(fixedLengthDataBindConfig, this, fieldValue);
+    public FieldConverter getFieldConverter() {
+        return fieldConverter;
     }
 }

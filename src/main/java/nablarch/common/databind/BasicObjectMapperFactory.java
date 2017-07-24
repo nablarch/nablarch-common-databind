@@ -123,7 +123,7 @@ public class BasicObjectMapperFactory extends ObjectMapperFactory {
         final DataBindConfig dataBindConfig = DataBindUtil.createDataBindConfig(clazz);
         final MapperType type = toMapperType(clazz, dataBindConfig);
 
-        if (type == MapperType.CSV_BEAN) {
+        if (type == MapperType.CSV_BEAN || type == MapperType.FIXED_LENGTH_BEAN) {
             return type.createMapper(clazz, dataBindConfig, stream);
         }
         // 到達しない
@@ -145,9 +145,9 @@ public class BasicObjectMapperFactory extends ObjectMapperFactory {
     public <T> ObjectMapper<T> createMapper(final Class<T> clazz, final OutputStream stream, final DataBindConfig dataBindConfig) {
         final MapperType type = toMapperType(clazz, dataBindConfig);
 
-        if (type == MapperType.CSV_BEAN) {
+        if (type == MapperType.CSV_BEAN || type == MapperType.FIXED_LENGTH_BEAN) {
             throw new IllegalArgumentException("this class should not be set config. class = [" + toFQCN(clazz) + ']');
-        } else if (type == MapperType.CSV_MAP) {
+        } else if (type == MapperType.CSV_MAP || type == MapperType.FIXED_LENGTH_MAP) {
             return type.createMapper(clazz, dataBindConfig, stream);
         }
         // 到達しない

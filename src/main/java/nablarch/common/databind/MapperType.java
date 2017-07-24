@@ -10,9 +10,11 @@ import nablarch.common.databind.csv.CsvBeanMapper;
 import nablarch.common.databind.csv.CsvDataBindConfig;
 import nablarch.common.databind.csv.CsvMapMapper;
 import nablarch.common.databind.csv.MapCsvMapper;
+import nablarch.common.databind.fixedlength.BeanFixedLengthMapper;
 import nablarch.common.databind.fixedlength.FixedLengthBeanMapper;
 import nablarch.common.databind.fixedlength.FixedLengthDataBindConfig;
 import nablarch.common.databind.fixedlength.FixedLengthMapMapper;
+import nablarch.common.databind.fixedlength.MapFixedLengthMapper;
 
 /**
  * マッパータイプ。
@@ -75,47 +77,51 @@ enum MapperType {
             return (ObjectMapper<T>) new MapCsvMapper(csvDataBindConfig, writer);
         }
     },
+    /** 固定長とBeanとのマッパー */
     FIXED_LENGTH_BEAN {
         @Override
-        <T> ObjectMapper<T> createMapper(Class<T> clazz, DataBindConfig config, InputStream stream) {
-            final FixedLengthDataBindConfig fixedLengthDataBindConfig = FixedLengthDataBindConfig.class.cast(config);
-            return new FixedLengthBeanMapper<T>(clazz, fixedLengthDataBindConfig, stream);
+        <T> ObjectMapper<T> createMapper(final Class<T> clazz, final DataBindConfig config, final InputStream stream) {
+            final FixedLengthDataBindConfig fixedLengthConfig = FixedLengthDataBindConfig.class.cast(config);
+            return new FixedLengthBeanMapper<T>(clazz, fixedLengthConfig, stream);
         }
 
         @Override
-        <T> ObjectMapper<T> createMapper(Class<T> clazz, DataBindConfig config, Reader reader) {
+        <T> ObjectMapper<T> createMapper(final Class<T> clazz, final DataBindConfig config, final Reader reader) {
             return null;
         }
 
         @Override
-        <T> ObjectMapper<T> createMapper(Class<T> clazz, DataBindConfig config, OutputStream stream) {
-            return null;
+        <T> ObjectMapper<T> createMapper(final Class<T> clazz, final DataBindConfig config, final OutputStream stream) {
+            final FixedLengthDataBindConfig fixedLengthConfig = FixedLengthDataBindConfig.class.cast(config);
+            return (ObjectMapper<T>) new BeanFixedLengthMapper(clazz, fixedLengthConfig, stream);
         }
 
         @Override
-        <T> ObjectMapper<T> createMapper(Class<T> clazz, DataBindConfig config, Writer writer) {
+        <T> ObjectMapper<T> createMapper(final Class<T> clazz, final DataBindConfig config, final Writer writer) {
             return null;
         }
     },
+    /** 固定長とMapとのマッパー */
     FIXED_LENGTH_MAP {
         @Override
-        <T> ObjectMapper<T> createMapper(Class<T> clazz, DataBindConfig config, InputStream stream) {
-            final FixedLengthDataBindConfig fixedLengthDataBindConfig = FixedLengthDataBindConfig.class.cast(config);
-            return (ObjectMapper<T>) new FixedLengthMapMapper(fixedLengthDataBindConfig, stream);
+        <T> ObjectMapper<T> createMapper(final Class<T> clazz, final DataBindConfig config, final InputStream stream) {
+            final FixedLengthDataBindConfig fixedLengthConfig = FixedLengthDataBindConfig.class.cast(config);
+            return (ObjectMapper<T>) new FixedLengthMapMapper(fixedLengthConfig, stream);
         }
 
         @Override
-        <T> ObjectMapper<T> createMapper(Class<T> clazz, DataBindConfig config, Reader reader) {
+        <T> ObjectMapper<T> createMapper(final Class<T> clazz, final DataBindConfig config, final Reader reader) {
             return null;
         }
 
         @Override
-        <T> ObjectMapper<T> createMapper(Class<T> clazz, DataBindConfig config, OutputStream stream) {
-            return null;
+        <T> ObjectMapper<T> createMapper(final Class<T> clazz, final DataBindConfig config, final OutputStream stream) {
+            final FixedLengthDataBindConfig fixedLengthConfig = FixedLengthDataBindConfig.class.cast(config);
+            return (ObjectMapper<T>) new MapFixedLengthMapper(fixedLengthConfig, stream);
         }
 
         @Override
-        <T> ObjectMapper<T> createMapper(Class<T> clazz, DataBindConfig config, Writer writer) {
+        <T> ObjectMapper<T> createMapper(final Class<T> clazz, final DataBindConfig config, final Writer writer) {
             return null;
         }
     };

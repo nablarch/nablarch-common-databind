@@ -35,12 +35,18 @@ public @interface Lpad {
     /**
      * 値の変換を行う。
      */
-    class LpadConverter implements FieldConvert.FieldConverter {
+    class LpadConverter implements FieldConvert.FieldConverter<Lpad> {
 
         /**
          * 値の先頭に設定する文字
          */
-        private final char padChar;
+        private char padChar;
+
+        /**
+         * 値の変換処理を行うクラスを構築する。
+         */
+        public LpadConverter() {
+        }
 
         /**
          * 指定された値を用いて値の変換処理を行うクラスを構築する。
@@ -51,12 +57,9 @@ public @interface Lpad {
             this.padChar = padChar;
         }
 
-        /**
-         * {@link Lpad}に設定された値をもとにインスタンスを生成する。
-         * @param lpad Lpad
-         */
-        public LpadConverter(final Lpad lpad) {
-            padChar = lpad.value();
+        @Override
+        public void initialize(final Lpad annotation) {
+            padChar = annotation.value();
         }
 
         @Override
@@ -81,12 +84,13 @@ public @interface Lpad {
                 final FieldConfig fieldConfig,
                 final Object output) {
 
+            final String strValue = output != null ? StringUtil.toString(output) : "";
             final byte[] paddingChar = StringUtil.getBytes(
                     Character.toString(padChar), fixedLengthDataBindConfig.getCharset());
             
             final ByteBuffer buffer = ByteBuffer.allocate(fieldConfig.getLength());
 
-            final byte[] value = StringUtil.getBytes(output.toString(), fixedLengthDataBindConfig.getCharset());
+            final byte[] value = StringUtil.getBytes(strValue, fixedLengthDataBindConfig.getCharset());
             while (buffer.position() < fieldConfig.getLength() - value.length) {
                 buffer.put(paddingChar);
             }
@@ -97,7 +101,7 @@ public @interface Lpad {
                         + " expected length " + fieldConfig.getLength()
                         + " but was actual length " + (buffer.position() + value.length) + '.'
                         + " field_name: " + fieldConfig.getName()
-                        + " output value: " + output
+                        + " output value: " + strValue
                         + " padding_char: " + padChar, e);
             }
             return buffer.array();

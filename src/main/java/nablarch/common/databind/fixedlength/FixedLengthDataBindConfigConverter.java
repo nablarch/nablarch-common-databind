@@ -8,7 +8,9 @@ import java.nio.charset.Charset;
 
 import nablarch.common.databind.DataBindConfig;
 import nablarch.common.databind.DataBindConfigConverter;
+import nablarch.common.databind.DataBindUtil;
 import nablarch.core.beans.BeanUtil;
+import nablarch.core.beans.BeansException;
 
 /**
  * {@link FixedLength}アノテーションを{@link FixedLengthDataBindConfig}に変換するクラス。
@@ -64,6 +66,7 @@ public class FixedLengthDataBindConfigConverter implements DataBindConfigConvert
      * @param propertyDescriptor 対象のフィールド
      * @return フィールドコンバータ
      */
+    @SuppressWarnings("rawtypes")
     private FieldConvert.FieldConverter getFieldConverter(final PropertyDescriptor propertyDescriptor) {
         FieldConvert.FieldConverter fieldConverter = null;
         for (final Annotation annotation : propertyDescriptor.getReadMethod().getAnnotations()) {
@@ -75,20 +78,12 @@ public class FixedLengthDataBindConfigConverter implements DataBindConfigConvert
                     throw new IllegalStateException("multiple field converters can not be set. field_name:" + propertyDescriptor.getName());
                 }
 
-                Constructor<? extends FieldConvert.FieldConverter> constructor;
                 try {
-                    final Class<? extends FieldConvert.FieldConverter> fieldConverterClass = fieldConvert.value();
-                    constructor = fieldConverterClass.getConstructor(annotation.annotationType());
-                } catch (NoSuchMethodException e) {
-                    throw new IllegalStateException("no constructor is defined for class with argument. " +
-                            "class:" + fieldConvert.value().getName() + ", argument:" + annotation.annotationType().getName());
+                    fieldConverter = DataBindUtil.newInstance(fieldConvert.value());
+                } catch (BeansException e) {
+                    throw new IllegalStateException("instance creation failed. class:" + fieldConvert.value().getName(), e);
                 }
-
-                try {
-                    fieldConverter = constructor.newInstance(annotation);
-                } catch (Exception e) {
-                    throw new IllegalStateException("instance creation failed. class:" + fieldConvert.value().getName());
-                }
+                fieldConverter.initialize(annotation);
             }
         }
         return fieldConverter;
