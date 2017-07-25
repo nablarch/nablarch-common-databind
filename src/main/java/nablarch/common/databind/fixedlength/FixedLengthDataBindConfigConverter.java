@@ -2,7 +2,6 @@ package nablarch.common.databind.fixedlength;
 
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 
@@ -23,22 +22,41 @@ public class FixedLengthDataBindConfigConverter implements DataBindConfigConvert
     public DataBindConfig convert(final Class<?> beanClass) {
         final FixedLength fixedLength = beanClass.getAnnotation(FixedLength.class);
 
-        return FixedLengthDataBindConfigBuilder.newBuilder()
-                                               .length(fixedLength.length())
-                                               .charset(Charset.forName(fixedLength.charset()))
-                                               .lineSeparator(fixedLength.lineSeparator())
-                                               .addRecord(createRecordConfig(beanClass))
-                                               .build();
+        final FixedLengthDataBindConfigBuilder builder = FixedLengthDataBindConfigBuilder.newBuilder()
+                .length(fixedLength.length())
+                .charset(Charset.forName(fixedLength.charset()))
+                .lineSeparator(fixedLength.lineSeparator());
 
+        if (fixedLength.multiLayout()) {
+            if (!MultiLayout.class.isAssignableFrom(beanClass)) {
+                throw new IllegalStateException("bean class must inherit " + MultiLayout.class.getName() + ". bean_class:" + beanClass.getName());
+            }
+
+
+            builder.multiLayout(new MultiLayoutConfig(((MultiLayout) DataBindUtil.newInstance(beanClass)).getRecordIdentifier()));
+
+            final PropertyDescriptor[] descriptors = BeanUtil.getPropertyDescriptors(beanClass);
+            for (PropertyDescriptor descriptor : descriptors) {
+                final Record record = descriptor.getReadMethod().getAnnotation(Record.class);
+                if (record != null) {
+                    builder.addRecord(createRecordConfig(descriptor.getPropertyType(), descriptor.getName()));
+                }
+            }
+        } else {
+            builder.addRecord(createRecordConfig(beanClass, RecordConfig.SINGLE_LAYOUT_RECORD_NAME));
+        }
+
+        return builder.build();
     }
 
     /**
      * レコードの定義を生成する。
      *
      * @param beanClass レコードの定義を生成するBean
+     * @param recordName レコード名
      * @return レコードの定義
      */
-    private RecordConfig createRecordConfig(final Class<?> beanClass) {
+    private RecordConfig createRecordConfig(final Class<?> beanClass, final String recordName) {
         final PropertyDescriptor[] descriptors = BeanUtil.getPropertyDescriptors(beanClass);
 
         final RecordBuilder recordBuilder = new RecordBuilder();
@@ -57,7 +75,7 @@ public class FixedLengthDataBindConfigConverter implements DataBindConfigConvert
             }
 
         }
-        return recordBuilder.build();
+        return recordBuilder.recordName(recordName).build();
     }
 
     /**

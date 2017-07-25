@@ -55,6 +55,76 @@ class BeanFixedLengthMapperTest {
     }
 
     @Test
+    fun `マルチレイアウトなBeanを固定長に変換できること`() {
+
+        val stream = ByteArrayOutputStream()
+
+        data class Header (
+                @get:Field(offset = 1, length = 1)
+                var id: Int? = null,
+                @get:Field(offset = 2, length = 7)
+                @get:Rpad
+                var field: String? = null
+        ) {
+            constructor() : this(null, null)
+        }
+
+        data class Data(
+                @get:Field(offset = 1, length = 1)
+                var id: Int? = null,
+                @get:Field(offset = 2, length = 4)
+                @get:Rpad
+                var name: String? = null,
+                @get:Field(offset = 6, length = 3)
+                @get:Lpad
+                var age: Int? = null
+        ) {
+            constructor() : this(null, null, null)
+        }
+
+        @FixedLength(length = 8, charset = "MS932", lineSeparator = "\r\n", multiLayout = true)
+        class Multi : MultiLayout() {
+            override fun getRecordIdentifier(): MultiLayoutConfig.RecordIdentifier {
+                return MultiLayoutConfig.RecordIdentifier {
+                    if (it.first().toInt() == 0x31) {
+                        "header"
+                    } else {
+                        "data"
+                    }
+                }
+            }
+            @get:Record
+            var header: Header? = null
+
+            @get:Record
+            var data: Data? = null
+        }
+
+        ObjectMapperFactory.create(Multi::class.java, stream).use { sut ->
+            assertThat(sut, Matchers.instanceOf(BeanFixedLengthMapper::class.java))
+
+            val header = Multi()
+            header.recordName = "header"
+            header.header = Header(1, "test")
+            sut.write(header)
+            assertThat(stream.toString(), Matchers.`is`("1test   \r\n"))
+
+            var data1 = Multi()
+            data1.recordName = "data"
+            data1.data = Data(2, "aaa", 12)
+            sut.write(data1)
+            assertThat(stream.toString(), Matchers.`is`("1test   \r\n2aaa 012\r\n"))
+
+            var data2 = Multi()
+            data2.recordName = "data"
+            data2.data = Data(2, "bb", 345)
+            sut.write(data2)
+            assertThat(stream.toString(), Matchers.`is`("1test   \r\n2aaa 012\r\n2bb  345\r\n"))
+            sut.close()
+        }
+    }
+
+    @Test
     fun `レコード長がオーバーしている場合に例外が発生すること`() {
 
         val stream = ByteArrayOutputStream()

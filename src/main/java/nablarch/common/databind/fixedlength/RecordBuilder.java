@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import nablarch.common.databind.fixedlength.converter.DefaultConverter;
+import nablarch.core.util.StringUtil;
 
 /**
  * レコード定義を構築する。
@@ -14,8 +15,22 @@ import nablarch.common.databind.fixedlength.converter.DefaultConverter;
  */
 public class RecordBuilder {
 
+    /** レコード名 */
+    private String recordName;
+
     /** フィールド定義のリスト */
     private final List<FieldConfig> fieldConfigList = new ArrayList<FieldConfig>();
+
+    /**
+     * レコード名を設定する。
+     *
+     * @param recordName レコード名
+     * @return 本インスタンス
+     */
+    public RecordBuilder recordName(final String recordName) {
+        this.recordName = recordName;
+        return this;
+    }
 
     /**
      * フィールドを追加する。
@@ -47,7 +62,11 @@ public class RecordBuilder {
      */
     public RecordConfig build() {
         Collections.sort(fieldConfigList, new FieldConfigComparator());
-        return new RecordConfig(fieldConfigList);
+        if (StringUtil.hasValue(recordName)) {
+            return new RecordConfig(recordName, fieldConfigList);
+        } else {
+            return new RecordConfig(fieldConfigList);
+        }
     }
 
     /**

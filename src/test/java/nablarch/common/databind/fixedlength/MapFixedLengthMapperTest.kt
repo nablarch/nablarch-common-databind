@@ -54,6 +54,50 @@ class MapFixedLengthMapperTest {
     }
 
     @Test
+    fun `マルチレイアウトなMapを固定長に変換できること`() {
+
+        val stream = ByteArrayOutputStream()
+        val config = FixedLengthDataBindConfigBuilder
+                .newBuilder()
+                .charset(MS932())
+                .length(8)
+                .lineSeparator("\r\n")
+                .addRecord(RecordBuilder()
+                        .recordName("header")
+                        .addField("id", 1, 1)
+                        .addField("field", 2, 7, Rpad.RpadConverter(' '))
+                        .build())
+                .addRecord(RecordBuilder()
+                        .recordName("data")
+                        .addField("id", 1, 1)
+                        .addField("name", 2, 4, Rpad.RpadConverter(' '))
+                        .addField("age", 6, 3, Lpad.LpadConverter('0'))
+                        .build())
+                .multiLayout(MultiLayoutConfig(MultiLayoutConfig.RecordIdentifier {
+                    if (it.first().toInt() == 0x31) {
+                        "header"
+                    } else {
+                        "data"
+                    }
+                }))
+                .build()
+
+        ObjectMapperFactory.create(Map::class.java, stream, config).use { sut ->
+            assertThat(sut, Matchers.instanceOf(MapFixedLengthMapper::class.java))
+
+            sut.write(mapOf("recordName" to "header", "header.id" to 1, "header.field" to "test"))
+            assertThat(stream.toString(), Matchers.`is`("1test   \r\n"))
+
+            sut.write(mapOf("recordName" to "data", "data.id" to 2, "data.name" to "aaa", "data.age" to 12))
+            assertThat(stream.toString(), Matchers.`is`("1test   \r\n2aaa 012\r\n"))
+
+            sut.write(mapOf("recordName" to "data", "data.id" to 2, "data.name" to "bb", "data.age" to 345))
+            assertThat(stream.toString(), Matchers.`is`("1test   \r\n2aaa 012\r\n2bb  345\r\n"))
+            sut.close()
+        }
+    }
+
+    @Test
     fun `レコード長がオーバーしている場合に例外が発生すること`() {
 
         val stream = ByteArrayOutputStream()

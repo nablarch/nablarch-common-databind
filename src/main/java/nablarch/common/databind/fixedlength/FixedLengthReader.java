@@ -61,9 +61,20 @@ public class FixedLengthReader implements Closeable {
 
             lineNumber++;
             final Map<String, Object> fields = new HashMap<String, Object>();
-            final List<FieldConfig> fieldConfigList = config.getRecordConfig().getFieldConfigList();
-            for (final FieldConfig fieldConfig : fieldConfigList) {
-                fields.put(fieldConfig.getName(), readValue(buffer.array(), config, fieldConfig));
+            final MultiLayoutConfig multiLayoutConfig = config.getMultiLayoutConfig();
+            final List<FieldConfig> fieldConfigList;
+            if (multiLayoutConfig != null) {
+                final String recordName = multiLayoutConfig.getRecordIdentifier().identify(buffer.array());
+                fields.put("recordName", recordName);
+                fieldConfigList = config.getRecordConfig(recordName).getFieldConfigList();
+                for (final FieldConfig fieldConfig : fieldConfigList) {
+                    fields.put(recordName + '.' + fieldConfig.getName(), readValue(buffer.array(), config, fieldConfig));
+                }
+            } else {
+                fieldConfigList = config.getRecordConfig(RecordConfig.SINGLE_LAYOUT_RECORD_NAME).getFieldConfigList();
+                for (final FieldConfig fieldConfig : fieldConfigList) {
+                    fields.put(fieldConfig.getName(), readValue(buffer.array(), config, fieldConfig));
+                }
             }
             return fields;
         } catch (IOException e) {

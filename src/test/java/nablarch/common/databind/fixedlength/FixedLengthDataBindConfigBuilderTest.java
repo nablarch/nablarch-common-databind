@@ -5,11 +5,13 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.nio.charset.Charset;
 
 import nablarch.common.databind.fixedlength.converter.DefaultConverter;
+import nablarch.common.databind.fixedlength.converter.Rpad;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -32,7 +34,7 @@ public class FixedLengthDataBindConfigBuilderTest {
         assertThat(config.getLineSeparator(), is("\r\n"));
         assertThat(config.getLength(), is(128));
         assertThat(config.getCharset(), is(Charset.forName("MS932")));
-        assertThat(config.getRecordConfig().getFieldConfigList(), contains(
+        assertThat(config.getRecordConfig(RecordConfig.SINGLE_LAYOUT_RECORD_NAME).getFieldConfigList(), contains(
                 allOf(
                         hasProperty("name", is("test")),
                         hasProperty("offset", is(1)),
@@ -102,6 +104,79 @@ public class FixedLengthDataBindConfigBuilderTest {
                 .length(128)
                 .charset(Charset.forName("MS932"))
                 .addRecord(new RecordBuilder().build())
+                .build();
+    }
+
+    @Test
+    public void マルチレイアウトの場合にコンフィグを生成できること() throws Exception {
+        final FixedLengthDataBindConfig config = FixedLengthDataBindConfigBuilder
+                .newBuilder()
+                .lineSeparator("\r\n")
+                .length(128)
+                .charset(Charset.forName("MS932"))
+                .addRecord(new RecordBuilder()
+                        .recordName("header")
+                        .addField("field1", 1, 64)
+                        .addField("field2", 65, 64)
+                        .build())
+                .addRecord(new RecordBuilder()
+                        .recordName("data")
+                        .addField("test", 1, 128, new Rpad.RpadConverter())
+                        .build())
+                .multiLayout(new MultiLayoutConfig(new MultiLayoutConfig.RecordIdentifier() {
+                    @Override
+                    public String identify(byte[] record) {
+                        return record[0] == 0x31 ? "header" : "data";
+                    }
+                }))
+                .build();
+
+        assertThat(config.getLineSeparator(), is("\r\n"));
+        assertThat(config.getLength(), is(128));
+        assertThat(config.getCharset(), is(Charset.forName("MS932")));
+        assertThat(config.getRecordConfig("header").getFieldConfigList(), contains(
+                allOf(
+                        hasProperty("name", is("field1")),
+                        hasProperty("offset", is(1)),
+                        hasProperty("length", is(64)),
+                        hasProperty("fieldConverter", instanceOf(DefaultConverter.class))
+                ),
+                allOf(
+                        hasProperty("name", is("field2")),
+                        hasProperty("offset", is(65)),
+                        hasProperty("length", is(64)),
+                        hasProperty("fieldConverter", instanceOf(DefaultConverter.class))
+                )
+        ));
+        assertThat(config.getRecordConfig("data").getFieldConfigList(), contains(
+                allOf(
+                        hasProperty("name", is("test")),
+                        hasProperty("offset", is(1)),
+                        hasProperty("length", is(128)),
+                        hasProperty("fieldConverter", instanceOf(Rpad.RpadConverter.class))
+                )
+        ));
+        assertThat(config.getMultiLayoutConfig(), is(notNullValue()));
+    }
+
+    @Test
+    public void シングルレイアウトで複数のレコードが定義されている場合に例外が送出されること() throws Exception {
+        expectedException.expect(IllegalStateException.class);
+        expectedException.expectMessage("single layout can not define multiple record config.");
+        FixedLengthDataBindConfigBuilder
+                .newBuilder()
+                .lineSeparator("\r\n")
+                .length(128)
+                .charset(Charset.forName("MS932"))
+                .addRecord(new RecordBuilder()
+                        .recordName("header")
+                        .addField("field1", 1, 64)
+                        .addField("field2", 65, 64)
+                        .build())
+                .addRecord(new RecordBuilder()
+                        .recordName("data")
+                        .addField("test", 1, 128, new Rpad.RpadConverter())
+                        .build())
                 .build();
     }
 }

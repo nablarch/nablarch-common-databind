@@ -51,6 +51,81 @@ class FixedLengthBeanMapperTest {
     }
 
     @Test
+    fun `マルチレイアウトの固定長をBeanに変換できること`() {
+        data class Header (
+                @get:Field(offset = 1, length = 1)
+                var id: Int? = null,
+                @get:Field(offset = 2, length = 7)
+                @get:Rpad
+                var field: String? = null
+        ) {
+            constructor() : this(null, null)
+        }
+
+        data class Data(
+                @get:Field(offset = 1, length = 1)
+                var id: Int? = null,
+                @get:Field(offset = 2, length = 4)
+                @get:Rpad
+                var name: String? = null,
+                @get:Field(offset = 6, length = 3)
+                @get:Lpad
+                var age: Int? = null
+        ) {
+            constructor() : this(null, null, null)
+        }
+
+        @FixedLength(length = 8, charset = "MS932", lineSeparator = "\r\n", multiLayout = true)
+        class Multi : MultiLayout() {
+            override fun getRecordIdentifier(): MultiLayoutConfig.RecordIdentifier {
+                return MultiLayoutConfig.RecordIdentifier {
+                    if (it.first().toInt() == 0x31) {
+                        "header"
+                    } else {
+                        "data"
+                    }
+                }
+            }
+            @get:Record
+            var header: Header? = null
+
+            @get:Record
+            var data: Data? = null
+        }
+
+        ObjectMapperFactory.create(Multi::class.java, "1test   \r\n2aaa 012\r\n2bb  345".toByteArray().inputStream()).use {
+            assertThat(it, instanceOf(FixedLengthBeanMapper::class.java))
+            val first = it.read()
+            assertThat(first.getRecordName(), `is`("header"))
+            assertThat(first.data, `is`(nullValue()))
+            assertThat(first.header, allOf(
+                    hasProperty("id", `is`(1)),
+                    hasProperty("field", `is`("test"))
+            ))
+
+            val second = it.read()
+            assertThat(second.getRecordName(), `is`("data"))
+            assertThat(second.header, `is`(nullValue()))
+            assertThat(second.data, allOf(
+                    hasProperty("id", `is`(2)),
+                    hasProperty("name", `is`("aaa")),
+                    hasProperty("age", `is`(12))
+            ))
+
+            val thrid = it.read()
+            assertThat(thrid.getRecordName(), `is`("data"))
+            assertThat(thrid.header, `is`(nullValue()))
+            assertThat(thrid.data, allOf(
+                    hasProperty("id", `is`(2)),
+                    hasProperty("name", `is`("bb")),
+                    hasProperty("age", `is`(345))
+            ))
+
+            assertThat(it.read(), `is`(nullValue()))
+        }
+    }
+
+    @Test
     fun `改行コードの存在しないデータでも読み取れること`() {
 
         @FixedLength(length = 5, charset = "MS932", lineSeparator = "")

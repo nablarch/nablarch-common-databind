@@ -26,6 +26,9 @@ public class FixedLengthDataBindConfigBuilder {
     /** レコードの定義 */
     private final Map<String, RecordConfig> recordConfigMap = new HashMap<String, RecordConfig>();
 
+    /** マルチレイアウトの定義 */
+    private MultiLayoutConfig multiLayoutConfig;
+
     /**
      * 隠蔽コンストラクタ。
      */
@@ -81,7 +84,17 @@ public class FixedLengthDataBindConfigBuilder {
      * @return 自身のインスタンス
      */
     public FixedLengthDataBindConfigBuilder addRecord(final RecordConfig recordConfig) {
-        recordConfigMap.put(RecordConfig.SINGLE_LAYOUT_RECORD_NAME, recordConfig);
+        recordConfigMap.put(recordConfig.getRecordName(), recordConfig);
+        return this;
+    }
+
+    /**
+     * マルチレイアウトの定義を設定する。
+     * @param multiLayoutConfig マルチレイアウトの定義
+     * @return 自身のインスタンス
+     */
+    public FixedLengthDataBindConfigBuilder multiLayout(final MultiLayoutConfig multiLayoutConfig) {
+        this.multiLayoutConfig = multiLayoutConfig;
         return this;
     }
 
@@ -93,7 +106,12 @@ public class FixedLengthDataBindConfigBuilder {
     public FixedLengthDataBindConfig build() {
         verifyFile();
         verifyRecordConfig();
-        return new FixedLengthDataBindConfig(length, charset, lineSeparator, recordConfigMap);
+        if (multiLayoutConfig == null) {
+            return new FixedLengthDataBindConfig(length, charset, lineSeparator, recordConfigMap);
+        } else {
+            return new FixedLengthDataBindConfig(length, charset, lineSeparator, recordConfigMap, multiLayoutConfig);
+        }
+
     }
 
     /**
@@ -111,6 +129,10 @@ public class FixedLengthDataBindConfigBuilder {
     private void verifyRecordConfig() {
         if (recordConfigMap.isEmpty()) {
             throw new IllegalStateException("record config is undefined.");
+        }
+
+        if (multiLayoutConfig == null && recordConfigMap.size() >= 2) {
+            throw new IllegalStateException("single layout can not define multiple record config.");
         }
 
         for (final Map.Entry<String, RecordConfig> entry : recordConfigMap.entrySet()) {

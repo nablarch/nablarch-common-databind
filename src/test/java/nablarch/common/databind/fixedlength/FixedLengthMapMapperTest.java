@@ -84,6 +84,62 @@ public class FixedLengthMapMapperTest {
     }
 
     @Test
+    public void マルチレイアウトの固定長をMapに変換できること() throws Exception {
+        inputStream = new ByteArrayInputStream("1test   \r\n2aaa 012\r\n2bb  345".getBytes("MS932"));
+
+        final DataBindConfig dataBindConfig =
+                FixedLengthDataBindConfigBuilder
+                        .newBuilder()
+                        .length(8)
+                        .charset(Charset.forName("MS932"))
+                        .lineSeparator("\r\n")
+                        .addRecord(new RecordBuilder()
+                                .recordName("header")
+                                .addField("id", 1, 1)
+                                .addField("field", 2, 7, new Rpad.RpadConverter(' '))
+                                .build())
+                        .addRecord(new RecordBuilder()
+                                .recordName("data")
+                                .addField("id", 1, 1)
+                                .addField("name", 2, 4, new Rpad.RpadConverter(' '))
+                                .addField("age", 6, 3, new Lpad.LpadConverter('0'))
+                                .build())
+                        .multiLayout(new MultiLayoutConfig(new MultiLayoutConfig.RecordIdentifier() {
+                            @Override
+                            public String identify(byte[] record) {
+                                return record[0] == 0x31 ? "header" : "data";
+                            }
+                        }))
+                        .build();
+
+        sut = ObjectMapperFactory.create(
+                Map.class,
+                inputStream,
+                dataBindConfig
+        );
+        Map<String, ?> map = sut.read();
+        assertThat(map.get("recordName").toString(), is("header"));
+        assertThat(map.get("header.id").toString(), is("1"));
+        assertThat(map.get("header.field").toString(), is("test"));
+
+        map = sut.read();
+        assertThat(map.get("recordName").toString(), is("data"));
+        assertThat(map.get("data.id").toString(), is("2"));
+        assertThat(map.get("data.name").toString(), is("aaa"));
+        assertThat(map.get("data.age").toString(), is("12"));
+
+        map = sut.read();
+        assertThat(map.get("recordName").toString(), is("data"));
+        assertThat(map.get("data.id").toString(), is("2"));
+        assertThat(map.get("data.name").toString(), is("bb"));
+        assertThat(map.get("data.age").toString(), is("345"));
+
+        map = sut.read();
+        assertThat(map, nullValue());
+        sut.close();
+    }
+
+    @Test
     public void 改行コードの存在しないデータでもMapに変換できること() throws Exception {
         inputStream = new ByteArrayInputStream("ab  あい003efg か　000".getBytes("MS932"));
 

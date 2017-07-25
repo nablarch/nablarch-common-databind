@@ -28,7 +28,7 @@ public class BeanFixedLengthMapper<T> implements ObjectMapper<T> {
     }
 
     @Override
-    public void write(T object) {
+    public void write(final T object) {
         final Map<String, Object> map = BeanUtil.createMapAndCopy(object);
         mapFixedLengthMapper.write(map);
     }

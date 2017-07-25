@@ -1,10 +1,13 @@
 package nablarch.common.databind.fixedlength;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.lang.annotation.ElementType;
@@ -42,11 +45,12 @@ public class FixedLengthDataBindConfigConverterTest {
         assertThat(actual, allOf(
                 hasProperty("length", is(1024)),
                 hasProperty("charset", is(Charset.forName("MS932"))),
-                hasProperty("lineSeparator", is("\n"))
+                hasProperty("lineSeparator", is("\n")),
+                hasProperty("multiLayoutConfig", is(nullValue()))
         ));
 
         // assert record
-        final RecordConfig recordConfig = ((FixedLengthDataBindConfig) actual).getRecordConfig();
+        final RecordConfig recordConfig = ((FixedLengthDataBindConfig) actual).getRecordConfig(RecordConfig.SINGLE_LAYOUT_RECORD_NAME);
         assertThat("フィールド数は2", recordConfig.getFieldConfigList(), hasSize(2));
         assertThat("field:1", recordConfig.getFieldConfigList()
                                           .get(0),
@@ -116,6 +120,60 @@ public class FixedLengthDataBindConfigConverterTest {
                 "class:nablarch.common.databind.fixedlength.FixedLengthDataBindConfigConverterTest$NewInstanceFail$NewInstanceFailConverter");
         expectedException.expectCause(Matchers.<Throwable>instanceOf(BeansException.class));
         sut.convert(NewInstanceFailConverter.class);
+    }
+
+    @Test
+    public void マルチレイアウトの場合にマルチレイアウトコンフィグが生成されること() throws Exception {
+        final DataBindConfig actual = sut.convert(MultiLayoutBean.class);
+
+        assertThat(actual, instanceOf(FixedLengthDataBindConfig.class));
+        assertThat(actual, allOf(
+                hasProperty("length", is(8)),
+                hasProperty("charset", is(Charset.forName("MS932"))),
+                hasProperty("lineSeparator", is("\r\n")),
+                hasProperty("multiLayoutConfig", is(notNullValue()))
+        ));
+
+        final FixedLengthDataBindConfig config = (FixedLengthDataBindConfig) actual;
+        final RecordConfig header = config.getRecordConfig("header");
+        assertThat(header.getFieldConfigList(), contains(
+                allOf(
+                        hasProperty("name", is("id")),
+                        hasProperty("offset", is(1)),
+                        hasProperty("length", is(1))
+                ),
+                allOf(
+                        hasProperty("name", is("field")),
+                        hasProperty("offset", is(2)),
+                        hasProperty("length", is(7))
+                )
+        ));
+        final RecordConfig data = config.getRecordConfig("data");
+        assertThat(data.getFieldConfigList(), contains(
+                allOf(
+                        hasProperty("name", is("id")),
+                        hasProperty("offset", is(1)),
+                        hasProperty("length", is(1))
+                ),
+                allOf(
+                        hasProperty("name", is("name")),
+                        hasProperty("offset", is(2)),
+                        hasProperty("length", is(4))
+                ),
+                allOf(
+                        hasProperty("name", is("age")),
+                        hasProperty("offset", is(6)),
+                        hasProperty("length", is(3))
+                )
+        ));
+    }
+
+    @Test
+    public void マルチレイアウトでMultiLayoutを継承していない場合に例外が送出されること() throws Exception {
+        expectedException.expect(IllegalStateException.class);
+        expectedException.expectMessage("bean class must inherit nablarch.common.databind.fixedlength.MultiLayout. " +
+                "bean_class:nablarch.common.databind.fixedlength.FixedLengthDataBindConfigConverterTest$InValidMultiLayoutBean");
+        sut.convert(InValidMultiLayoutBean.class);
     }
 
     @FixedLength(length = 1024, charset = "MS932", lineSeparator = "\n")
@@ -286,4 +344,127 @@ public class FixedLengthDataBindConfigConverterTest {
             }
         }
     }
+
+    @FixedLength(length = 8, charset = "MS932", lineSeparator = "\r\n", multiLayout = true)
+    public static class MultiLayoutBean extends MultiLayout {
+
+        private Header header;
+
+        private Data data;
+
+        @Record
+        public Header getHeader() {
+            return header;
+        }
+
+        public void setHeader(Header header) {
+            this.header = header;
+        }
+
+        @Record
+        public Data getData() {
+            return data;
+        }
+
+        public void setData(Data data) {
+            this.data = data;
+        }
+
+        @Override
+        public MultiLayoutConfig.RecordIdentifier getRecordIdentifier() {
+            return null;
+        }
+    }
+
+    public static class Header {
+
+        private Long id;
+
+        private String field;
+
+        @Field(offset = 1, length = 1)
+        public Long getId() {
+            return id;
+        }
+
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        @Rpad
+        @Field(offset = 2, length = 7)
+        public String getField() {
+            return field;
+        }
+
+        public void setField(String field) {
+            this.field = field;
+        }
+    }
+
+    public static class Data {
+
+        private Long id;
+
+        private String name;
+
+        private Long age;
+
+        @Field(offset = 1, length = 1)
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        @Rpad
+        @Field(offset = 2, length = 4)
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        @Lpad
+        @Field(offset = 6, length = 3)
+        public Long getAge() {
+            return age;
+        }
+
+        public void setAge(Long age) {
+            this.age = age;
+        }
+    }
+
+    @FixedLength(length = 8, charset = "MS932", lineSeparator = "\r\n", multiLayout = true)
+    public static class InValidMultiLayoutBean {
+
+        private Header header;
+
+        private Data data;
+
+        @Record
+        public Header getHeader() {
+            return header;
+        }
+
+        public void setHeader(Header header) {
+            this.header = header;
+        }
+
+        @Record
+        public Data getData() {
+            return data;
+        }
+
+        public void setData(Data data) {
+            this.data = data;
+        }
+    }
+
 }

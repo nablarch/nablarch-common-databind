@@ -27,13 +27,13 @@ public class FixedLengthBeanMapper<T> implements ObjectMapper<T> {
      * @param config 固定長の設定情報
      * @param stream 固定長データ
      */
-    public FixedLengthBeanMapper(Class<T> clazz, FixedLengthDataBindConfig config, InputStream stream) {
+    public FixedLengthBeanMapper(final Class<T> clazz, final FixedLengthDataBindConfig config, final InputStream stream) {
         this.clazz = clazz;
         fixedLengthMapMapper = new FixedLengthMapMapper(config, stream);
     }
 
     @Override
-    public void write(T object) {
+    public void write(final T object) {
         throw new UnsupportedOperationException("unsupported write method.");
     }
 

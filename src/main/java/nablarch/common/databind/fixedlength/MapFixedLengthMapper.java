@@ -26,7 +26,7 @@ public class MapFixedLengthMapper implements ObjectMapper<Map<String, ?>> {
     }
 
     @Override
-    public void write(Map<String, ?> object) {
+    public void write(final Map<String, ?> object) {
         writer.writeRecord(object);
     }
 

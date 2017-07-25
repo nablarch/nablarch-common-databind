@@ -36,4 +36,12 @@ public @interface FixedLength {
      * @return 改行を現す文字
      */
     String lineSeparator();
+
+    /**
+     * マルチレイアウトか否か
+     * <p>
+     * デフォルトは{@code false}
+     * @return マルチレイアウトか否か
+     */
+    boolean multiLayout() default false;
 }
