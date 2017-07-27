@@ -64,7 +64,7 @@ public class FixedLengthReader implements Closeable {
             final MultiLayoutConfig multiLayoutConfig = config.getMultiLayoutConfig();
             final List<FieldConfig> fieldConfigList;
             if (multiLayoutConfig != null) {
-                final MultiLayoutConfig.RecordName recordName = multiLayoutConfig.getRecordIdentifier().identify(buffer.array());
+                final MultiLayoutConfig.RecordName recordName = multiLayoutConfig.getRecordIdentifier().identifyRecordName(buffer.array());
                 map.put("recordName", recordName);
                 fieldConfigList = config.getRecordConfig(recordName.getRecordName()).getFieldConfigList();
 

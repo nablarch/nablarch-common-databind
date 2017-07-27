@@ -36,7 +36,7 @@ public class MultiLayoutConfig {
          * @param record レコード情報
          * @return レコード名
          */
-        RecordName identify(byte[] record);
+        RecordName identifyRecordName(byte[] record);
     }
 
     /**

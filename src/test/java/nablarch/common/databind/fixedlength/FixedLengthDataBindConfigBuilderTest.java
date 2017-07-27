@@ -125,7 +125,7 @@ public class FixedLengthDataBindConfigBuilderTest {
                         .build())
                 .multiLayout(new MultiLayoutConfig(new MultiLayoutConfig.RecordIdentifier() {
                     @Override
-                    public MultiLayoutConfig.RecordName identify(byte[] record) {
+                    public MultiLayoutConfig.RecordName identifyRecordName(byte[] record) {
                         return record[0] == 0x31 ? RecordType.HEADER : RecordType.DATA;
                     }
                 }))
