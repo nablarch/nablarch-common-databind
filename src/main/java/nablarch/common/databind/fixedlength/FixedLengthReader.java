@@ -64,15 +64,15 @@ public class FixedLengthReader implements Closeable {
             final MultiLayoutConfig multiLayoutConfig = config.getMultiLayoutConfig();
             final List<FieldConfig> fieldConfigList;
             if (multiLayoutConfig != null) {
-                final String recordName = multiLayoutConfig.getRecordIdentifier().identify(buffer.array());
+                final MultiLayoutConfig.RecordName recordName = multiLayoutConfig.getRecordIdentifier().identify(buffer.array());
                 map.put("recordName", recordName);
-                fieldConfigList = config.getRecordConfig(recordName).getFieldConfigList();
+                fieldConfigList = config.getRecordConfig(recordName.getRecordName()).getFieldConfigList();
 
                 final Map<String, Object> fields = new HashMap<String, Object>();
                 for (final FieldConfig fieldConfig : fieldConfigList) {
                     fields.put(fieldConfig.getName(), readValue(buffer.array(), config, fieldConfig));
                 }
-                map.put(recordName, fields);
+                map.put(recordName.getRecordName(), fields);
             } else {
                 fieldConfigList = config.getRecordConfig(RecordConfig.SINGLE_LAYOUT_RECORD_NAME).getFieldConfigList();
                 for (final FieldConfig fieldConfig : fieldConfigList) {

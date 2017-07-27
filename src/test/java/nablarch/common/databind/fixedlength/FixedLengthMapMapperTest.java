@@ -6,6 +6,7 @@ import nablarch.common.databind.ObjectMapper;
 import nablarch.common.databind.ObjectMapperFactory;
 import nablarch.common.databind.fixedlength.converter.Lpad;
 import nablarch.common.databind.fixedlength.converter.Rpad;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -106,8 +107,8 @@ public class FixedLengthMapMapperTest {
                                 .build())
                         .multiLayout(new MultiLayoutConfig(new MultiLayoutConfig.RecordIdentifier() {
                             @Override
-                            public String identify(byte[] record) {
-                                return record[0] == 0x31 ? "header" : "data";
+                            public MultiLayoutConfig.RecordName identify(byte[] record) {
+                                return record[0] == 0x31 ? RecordType.HEADER : RecordType.DATA;
                             }
                         }))
                         .build();
@@ -118,20 +119,20 @@ public class FixedLengthMapMapperTest {
                 dataBindConfig
         );
         Map<String, ?> map = sut.read();
-        assertThat(map.get("recordName").toString(), is("header"));
+        assertThat(map.get("recordName"), Matchers.<Object>is(RecordType.HEADER));
         final Map<String, ?> header = (Map<String, ?>) map.get("header");
         assertThat(header.get("id").toString(), is("1"));
         assertThat(header.get("field").toString(), is("test"));
 
         map = sut.read();
-        assertThat(map.get("recordName").toString(), is("data"));
+        assertThat(map.get("recordName"), Matchers.<Object>is(RecordType.DATA));
         Map<String, ?> data = (Map<String, ?>) map.get("data");
         assertThat(data.get("id").toString(), is("2"));
         assertThat(data.get("name").toString(), is("aaa"));
         assertThat(data.get("age").toString(), is("12"));
 
         map = sut.read();
-        assertThat(map.get("recordName").toString(), is("data"));
+        assertThat(map.get("recordName"), Matchers.<Object>is(RecordType.DATA));
         data = (Map<String, ?>) map.get("data");
         assertThat(data.get("id").toString(), is("2"));
         assertThat(data.get("name").toString(), is("bb"));
@@ -393,5 +394,20 @@ public class FixedLengthMapMapperTest {
         expectedException.expect(UnsupportedOperationException.class);
         expectedException.expectMessage("unsupported write method.");
         sut.write(null);
+    }
+
+    enum RecordType implements MultiLayoutConfig.RecordName {
+        HEADER {
+            @Override
+            public String getRecordName() {
+                return "header";
+            }
+        },
+        DATA {
+            @Override
+            public String getRecordName() {
+                return "data";
+            }
+        }
     }
 }

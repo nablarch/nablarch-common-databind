@@ -10,8 +10,6 @@ import java.nio.channels.WritableByteChannel;
 import java.util.List;
 import java.util.Map;
 
-import nablarch.core.util.StringUtil;
-
 /**
  * 固定長データを出力するクラス。
  * @author Naoki Yamamoto
@@ -50,9 +48,9 @@ public class FixedLengthWriter implements Closeable {
         final List<FieldConfig> fieldConfigList;
         final Map<String, ?> fields;
         if (multiLayoutConfig != null) {
-            final String recordName = StringUtil.toString(map.get("recordName"));
-            fields = (Map<String, ?>) map.get(recordName);
-            fieldConfigList = config.getRecordConfig(recordName).getFieldConfigList();
+            final MultiLayoutConfig.RecordName recordName = (MultiLayoutConfig.RecordName) map.get("recordName");
+            fields = (Map<String, ?>) map.get(recordName.getRecordName());
+            fieldConfigList = config.getRecordConfig(recordName.getRecordName()).getFieldConfigList();
         } else {
             fields = map;
             fieldConfigList = config.getRecordConfig(RecordConfig.SINGLE_LAYOUT_RECORD_NAME).getFieldConfigList();

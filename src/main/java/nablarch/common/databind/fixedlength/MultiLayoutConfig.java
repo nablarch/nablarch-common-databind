@@ -36,6 +36,17 @@ public class MultiLayoutConfig {
          * @param record レコード情報
          * @return レコード名
          */
-        String identify(byte[] record);
+        RecordName identify(byte[] record);
+    }
+
+    /**
+     * レコード名を扱うインタフェース
+     */
+    public interface RecordName {
+        /**
+         * レコード名を取得する。
+         * @return レコード名
+         */
+        String getRecordName();
     }
 }

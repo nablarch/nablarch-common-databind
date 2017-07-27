@@ -10,14 +10,14 @@ import nablarch.common.databind.fixedlength.MultiLayoutConfig.RecordIdentifier;
 public abstract class MultiLayout {
 
     /** レコード名 */
-    private String recordName;
+    private MultiLayoutConfig.RecordName recordName;
 
     /**
      * レコード名を取得する。
      *
      * @return レコード名
      */
-    public String getRecordName() {
+    public MultiLayoutConfig.RecordName getRecordName() {
         return recordName;
     }
 
@@ -26,7 +26,7 @@ public abstract class MultiLayout {
      *
      * @param recordName レコード名
      */
-    public void setRecordName(final String recordName) {
+    public void setRecordName(final MultiLayoutConfig.RecordName recordName) {
         this.recordName = recordName;
     }
 

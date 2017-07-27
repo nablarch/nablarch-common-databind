@@ -125,8 +125,8 @@ public class FixedLengthDataBindConfigBuilderTest {
                         .build())
                 .multiLayout(new MultiLayoutConfig(new MultiLayoutConfig.RecordIdentifier() {
                     @Override
-                    public String identify(byte[] record) {
-                        return record[0] == 0x31 ? "header" : "data";
+                    public MultiLayoutConfig.RecordName identify(byte[] record) {
+                        return record[0] == 0x31 ? RecordType.HEADER : RecordType.DATA;
                     }
                 }))
                 .build();
@@ -178,5 +178,20 @@ public class FixedLengthDataBindConfigBuilderTest {
                         .addField("test", 1, 128, new Rpad.RpadConverter())
                         .build())
                 .build();
+    }
+
+    enum RecordType implements MultiLayoutConfig.RecordName {
+        HEADER {
+            @Override
+            public String getRecordName() {
+                return "header";
+            }
+        },
+        DATA {
+            @Override
+            public String getRecordName() {
+                return "data";
+            }
+        }
     }
 }

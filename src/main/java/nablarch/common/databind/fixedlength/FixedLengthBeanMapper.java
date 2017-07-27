@@ -6,7 +6,6 @@ import java.util.Map;
 
 import nablarch.common.databind.ObjectMapper;
 import nablarch.core.beans.BeanUtil;
-import nablarch.core.util.StringUtil;
 
 /**
  * 固定長をBeanにマッピングする{@link ObjectMapper}
@@ -52,10 +51,10 @@ public class FixedLengthBeanMapper<T> implements ObjectMapper<T> {
 
         if (config.getMultiLayoutConfig() != null) {
             final T bean = BeanUtil.createAndCopy(clazz, read);
-            final String recordName = StringUtil.toString(read.get("recordName"));
-            final PropertyDescriptor descriptor = BeanUtil.getPropertyDescriptor(clazz, recordName);
-            final Object record = BeanUtil.createAndCopy(descriptor.getPropertyType(), (Map<String, ?>)read.get(recordName));
-            BeanUtil.setProperty(bean, recordName, record);
+            final MultiLayoutConfig.RecordName recordName = (MultiLayoutConfig.RecordName) read.get("recordName");
+            final PropertyDescriptor descriptor = BeanUtil.getPropertyDescriptor(clazz, recordName.getRecordName());
+            final Object record = BeanUtil.createAndCopy(descriptor.getPropertyType(), (Map<String, ?>)read.get(recordName.getRecordName()));
+            BeanUtil.setProperty(bean, recordName.getRecordName(), record);
             return bean;
 
         } else {

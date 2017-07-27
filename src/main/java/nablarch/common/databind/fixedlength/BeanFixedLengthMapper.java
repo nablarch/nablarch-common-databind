@@ -1,11 +1,11 @@
 package nablarch.common.databind.fixedlength;
 
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 
 import nablarch.common.databind.ObjectMapper;
 import nablarch.core.beans.BeanUtil;
-import nablarch.core.util.StringUtil;
 
 /**
  * Beanを固定長にマッピングする{@link ObjectMapper}
@@ -36,10 +36,12 @@ public class BeanFixedLengthMapper<T> implements ObjectMapper<T> {
     public void write(final T object) {
         Map<String, Object> map;
         if (config.getMultiLayoutConfig() != null) {
-            final String recordName = StringUtil.toString(BeanUtil.getProperty(object, "recordName"));
-            final Object record = BeanUtil.getProperty(object, recordName);
-            map = BeanUtil.createMapAndCopy(object);
-            map.put(recordName, BeanUtil.createMapAndCopy(record));
+            final MultiLayoutConfig.RecordName recordName =
+                    (MultiLayoutConfig.RecordName) BeanUtil.getProperty(object, "recordName");
+            final Object record = BeanUtil.getProperty(object, recordName.getRecordName());
+            map = new HashMap<String, Object>();
+            map.put("recordName", recordName);
+            map.put(recordName.getRecordName(), BeanUtil.createMapAndCopy(record));
         } else {
             map = BeanUtil.createMapAndCopy(object);
         }

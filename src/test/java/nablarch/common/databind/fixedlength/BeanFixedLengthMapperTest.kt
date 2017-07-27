@@ -87,9 +87,9 @@ class BeanFixedLengthMapperTest {
             override fun getRecordIdentifier(): MultiLayoutConfig.RecordIdentifier {
                 return MultiLayoutConfig.RecordIdentifier {
                     if (it.first().toInt() == 0x31) {
-                        "header"
+                        RecordType.HEADER
                     } else {
-                        "data"
+                        RecordType.DATA
                     }
                 }
             }
@@ -104,19 +104,19 @@ class BeanFixedLengthMapperTest {
             assertThat(sut, Matchers.instanceOf(BeanFixedLengthMapper::class.java))
 
             val header = Multi()
-            header.recordName = "header"
+            header.recordName = RecordType.HEADER
             header.header = Header(1, "test")
             sut.write(header)
             assertThat(stream.toString(), Matchers.`is`("1test   \r\n"))
 
             var data1 = Multi()
-            data1.recordName = "data"
+            data1.recordName = RecordType.DATA
             data1.data = Data(2, "aaa", 12)
             sut.write(data1)
             assertThat(stream.toString(), Matchers.`is`("1test   \r\n2aaa 012\r\n"))
 
             var data2 = Multi()
-            data2.recordName = "data"
+            data2.recordName = RecordType.DATA
             data2.data = Data(2, "bb", 345)
             sut.write(data2)
             assertThat(stream.toString(), Matchers.`is`("1test   \r\n2aaa 012\r\n2bb  345\r\n"))
@@ -221,6 +221,15 @@ class BeanFixedLengthMapperTest {
         override fun convertOfWrite(fixedLengthDataBindConfig: FixedLengthDataBindConfig, fieldConfig: FieldConfig, output: Any): ByteArray {
             return output.toString().toByteArray()
         }
+    }
+
+    enum class RecordType : MultiLayoutConfig.RecordName {
+        HEADER {
+            override fun getRecordName(): String = "header"
+        },
+        DATA {
+            override fun getRecordName(): String = "data"
+        };
     }
 }
 

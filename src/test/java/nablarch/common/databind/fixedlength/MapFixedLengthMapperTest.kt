@@ -75,9 +75,9 @@ class MapFixedLengthMapperTest {
                         .build())
                 .multiLayout(MultiLayoutConfig(MultiLayoutConfig.RecordIdentifier {
                     if (it.first().toInt() == 0x31) {
-                        "header"
+                        RecordType.HEADER
                     } else {
-                        "data"
+                        RecordType.DATA
                     }
                 }))
                 .build()
@@ -85,13 +85,13 @@ class MapFixedLengthMapperTest {
         ObjectMapperFactory.create(Map::class.java, stream, config).use { sut ->
             assertThat(sut, Matchers.instanceOf(MapFixedLengthMapper::class.java))
 
-            sut.write(mapOf("recordName" to "header", "header" to mapOf("id" to 1, "field" to "test")))
+            sut.write(mapOf("recordName" to RecordType.HEADER, "header" to mapOf("id" to 1, "field" to "test")))
             assertThat(stream.toString(), Matchers.`is`("1test   \r\n"))
 
-            sut.write(mapOf("recordName" to "data", "data" to mapOf("id" to 2, "name" to "aaa", "age" to 12)))
+            sut.write(mapOf("recordName" to RecordType.DATA, "data" to mapOf("id" to 2, "name" to "aaa", "age" to 12)))
             assertThat(stream.toString(), Matchers.`is`("1test   \r\n2aaa 012\r\n"))
 
-            sut.write(mapOf("recordName" to "data", "data" to mapOf("id" to 2, "name" to "bb", "age" to 345)))
+            sut.write(mapOf("recordName" to RecordType.DATA, "data" to mapOf("id" to 2, "name" to "bb", "age" to 345)))
             assertThat(stream.toString(), Matchers.`is`("1test   \r\n2aaa 012\r\n2bb  345\r\n"))
             sut.close()
         }
@@ -194,6 +194,15 @@ class MapFixedLengthMapperTest {
         override fun convertOfWrite(fixedLengthDataBindConfig: FixedLengthDataBindConfig, fieldConfig: FieldConfig, output: Any): ByteArray {
             return output.toString().toByteArray()
         }
+    }
+
+    enum class RecordType : MultiLayoutConfig.RecordName {
+        HEADER {
+            override fun getRecordName(): String = "header"
+        },
+        DATA {
+            override fun getRecordName(): String = "data"
+        };
     }
 }
 

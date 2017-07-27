@@ -80,9 +80,9 @@ class FixedLengthBeanMapperTest {
             override fun getRecordIdentifier(): MultiLayoutConfig.RecordIdentifier {
                 return MultiLayoutConfig.RecordIdentifier {
                     if (it.first().toInt() == 0x31) {
-                        "header"
+                        RecordType.HEADER
                     } else {
-                        "data"
+                        RecordType.DATA
                     }
                 }
             }
@@ -96,7 +96,7 @@ class FixedLengthBeanMapperTest {
         ObjectMapperFactory.create(Multi::class.java, "1test   \r\n2aaa 012\r\n2bb  345".toByteArray().inputStream()).use {
             assertThat(it, instanceOf(FixedLengthBeanMapper::class.java))
             val first = it.read()
-            assertThat(first.getRecordName(), `is`("header"))
+            assertThat(first.getRecordName(), `is`<MultiLayoutConfig.RecordName>(RecordType.HEADER))
             assertThat(first.data, `is`(nullValue()))
             assertThat(first.header, allOf(
                     hasProperty("id", `is`(1)),
@@ -104,7 +104,7 @@ class FixedLengthBeanMapperTest {
             ))
 
             val second = it.read()
-            assertThat(second.getRecordName(), `is`("data"))
+            assertThat(second.getRecordName(), `is`<MultiLayoutConfig.RecordName>(RecordType.DATA))
             assertThat(second.header, `is`(nullValue()))
             assertThat(second.data, allOf(
                     hasProperty("id", `is`(2)),
@@ -113,7 +113,7 @@ class FixedLengthBeanMapperTest {
             ))
 
             val thrid = it.read()
-            assertThat(thrid.getRecordName(), `is`("data"))
+            assertThat(thrid.getRecordName(), `is`<MultiLayoutConfig.RecordName>(RecordType.DATA))
             assertThat(thrid.header, `is`(nullValue()))
             assertThat(thrid.data, allOf(
                     hasProperty("id", `is`(2)),
@@ -301,5 +301,14 @@ class FixedLengthBeanMapperTest {
             expectedException.expectMessage("unsupported write method.")
             it.write(null)
         }
+    }
+
+    enum class RecordType : MultiLayoutConfig.RecordName {
+        HEADER {
+            override fun getRecordName(): String = "header"
+        },
+        DATA {
+            override fun getRecordName(): String = "data"
+        };
     }
 }
