@@ -119,20 +119,23 @@ public class FixedLengthMapMapperTest {
         );
         Map<String, ?> map = sut.read();
         assertThat(map.get("recordName").toString(), is("header"));
-        assertThat(map.get("header.id").toString(), is("1"));
-        assertThat(map.get("header.field").toString(), is("test"));
+        final Map<String, ?> header = (Map<String, ?>) map.get("header");
+        assertThat(header.get("id").toString(), is("1"));
+        assertThat(header.get("field").toString(), is("test"));
 
         map = sut.read();
         assertThat(map.get("recordName").toString(), is("data"));
-        assertThat(map.get("data.id").toString(), is("2"));
-        assertThat(map.get("data.name").toString(), is("aaa"));
-        assertThat(map.get("data.age").toString(), is("12"));
+        Map<String, ?> data = (Map<String, ?>) map.get("data");
+        assertThat(data.get("id").toString(), is("2"));
+        assertThat(data.get("name").toString(), is("aaa"));
+        assertThat(data.get("age").toString(), is("12"));
 
         map = sut.read();
         assertThat(map.get("recordName").toString(), is("data"));
-        assertThat(map.get("data.id").toString(), is("2"));
-        assertThat(map.get("data.name").toString(), is("bb"));
-        assertThat(map.get("data.age").toString(), is("345"));
+        data = (Map<String, ?>) map.get("data");
+        assertThat(data.get("id").toString(), is("2"));
+        assertThat(data.get("name").toString(), is("bb"));
+        assertThat(data.get("age").toString(), is("345"));
 
         map = sut.read();
         assertThat(map, nullValue());

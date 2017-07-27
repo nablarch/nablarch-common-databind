@@ -60,23 +60,26 @@ public class FixedLengthReader implements Closeable {
             skipLineSeparator();
 
             lineNumber++;
-            final Map<String, Object> fields = new HashMap<String, Object>();
+            final Map<String, Object> map = new HashMap<String, Object>();
             final MultiLayoutConfig multiLayoutConfig = config.getMultiLayoutConfig();
             final List<FieldConfig> fieldConfigList;
             if (multiLayoutConfig != null) {
                 final String recordName = multiLayoutConfig.getRecordIdentifier().identify(buffer.array());
-                fields.put("recordName", recordName);
+                map.put("recordName", recordName);
                 fieldConfigList = config.getRecordConfig(recordName).getFieldConfigList();
-                for (final FieldConfig fieldConfig : fieldConfigList) {
-                    fields.put(recordName + '.' + fieldConfig.getName(), readValue(buffer.array(), config, fieldConfig));
-                }
-            } else {
-                fieldConfigList = config.getRecordConfig(RecordConfig.SINGLE_LAYOUT_RECORD_NAME).getFieldConfigList();
+
+                final Map<String, Object> fields = new HashMap<String, Object>();
                 for (final FieldConfig fieldConfig : fieldConfigList) {
                     fields.put(fieldConfig.getName(), readValue(buffer.array(), config, fieldConfig));
                 }
+                map.put(recordName, fields);
+            } else {
+                fieldConfigList = config.getRecordConfig(RecordConfig.SINGLE_LAYOUT_RECORD_NAME).getFieldConfigList();
+                for (final FieldConfig fieldConfig : fieldConfigList) {
+                    map.put(fieldConfig.getName(), readValue(buffer.array(), config, fieldConfig));
+                }
             }
-            return fields;
+            return map;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

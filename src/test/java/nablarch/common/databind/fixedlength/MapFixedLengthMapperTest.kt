@@ -85,13 +85,13 @@ class MapFixedLengthMapperTest {
         ObjectMapperFactory.create(Map::class.java, stream, config).use { sut ->
             assertThat(sut, Matchers.instanceOf(MapFixedLengthMapper::class.java))
 
-            sut.write(mapOf("recordName" to "header", "header.id" to 1, "header.field" to "test"))
+            sut.write(mapOf("recordName" to "header", "header" to mapOf("id" to 1, "field" to "test")))
             assertThat(stream.toString(), Matchers.`is`("1test   \r\n"))
 
-            sut.write(mapOf("recordName" to "data", "data.id" to 2, "data.name" to "aaa", "data.age" to 12))
+            sut.write(mapOf("recordName" to "data", "data" to mapOf("id" to 2, "name" to "aaa", "age" to 12)))
             assertThat(stream.toString(), Matchers.`is`("1test   \r\n2aaa 012\r\n"))
 
-            sut.write(mapOf("recordName" to "data", "data.id" to 2, "data.name" to "bb", "data.age" to 345))
+            sut.write(mapOf("recordName" to "data", "data" to mapOf("id" to 2, "name" to "bb", "age" to 345)))
             assertThat(stream.toString(), Matchers.`is`("1test   \r\n2aaa 012\r\n2bb  345\r\n"))
             sut.close()
         }
