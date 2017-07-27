@@ -215,20 +215,17 @@ class BeanFixedLengthMapperTest {
     }
 
     @Test
-    fun `レコード長が足りない場合に例外が発生すること`() {
+    fun `各フィールド長の合計がレコード長より短い場合に自動的に埋め字で埋められること`() {
 
         val stream = ByteArrayOutputStream()
 
-        @FixedLength(length = 19, charset = "MS932", lineSeparator = "\r\n")
+        @FixedLength(length = 25, charset = "MS932", lineSeparator = "\r\n")
         data class TestBean(
                 @field:Field(offset = 1, length = 8)
-                @field:Custom
                 var name: String? = null,
-                @field:Field(offset = 9, length = 8)
-                @field:Custom
+                @field:Field(offset = 10, length = 8)
                 var text: String? = null,
-                @field:Field(offset = 17, length = 3)
-                @field:Custom
+                @field:Field(offset = 20, length = 3)
                 var age: Int? = null
         ) {
             constructor() : this(null, null, null)
@@ -236,10 +233,8 @@ class BeanFixedLengthMapperTest {
 
         ObjectMapperFactory.create(TestBean::class.java, stream).use { sut ->
             assertThat(sut, Matchers.instanceOf(BeanFixedLengthMapper::class.java))
-
-            expectedException.expect(IllegalArgumentException::class.java)
-            expectedException.expectMessage("record length is invalid. expected_length:19, actual_length:15")
-            sut.write(TestBean("name", "testtext", 100))
+            sut.write(TestBean("testname", "testtext", 100))
+            assertThat(stream.toString(), Matchers.`is`("testname testtext  100   \r\n"))
 
         }
     }

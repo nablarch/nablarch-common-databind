@@ -23,6 +23,9 @@ public class FixedLengthDataBindConfigBuilder {
     /** 改行を現す文字 */
     private String lineSeparator;
 
+    /** 未定義部の埋め文字 */
+    private char fillChar = ' ';
+
     /** レコードの定義 */
     private final Map<String, RecordConfig> recordConfigMap = new HashMap<String, RecordConfig>();
 
@@ -78,6 +81,17 @@ public class FixedLengthDataBindConfigBuilder {
     }
 
     /**
+     * 未定義部の埋め文字を設定する。
+     *
+     * @param fillChar 未定義部の埋め文字
+     * @return 自身のインスタンス
+     */
+    public FixedLengthDataBindConfigBuilder fillChar(final char fillChar) {
+        this.fillChar = fillChar;
+        return this;
+    }
+
+    /**
      * レコードの定義を設定する。
      *
      * @param recordConfig レコードの定義
@@ -107,9 +121,9 @@ public class FixedLengthDataBindConfigBuilder {
         verifyFile();
         verifyRecordConfig();
         if (multiLayoutConfig == null) {
-            return new FixedLengthDataBindConfig(length, charset, lineSeparator, recordConfigMap);
+            return new FixedLengthDataBindConfig(length, charset, lineSeparator, fillChar, recordConfigMap);
         } else {
-            return new FixedLengthDataBindConfig(length, charset, lineSeparator, recordConfigMap, multiLayoutConfig);
+            return new FixedLengthDataBindConfig(length, charset, lineSeparator, fillChar, recordConfigMap, multiLayoutConfig);
         }
 
     }
@@ -142,7 +156,7 @@ public class FixedLengthDataBindConfigBuilder {
             int expectedOffset = 1;
             FieldConfig lastField = null;
             for (final FieldConfig fieldConfig : recordConfig.getFieldConfigList()) {
-                if (expectedOffset != fieldConfig.getOffset()) {
+                if (expectedOffset > fieldConfig.getOffset()) {
                     throw new IllegalStateException(
                             "field offset is invalid." 
                                     + " record_name:" + recordName
@@ -156,7 +170,7 @@ public class FixedLengthDataBindConfigBuilder {
             if (lastField == null) {
                 throw new IllegalStateException("field was not found. record_name:" + recordName);
             }
-            if (length != lastField.getOffset() + lastField.getLength() - 1) {
+            if (length < lastField.getOffset() + lastField.getLength() - 1) {
                 throw new IllegalStateException(
                         "field length is invalid."
                                 + " record_name:" + recordName

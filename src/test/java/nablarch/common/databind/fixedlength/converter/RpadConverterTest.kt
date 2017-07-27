@@ -22,7 +22,7 @@ class RpadConverterTest {
      */
     class ConvertOfRead {
 
-        private val fixedLengthDataBindConfig = FixedLengthDataBindConfig(5, MS932(), "", mutableMapOf())
+        private val fixedLengthDataBindConfig = FixedLengthDataBindConfig(5, MS932(), "", ' ', mutableMapOf())
 
         @Test
         fun トリム対象の文字がない場合はそのまま戻されること() {
@@ -68,7 +68,7 @@ class RpadConverterTest {
         @get:Rule
         val expectedException: ExpectedException = ExpectedException.none()
 
-        private val fixedLengthDataBindConfig = FixedLengthDataBindConfig(5, MS932(), "", mutableMapOf())
+        private val fixedLengthDataBindConfig = FixedLengthDataBindConfig(5, MS932(), "", ' ', mutableMapOf())
 
         @Test
         fun パディングの必要が無い場合値がそのまま返されること() {

@@ -38,6 +38,14 @@ public @interface FixedLength {
     String lineSeparator();
 
     /**
+     * 未定義領域を埋める文字
+     * <p>
+     * デフォルトは半角スペース。
+     * @return 未定義領域を埋める文字
+     */
+    char fillChar() default ' ';
+
+    /**
      * マルチレイアウトか否か
      * <p>
      * デフォルトは{@code false}

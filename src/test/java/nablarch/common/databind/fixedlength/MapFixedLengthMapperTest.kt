@@ -165,34 +165,6 @@ class MapFixedLengthMapperTest {
     }
 
     @Test
-    fun `レコード長が足りない場合に例外が発生すること`() {
-
-        val stream = ByteArrayOutputStream()
-        val recordConfig = RecordBuilder()
-                .addField("name", 1, 8, CustomConverter())
-                .addField("text", 9, 8, CustomConverter())
-                .addField("age", 17, 3, CustomConverter())
-                .build()
-
-        val config = FixedLengthDataBindConfigBuilder
-                .newBuilder()
-                .charset(MS932())
-                .length(19)
-                .lineSeparator("\r\n")
-                .addRecord(recordConfig)
-                .build()
-
-        ObjectMapperFactory.create(Map::class.java, stream, config).use { sut ->
-            assertThat(sut, Matchers.instanceOf(MapFixedLengthMapper::class.java))
-
-            expectedException.expect(IllegalArgumentException::class.java)
-            expectedException.expectMessage("record length is invalid. expected_length:19, actual_length:15")
-            sut.write(mapOf("name" to "test", "text" to "testtext", "age" to 100))
-
-        }
-    }
-
-    @Test
     fun `readメソッドは使用できないこと`() {
 
         val stream = ByteArrayOutputStream()

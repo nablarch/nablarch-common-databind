@@ -81,14 +81,6 @@ public class FixedLengthDataBindConfigConverterTest {
         expectedException.expectMessage("field was not found. record_name:single");
         sut.convert(EmptyField.class);
     }
-
-    @Test
-    public void フィールドのオフセットが前のフィールドの終了位置より大きい場合例外が送出されること() throws Exception {
-        expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage(
-                "field offset is invalid. record_name:single, field_name:other, expected offset:11 but was 12");
-        sut.convert(InvalidOffsetField.class);
-    }
     
     @Test
     public void フィールドのオフセットが前のフィールドの終了位置より小さい場合例外が送出されること() throws Exception {
@@ -99,10 +91,10 @@ public class FixedLengthDataBindConfigConverterTest {
     }
 
     @Test
-    public void 最後のレコードの長さがレコード長に満たない場合は例外が送出されること() throws Exception {
+    public void 最後のレコードの長さがレコード長を超えている場合は例外が送出されること() throws Exception {
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage(
-                "field length is invalid. record_name:single, field_name:type, expected length:1024 but was 10");
+                "field length is invalid. record_name:single, field_name:type, expected length:10 but was 11");
         sut.convert(InvalidLengthField.class);
     }
 
@@ -247,10 +239,10 @@ public class FixedLengthDataBindConfigConverterTest {
         }
     }
 
-    @FixedLength(length = 1024, charset = "MS932", lineSeparator = "\n")
+    @FixedLength(length = 10, charset = "MS932", lineSeparator = "\n")
     public static class InvalidLengthField {
 
-        @Field(offset = 1, length = 10)
+        @Field(offset = 1, length = 11)
         private String type;
 
         private String other;

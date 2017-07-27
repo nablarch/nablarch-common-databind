@@ -72,13 +72,13 @@ public class FixedLengthDataBindConfigBuilderTest {
     @Test
     public void フィールドの桁数の定義が不正な場合に例外が送出されること() throws Exception {
         expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage("field length is invalid. record_name:single, field_name:text, expected length:120 but was 119");
+        expectedException.expectMessage("field length is invalid. record_name:single, field_name:text, expected length:120 but was 121");
         FixedLengthDataBindConfigBuilder
                 .newBuilder()
                 .lineSeparator("\r\n")
                 .length(128)
                 .charset(Charset.forName("MS932"))
-                .addRecord(new RecordBuilder().addField("test", 1, 8).addField("text", 9, 119).build())
+                .addRecord(new RecordBuilder().addField("test", 1, 8).addField("text", 9, 121).build())
                 .build();
     }
 

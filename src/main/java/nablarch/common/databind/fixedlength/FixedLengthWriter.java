@@ -10,6 +10,8 @@ import java.nio.channels.WritableByteChannel;
 import java.util.List;
 import java.util.Map;
 
+import nablarch.core.util.StringUtil;
+
 /**
  * 固定長データを出力するクラス。
  * @author Naoki Yamamoto
@@ -62,16 +64,14 @@ public class FixedLengthWriter implements Closeable {
         for (final FieldConfig fieldConfig : fieldConfigList) {
             final byte[] value = fieldConfig.getFieldConverter().convertOfWrite(config, fieldConfig, fields.get(fieldConfig.getName()));
             try {
+                byteBuffer.put(getFillBytes(fieldConfig.getOffset() - byteBuffer.position() - 1));
                 byteBuffer.put(value);
             } catch (BufferOverflowException e) {
                 throw new IllegalArgumentException(
                         "record length is invalid. expected_length:" + configLength + ", actual_length:" + (byteBuffer.position() + value.length), e);
             }
         }
-        if (byteBuffer.position() < configLength) {
-            throw new IllegalArgumentException(
-                    "record length is invalid. expected_length:" + configLength + ", actual_length:" + byteBuffer.position());
-        }
+        byteBuffer.put(getFillBytes(config.getLength() - byteBuffer.position()));
         write(byteBuffer);
         write(lineSeparatorByteBuffer);
     }
@@ -87,6 +87,23 @@ public class FixedLengthWriter implements Closeable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 指定された長さの埋め時のバイト配列を返す。
+     * @param length 長さ
+     * @return 埋め字のバイト配列
+     */
+    private byte[] getFillBytes(final int length) {
+        if (length > 0) {
+            byte[] bytes = StringUtil.getBytes(Character.toString(config.getFillChar()), config.getCharset());
+            final ByteBuffer buffer = ByteBuffer.allocate(length);
+            while (buffer.position() < buffer.limit()) {
+                buffer.put(bytes);
+            }
+            return buffer.array();
+        }
+        return new byte[0];
     }
 
     @Override
