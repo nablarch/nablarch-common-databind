@@ -41,7 +41,9 @@ public class BeanFixedLengthMapper<T> implements ObjectMapper<T> {
             final Object record = BeanUtil.getProperty(object, recordName.getRecordName());
             map = new HashMap<String, Object>();
             map.put("recordName", recordName);
-            map.put(recordName.getRecordName(), BeanUtil.createMapAndCopy(record));
+            if (record != null) {
+                map.put(recordName.getRecordName(), BeanUtil.createMapAndCopy(record));
+            }
         } else {
             map = BeanUtil.createMapAndCopy(object);
         }

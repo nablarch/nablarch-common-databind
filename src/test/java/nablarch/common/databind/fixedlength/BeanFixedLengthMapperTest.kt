@@ -125,6 +125,65 @@ class BeanFixedLengthMapperTest {
     }
 
     @Test
+    fun `マルチレイアウトでレコード名に紐づくデータが設定されていない場合に例外が送出されること`() {
+
+        val stream = ByteArrayOutputStream()
+
+        data class Header (
+                @field:Field(offset = 1, length = 1)
+                var id: Int? = null,
+                @field:Field(offset = 2, length = 7)
+                @field:Rpad
+                var field: String? = null
+        ) {
+            constructor() : this(null, null)
+        }
+
+        data class Data(
+                @field:Field(offset = 1, length = 1)
+                var id: Int? = null,
+                @field:Field(offset = 2, length = 4)
+                @field:Rpad
+                var name: String? = null,
+                @field:Field(offset = 6, length = 3)
+                @field:Lpad
+                var age: Int? = null
+        ) {
+            constructor() : this(null, null, null)
+        }
+
+        @FixedLength(length = 8, charset = "MS932", lineSeparator = "\r\n", multiLayout = true)
+        class Multi : MultiLayout() {
+            override fun getRecordIdentifier(): MultiLayoutConfig.RecordIdentifier {
+                return MultiLayoutConfig.RecordIdentifier {
+                    if (it.first().toInt() == 0x31) {
+                        RecordType.HEADER
+                    } else {
+                        RecordType.DATA
+                    }
+                }
+            }
+            @field:Record
+            var header: Header? = null
+
+            @field:Record
+            var data: Data? = null
+        }
+
+        ObjectMapperFactory.create(Multi::class.java, stream).use { sut ->
+            assertThat(sut, Matchers.instanceOf(BeanFixedLengthMapper::class.java))
+
+            val header = Multi()
+            header.recordName = RecordType.HEADER
+            header.data = Data(2, "aaa", 12)
+
+            expectedException.expect(IllegalArgumentException::class.java)
+            expectedException.expectMessage("record data is not found. record_name:header")
+            sut.write(header)
+        }
+    }
+
+    @Test
     fun `レコード長がオーバーしている場合に例外が発生すること`() {
 
         val stream = ByteArrayOutputStream()
