@@ -1,14 +1,11 @@
 package nablarch.common.databind.fixedlength;
 
-import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 
 import nablarch.common.databind.DataBindConfig;
 import nablarch.common.databind.DataBindConfigConverter;
 import nablarch.common.databind.DataBindUtil;
-import nablarch.core.beans.BeanUtil;
 import nablarch.core.beans.BeansException;
 
 /**
@@ -32,14 +29,13 @@ public class FixedLengthDataBindConfigConverter implements DataBindConfigConvert
                 throw new IllegalStateException("bean class must inherit " + MultiLayout.class.getName() + ". bean_class:" + beanClass.getName());
             }
 
-
             builder.multiLayout(new MultiLayoutConfig(((MultiLayout) DataBindUtil.newInstance(beanClass)).getRecordIdentifier()));
 
-            final PropertyDescriptor[] descriptors = BeanUtil.getPropertyDescriptors(beanClass);
-            for (PropertyDescriptor descriptor : descriptors) {
-                final Record record = descriptor.getReadMethod().getAnnotation(Record.class);
+            for (java.lang.reflect.Field field : beanClass.getDeclaredFields()) {
+
+                final Record record = field.getAnnotation(Record.class);
                 if (record != null) {
-                    builder.addRecord(createRecordConfig(descriptor.getPropertyType(), descriptor.getName()));
+                    builder.addRecord(createRecordConfig(field.getType(), field.getName()));
                 }
             }
         } else {
@@ -57,21 +53,18 @@ public class FixedLengthDataBindConfigConverter implements DataBindConfigConvert
      * @return レコードの定義
      */
     private RecordConfig createRecordConfig(final Class<?> beanClass, final String recordName) {
-        final PropertyDescriptor[] descriptors = BeanUtil.getPropertyDescriptors(beanClass);
-
         final RecordBuilder recordBuilder = new RecordBuilder();
-        for (final PropertyDescriptor descriptor : descriptors) {
-            final Method method = descriptor.getReadMethod();
-            final Field field = method.getAnnotation(Field.class);
-            if (field == null) {
+        for (final java.lang.reflect.Field field : beanClass.getDeclaredFields()) {
+            final Field fieldAnnotation = field.getAnnotation(Field.class);
+            if (fieldAnnotation == null) {
                 continue;
             }
 
-            final FieldConvert.FieldConverter fieldConverter = getFieldConverter(descriptor);
+            final FieldConvert.FieldConverter fieldConverter = getFieldConverter(field);
             if (fieldConverter == null) {
-                recordBuilder.addField(descriptor.getName(), field.offset(), field.length());
+                recordBuilder.addField(field.getName(), fieldAnnotation.offset(), fieldAnnotation.length());
             } else {
-                recordBuilder.addField(descriptor.getName(), field.offset(), field.length(), fieldConverter);
+                recordBuilder.addField(field.getName(), fieldAnnotation.offset(), fieldAnnotation.length(), fieldConverter);
             }
 
         }
@@ -81,19 +74,19 @@ public class FixedLengthDataBindConfigConverter implements DataBindConfigConvert
     /**
      * 設定されているフィールドコンバータを返す。
      *
-     * @param propertyDescriptor 対象のフィールド
+     * @param field 対象のフィールド
      * @return フィールドコンバータ
      */
     @SuppressWarnings("rawtypes")
-    private FieldConvert.FieldConverter getFieldConverter(final PropertyDescriptor propertyDescriptor) {
+    private FieldConvert.FieldConverter getFieldConverter(final java.lang.reflect.Field field) {
         FieldConvert.FieldConverter fieldConverter = null;
-        for (final Annotation annotation : propertyDescriptor.getReadMethod().getAnnotations()) {
+        for (final Annotation annotation : field.getDeclaredAnnotations()) {
             final FieldConvert fieldConvert = annotation.annotationType()
                                                         .getAnnotation(FieldConvert.class);
 
             if (fieldConvert != null) {
                 if (fieldConverter != null) {
-                    throw new IllegalStateException("multiple field converters can not be set. field_name:" + propertyDescriptor.getName());
+                    throw new IllegalStateException("multiple field converters can not be set. field_name:" + field.getName());
                 }
 
                 try {

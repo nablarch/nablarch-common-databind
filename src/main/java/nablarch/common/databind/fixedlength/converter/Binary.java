@@ -15,7 +15,7 @@ import nablarch.common.databind.fixedlength.FixedLengthDataBindConfig;
  * @author siosio
  */
 @FieldConvert(Binary.BinaryConverter.class)
-@Target(ElementType.METHOD)
+@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Binary {
 

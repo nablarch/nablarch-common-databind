@@ -24,14 +24,14 @@ class FixedLengthBeanMapperTest {
 
         @FixedLength(length = 11, charset = "MS932", lineSeparator = "\r\n")
         data class TestBean(
-            @get:Field(offset = 1, length = 4)
-            @get:Rpad
+            @field:Field(offset = 1, length = 4)
+            @field:Rpad
             var name: String? = null,
-            @get:Field(offset = 5, length = 4)
-            @get:Rpad('　')
+            @field:Field(offset = 5, length = 4)
+            @field:Rpad('　')
             var text: String? = null,
-            @get:Field(offset = 9, length = 3)
-            @get:Lpad
+            @field:Field(offset = 9, length = 3)
+            @field:Lpad
             var age: Int? = null
         ) {
             constructor() : this(null, null, null)
@@ -53,23 +53,23 @@ class FixedLengthBeanMapperTest {
     @Test
     fun `マルチレイアウトの固定長をBeanに変換できること`() {
         data class Header (
-                @get:Field(offset = 1, length = 1)
+                @field:Field(offset = 1, length = 1)
                 var id: Int? = null,
-                @get:Field(offset = 2, length = 7)
-                @get:Rpad
+                @field:Field(offset = 2, length = 7)
+                @field:Rpad
                 var field: String? = null
         ) {
             constructor() : this(null, null)
         }
 
         data class Data(
-                @get:Field(offset = 1, length = 1)
+                @field:Field(offset = 1, length = 1)
                 var id: Int? = null,
-                @get:Field(offset = 2, length = 4)
-                @get:Rpad
+                @field:Field(offset = 2, length = 4)
+                @field:Rpad
                 var name: String? = null,
-                @get:Field(offset = 6, length = 3)
-                @get:Lpad
+                @field:Field(offset = 6, length = 3)
+                @field:Lpad
                 var age: Int? = null
         ) {
             constructor() : this(null, null, null)
@@ -86,10 +86,10 @@ class FixedLengthBeanMapperTest {
                     }
                 }
             }
-            @get:Record
+            @field:Record
             var header: Header? = null
 
-            @get:Record
+            @field:Record
             var data: Data? = null
         }
 
@@ -130,9 +130,9 @@ class FixedLengthBeanMapperTest {
 
         @FixedLength(length = 5, charset = "MS932", lineSeparator = "")
         data class TestBean(
-            @get:Field(offset = 1, length = 4)
+            @field:Field(offset = 1, length = 4)
             var name: String? = null,
-            @get:Field(offset = 5, length = 1)
+            @field:Field(offset = 5, length = 1)
             var text: String? = null
         ) {
             constructor() : this(null, null)
@@ -152,7 +152,7 @@ class FixedLengthBeanMapperTest {
     fun `空ファイルを読み込むことができること`() {
         @FixedLength(length = 8, charset = "MS932", lineSeparator = "\r\n")
         data class TestBean(
-            @get:Field(offset = 1, length = 8)
+            @field:Field(offset = 1, length = 8)
             var name: String? = null
         ) {
             constructor() : this(null)
@@ -168,7 +168,7 @@ class FixedLengthBeanMapperTest {
     fun `末尾に改行コードがあっても読み込むことができること`() {
         @FixedLength(length = 8, charset = "MS932", lineSeparator = "\r\n")
         data class TestBean(
-            @get:Field(offset = 1, length = 8)
+            @field:Field(offset = 1, length = 8)
             var name: String? = null
         ) {
             constructor() : this(null)
@@ -186,9 +186,9 @@ class FixedLengthBeanMapperTest {
 
         @FixedLength(length = 11, charset = "MS932", lineSeparator = "\r\n")
         data class TestBean(
-            @get:Field(offset = 1, length = 8)
+            @field:Field(offset = 1, length = 8)
             var name: String? = null,
-            @get:Field(offset = 9, length = 3)
+            @field:Field(offset = 9, length = 3)
             var age: Int? = null
         ) {
             constructor() : this(null, null)
@@ -211,7 +211,7 @@ class FixedLengthBeanMapperTest {
 
         @FixedLength(length = 2, charset = "MS932", lineSeparator = "\r\n")
         data class TestBean(
-            @get:Field(offset = 1, length = 2)
+            @field:Field(offset = 1, length = 2)
             var name: String? = null
         ) {
             constructor() : this(null)
@@ -238,7 +238,7 @@ class FixedLengthBeanMapperTest {
 
         @FixedLength(length = 2, charset = "MS932", lineSeparator = "\r\n")
         data class TestBean(
-            @get:Field(offset = 1, length = 2)
+            @field:Field(offset = 1, length = 2)
             var name: String? = null
         ) {
             constructor() : this(null)
@@ -264,7 +264,7 @@ class FixedLengthBeanMapperTest {
     fun データ読み込み中に例外が送出されてた場合は原因例外を持つ実行時例外が送出されること() {
         @FixedLength(length = 2, charset = "MS932", lineSeparator = "\r\n")
         data class TestBean(
-            @get:Field(offset = 1, length = 2)
+            @field:Field(offset = 1, length = 2)
             var name: String? = null
         ) {
             constructor() : this(null)
@@ -290,7 +290,7 @@ class FixedLengthBeanMapperTest {
 
         @FixedLength(length = 2, charset = "MS932", lineSeparator = "\r\n")
         data class TestBean(
-            @get:Field(offset = 1, length = 2)
+            @field:Field(offset = 1, length = 2)
             var name: String? = null
         ) {
             constructor() : this(null)

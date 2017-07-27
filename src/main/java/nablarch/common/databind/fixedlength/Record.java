@@ -11,6 +11,6 @@ import java.lang.annotation.Target;
  * @author Naoki Yamamoto
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target(ElementType.FIELD)
 public @interface Record {
 }

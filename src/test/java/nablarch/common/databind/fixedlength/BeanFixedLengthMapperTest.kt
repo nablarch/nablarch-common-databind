@@ -30,14 +30,14 @@ class BeanFixedLengthMapperTest {
 
         @FixedLength(length = 19, charset = "MS932", lineSeparator = "\r\n")
         data class TestBean(
-                @get:Field(offset = 1, length = 8)
-                @get:Rpad
+                @field:Field(offset = 1, length = 8)
+                @field:Rpad
                 var name: String? = null,
-                @get:Field(offset = 9, length = 8)
-                @get:Rpad('a')
+                @field:Field(offset = 9, length = 8)
+                @field:Rpad('a')
                 var text: String? = null,
-                @get:Field(offset = 17, length = 3)
-                @get:Lpad
+                @field:Field(offset = 17, length = 3)
+                @field:Lpad
                 var age: Int? = null
         ) {
             constructor() : this(null, null, null)
@@ -60,23 +60,23 @@ class BeanFixedLengthMapperTest {
         val stream = ByteArrayOutputStream()
 
         data class Header (
-                @get:Field(offset = 1, length = 1)
+                @field:Field(offset = 1, length = 1)
                 var id: Int? = null,
-                @get:Field(offset = 2, length = 7)
-                @get:Rpad
+                @field:Field(offset = 2, length = 7)
+                @field:Rpad
                 var field: String? = null
         ) {
             constructor() : this(null, null)
         }
 
         data class Data(
-                @get:Field(offset = 1, length = 1)
+                @field:Field(offset = 1, length = 1)
                 var id: Int? = null,
-                @get:Field(offset = 2, length = 4)
-                @get:Rpad
+                @field:Field(offset = 2, length = 4)
+                @field:Rpad
                 var name: String? = null,
-                @get:Field(offset = 6, length = 3)
-                @get:Lpad
+                @field:Field(offset = 6, length = 3)
+                @field:Lpad
                 var age: Int? = null
         ) {
             constructor() : this(null, null, null)
@@ -93,10 +93,10 @@ class BeanFixedLengthMapperTest {
                     }
                 }
             }
-            @get:Record
+            @field:Record
             var header: Header? = null
 
-            @get:Record
+            @field:Record
             var data: Data? = null
         }
 
@@ -131,14 +131,14 @@ class BeanFixedLengthMapperTest {
 
         @FixedLength(length = 19, charset = "MS932", lineSeparator = "\r\n")
         data class TestBean(
-                @get:Field(offset = 1, length = 8)
-                @get:Custom
+                @field:Field(offset = 1, length = 8)
+                @field:Custom
                 var name: String? = null,
-                @get:Field(offset = 9, length = 8)
-                @get:Custom
+                @field:Field(offset = 9, length = 8)
+                @field:Custom
                 var text: String? = null,
-                @get:Field(offset = 17, length = 3)
-                @get:Custom
+                @field:Field(offset = 17, length = 3)
+                @field:Custom
                 var age: Int? = null
         ) {
             constructor() : this(null, null, null)
@@ -162,14 +162,14 @@ class BeanFixedLengthMapperTest {
 
         @FixedLength(length = 19, charset = "MS932", lineSeparator = "\r\n")
         data class TestBean(
-                @get:Field(offset = 1, length = 8)
-                @get:Custom
+                @field:Field(offset = 1, length = 8)
+                @field:Custom
                 var name: String? = null,
-                @get:Field(offset = 9, length = 8)
-                @get:Custom
+                @field:Field(offset = 9, length = 8)
+                @field:Custom
                 var text: String? = null,
-                @get:Field(offset = 17, length = 3)
-                @get:Custom
+                @field:Field(offset = 17, length = 3)
+                @field:Custom
                 var age: Int? = null
         ) {
             constructor() : this(null, null, null)
@@ -191,7 +191,7 @@ class BeanFixedLengthMapperTest {
         val stream = ByteArrayOutputStream()
         @FixedLength(length = 8, charset = "MS932", lineSeparator = "\r\n")
         data class TestBean(
-                @get:Field(offset = 1, length = 8)
+                @field:Field(offset = 1, length = 8)
                 var name: String? = null
         ) {
             constructor() : this(null)
@@ -206,7 +206,7 @@ class BeanFixedLengthMapperTest {
     }
 
     @FieldConvert(CustomConverter::class)
-    @Target(ElementType.METHOD)
+    @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
     annotation class Custom
 

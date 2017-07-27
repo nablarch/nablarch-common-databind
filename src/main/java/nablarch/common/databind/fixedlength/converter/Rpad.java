@@ -20,7 +20,7 @@ import nablarch.core.util.StringUtil;
  */
 @FieldConvert(RpadConverter.class)
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target(ElementType.FIELD)
 public @interface Rpad {
 
     /**

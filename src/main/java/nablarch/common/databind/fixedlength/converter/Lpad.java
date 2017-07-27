@@ -19,7 +19,7 @@ import nablarch.core.util.StringUtil;
  * @author siosio
  */
 @FieldConvert(LpadConverter.class)
-@Target(ElementType.METHOD)
+@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Lpad {
 

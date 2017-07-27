@@ -179,19 +179,19 @@ public class FixedLengthDataBindConfigConverterTest {
     @FixedLength(length = 1024, charset = "MS932", lineSeparator = "\n")
     public static class FixedLengthBean {
 
+        @Field(offset = 1, length = 10)
+        @Rpad
         private String type;
 
+        @Field(offset = 11, length = 1014)
+        @Lpad
         private String other;
         private String notField;
 
-        @Field(offset = 1, length = 10)
-        @Rpad
         public String getType() {
             return type;
         }
 
-        @Field(offset = 11, length = 1014)
-        @Lpad
         public String getOther() {
             return other;
         }
@@ -214,16 +214,16 @@ public class FixedLengthDataBindConfigConverterTest {
     @FixedLength(length = 1024, charset = "MS932", lineSeparator = "\n")
     public static class InvalidOffsetField {
 
+        @Field(offset = 1, length = 10)
         private String type;
 
+        @Field(offset = 12, length = 1014)
         private String other;
 
-        @Field(offset = 1, length = 10)
         public String getType() {
             return type;
         }
 
-        @Field(offset = 12, length = 1014)
         public String getOther() {
             return other;
         }
@@ -232,16 +232,16 @@ public class FixedLengthDataBindConfigConverterTest {
     @FixedLength(length = 1024, charset = "MS932", lineSeparator = "\n")
     public static class InvalidOffsetField2 {
 
+        @Field(offset = 1, length = 10)
         private String type;
 
+        @Field(offset = 5, length = 1014)
         private String other;
 
-        @Field(offset = 1, length = 10)
         public String getType() {
             return type;
         }
 
-        @Field(offset = 5, length = 1014)
         public String getOther() {
             return other;
         }
@@ -250,11 +250,11 @@ public class FixedLengthDataBindConfigConverterTest {
     @FixedLength(length = 1024, charset = "MS932", lineSeparator = "\n")
     public static class InvalidLengthField {
 
+        @Field(offset = 1, length = 10)
         private String type;
 
         private String other;
 
-        @Field(offset = 1, length = 10)
         public String getType() {
             return type;
         }
@@ -262,11 +262,11 @@ public class FixedLengthDataBindConfigConverterTest {
 
     @FixedLength(length = 1024, charset = "MS932", lineSeparator = "\n")
     public class MultipleConverter {
-        private String name;
-
         @Field(offset = 1, length = 1024)
         @Rpad
         @Lpad
+        private String name;
+
         public String getName() {
             return name;
         }
@@ -274,17 +274,17 @@ public class FixedLengthDataBindConfigConverterTest {
 
     @FixedLength(length = 1024, charset = "MS932", lineSeparator = "\n")
     public class NoConstructorConverter {
-        private String name;
-
         @Field(offset = 1, length = 1024)
         @NoConstructor
+        private String name;
+
         public String getName() {
             return name;
         }
     }
 
     @FieldConvert(NoConstructor.NoConstructorConverter.class)
-    @Target(ElementType.METHOD)
+    @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface NoConstructor {
 
@@ -308,17 +308,17 @@ public class FixedLengthDataBindConfigConverterTest {
 
     @FixedLength(length = 1024, charset = "MS932", lineSeparator = "\n")
     public class NewInstanceFailConverter {
-        private String name;
-
         @Field(offset = 1, length = 1024)
         @NewInstanceFail
+        private String name;
+
         public String getName() {
             return name;
         }
     }
 
     @FieldConvert(NewInstanceFail.NewInstanceFailConverter.class)
-    @Target(ElementType.METHOD)
+    @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface NewInstanceFail {
 
@@ -348,11 +348,12 @@ public class FixedLengthDataBindConfigConverterTest {
     @FixedLength(length = 8, charset = "MS932", lineSeparator = "\r\n", multiLayout = true)
     public static class MultiLayoutBean extends MultiLayout {
 
+        @Record
         private Header header;
 
+        @Record
         private Data data;
 
-        @Record
         public Header getHeader() {
             return header;
         }
@@ -361,7 +362,6 @@ public class FixedLengthDataBindConfigConverterTest {
             this.header = header;
         }
 
-        @Record
         public Data getData() {
             return data;
         }
@@ -378,11 +378,13 @@ public class FixedLengthDataBindConfigConverterTest {
 
     public static class Header {
 
+        @Field(offset = 1, length = 1)
         private Long id;
 
+        @Rpad
+        @Field(offset = 2, length = 7)
         private String field;
 
-        @Field(offset = 1, length = 1)
         public Long getId() {
             return id;
         }
@@ -392,8 +394,6 @@ public class FixedLengthDataBindConfigConverterTest {
             this.id = id;
         }
 
-        @Rpad
-        @Field(offset = 2, length = 7)
         public String getField() {
             return field;
         }
@@ -405,13 +405,17 @@ public class FixedLengthDataBindConfigConverterTest {
 
     public static class Data {
 
+        @Field(offset = 1, length = 1)
         private Long id;
 
+        @Rpad
+        @Field(offset = 2, length = 4)
         private String name;
 
+        @Lpad
+        @Field(offset = 6, length = 3)
         private Long age;
 
-        @Field(offset = 1, length = 1)
         public Long getId() {
             return id;
         }
@@ -420,8 +424,6 @@ public class FixedLengthDataBindConfigConverterTest {
             this.id = id;
         }
 
-        @Rpad
-        @Field(offset = 2, length = 4)
         public String getName() {
             return name;
         }
@@ -430,8 +432,6 @@ public class FixedLengthDataBindConfigConverterTest {
             this.name = name;
         }
 
-        @Lpad
-        @Field(offset = 6, length = 3)
         public Long getAge() {
             return age;
         }
@@ -444,11 +444,12 @@ public class FixedLengthDataBindConfigConverterTest {
     @FixedLength(length = 8, charset = "MS932", lineSeparator = "\r\n", multiLayout = true)
     public static class InValidMultiLayoutBean {
 
+        @Record
         private Header header;
 
+        @Record
         private Data data;
 
-        @Record
         public Header getHeader() {
             return header;
         }
@@ -457,7 +458,6 @@ public class FixedLengthDataBindConfigConverterTest {
             this.header = header;
         }
 
-        @Record
         public Data getData() {
             return data;
         }
