@@ -22,7 +22,8 @@ public class FixedLengthDataBindConfigConverter implements DataBindConfigConvert
         final FixedLengthDataBindConfigBuilder builder = FixedLengthDataBindConfigBuilder.newBuilder()
                 .length(fixedLength.length())
                 .charset(Charset.forName(fixedLength.charset()))
-                .lineSeparator(fixedLength.lineSeparator());
+                .lineSeparator(fixedLength.lineSeparator())
+                .fillChar(fixedLength.fillChar());
 
         if (fixedLength.multiLayout()) {
             if (!MultiLayout.class.isAssignableFrom(beanClass)) {

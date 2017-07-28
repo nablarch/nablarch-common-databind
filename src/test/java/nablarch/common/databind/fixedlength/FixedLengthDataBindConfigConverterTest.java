@@ -161,6 +161,39 @@ public class FixedLengthDataBindConfigConverterTest {
     }
 
     @Test
+    public void fillCharが設定された場合にコンフィグが生成できること() throws Exception {
+        final DataBindConfig actual = sut.convert(FillBean.class);
+
+        // assert file
+        assertThat(actual, instanceOf(FixedLengthDataBindConfig.class));
+        assertThat(actual, allOf(
+                hasProperty("length", is(24)),
+                hasProperty("charset", is(Charset.forName("MS932"))),
+                hasProperty("lineSeparator", is("\n")),
+                hasProperty("fillChar", is('0')),
+                hasProperty("multiLayoutConfig", is(nullValue()))
+        ));
+
+        // assert record
+        final RecordConfig recordConfig = ((FixedLengthDataBindConfig) actual).getRecordConfig(RecordConfig.SINGLE_LAYOUT_RECORD_NAME);
+        assertThat("フィールド数は2", recordConfig.getFieldConfigList(), hasSize(2));
+        assertThat("field:1", recordConfig.getFieldConfigList()
+                        .get(0),
+                allOf(
+                        hasProperty("name", is("name")),
+                        hasProperty("offset", is(5)),
+                        hasProperty("length", is(10))
+                ));
+        assertThat("field:2", recordConfig.getFieldConfigList()
+                        .get(1),
+                allOf(
+                        hasProperty("name", is("age")),
+                        hasProperty("offset", is(18)),
+                        hasProperty("length", is(3))
+                ));
+    }
+
+    @Test
     public void マルチレイアウトでMultiLayoutを継承していない場合に例外が送出されること() throws Exception {
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage("bean class must inherit nablarch.common.databind.fixedlength.MultiLayout. " +
@@ -456,6 +489,32 @@ public class FixedLengthDataBindConfigConverterTest {
 
         public void setData(Data data) {
             this.data = data;
+        }
+    }
+
+    @FixedLength(length = 24, charset = "MS932", lineSeparator = "\n", fillChar = '0')
+    public static class FillBean {
+
+        @Field(offset = 5, length = 10)
+        private String name;
+
+        @Field(offset = 18, length = 3)
+        private Integer age;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Integer getAge() {
+            return age;
+        }
+
+        public void setAge(Integer age) {
+            this.age = age;
         }
     }
 
