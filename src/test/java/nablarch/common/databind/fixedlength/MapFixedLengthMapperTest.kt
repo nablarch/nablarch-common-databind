@@ -136,6 +136,44 @@ class MapFixedLengthMapperTest {
     }
 
     @Test
+    fun `マルチレイアウトでレコード名に紐づくデータの型がMapではない場合に例外が送出されること`() {
+
+        val stream = ByteArrayOutputStream()
+        val config = FixedLengthDataBindConfigBuilder
+                .newBuilder()
+                .charset(MS932())
+                .length(8)
+                .lineSeparator("\r\n")
+                .addRecord(RecordBuilder()
+                        .recordName("header")
+                        .addField("id", 1, 1)
+                        .addField("field", 2, 7, Rpad.RpadConverter(' '))
+                        .build())
+                .addRecord(RecordBuilder()
+                        .recordName("data")
+                        .addField("id", 1, 1)
+                        .addField("name", 2, 4, Rpad.RpadConverter(' '))
+                        .addField("age", 6, 3, Lpad.LpadConverter('0'))
+                        .build())
+                .multiLayout(MultiLayoutConfig(MultiLayoutConfig.RecordIdentifier {
+                    if (it.first().toInt() == 0x31) {
+                        RecordType.HEADER
+                    } else {
+                        RecordType.DATA
+                    }
+                }))
+                .build()
+
+        ObjectMapperFactory.create(Map::class.java, stream, config).use { sut ->
+            assertThat(sut, Matchers.instanceOf(MapFixedLengthMapper::class.java))
+
+            expectedException.expect(IllegalArgumentException::class.java)
+            expectedException.expectMessage("record data must be java.util.Map type.")
+            sut.write(mapOf("recordName" to RecordType.HEADER, "header" to "invalid"))
+        }
+    }
+
+    @Test
     fun `レコード長がオーバーしている場合に例外が発生すること`() {
 
         val stream = ByteArrayOutputStream()

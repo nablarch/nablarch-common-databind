@@ -51,7 +51,11 @@ public class FixedLengthWriter implements Closeable {
         final Map<String, ?> fields;
         if (multiLayoutConfig != null) {
             final MultiLayoutConfig.RecordName recordName = (MultiLayoutConfig.RecordName) map.get("recordName");
-            fields = (Map<String, ?>) map.get(recordName.getRecordName());
+            try {
+                fields = (Map<String, ?>) map.get(recordName.getRecordName());
+            } catch (ClassCastException e) {
+                throw new IllegalArgumentException("record data must be " + Map.class.getName() + " type.");
+            }
             if (fields == null) {
                 throw new IllegalArgumentException("record data is not found. record_name:" + recordName.getRecordName());
             }
