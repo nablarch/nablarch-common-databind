@@ -54,7 +54,6 @@ test {
           '-Dfile.encoding=UTF-8',
           '-XX:-UseSplitVerifier'
   )
-  ignoreFailures = true
 }
 
 tasks.sonarRunner {
