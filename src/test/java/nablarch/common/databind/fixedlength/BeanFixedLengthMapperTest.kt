@@ -240,6 +240,31 @@ class BeanFixedLengthMapperTest {
     }
 
     @Test
+    fun `fillCharが非asciiコードの場合でも正しく動作すること`() {
+
+        val stream = ByteArrayOutputStream()
+
+        @FixedLength(length = 27, charset = "MS932", lineSeparator = "\r\n", fillChar = '　')
+        data class TestBean(
+                @field:Field(offset = 1, length = 8)
+                var name: String? = null,
+                @field:Field(offset = 11, length = 8)
+                var text: String? = null,
+                @field:Field(offset = 21, length = 3)
+                var age: Int? = null
+        ) {
+            constructor() : this(null, null, null)
+        }
+
+        ObjectMapperFactory.create(TestBean::class.java, stream).use { sut ->
+            assertThat(sut, Matchers.instanceOf(BeanFixedLengthMapper::class.java))
+            sut.write(TestBean("testname", "testtext", 100))
+            assertThat(stream.toString("MS932"), Matchers.`is`("testname　testtext　100　　\r\n"))
+
+        }
+    }
+
+    @Test
     fun `readメソッドは使用できないこと`() {
 
         val stream = ByteArrayOutputStream()
