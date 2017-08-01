@@ -2,10 +2,13 @@ package nablarch.common.databind.fixedlength;
 
 import java.lang.annotation.Annotation;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 import nablarch.common.databind.DataBindConfig;
 import nablarch.common.databind.DataBindConfigConverter;
 import nablarch.common.databind.DataBindUtil;
+import nablarch.common.databind.fixedlength.converter.DefaultConverter;
 import nablarch.core.beans.BeansException;
 
 /**
@@ -29,32 +32,32 @@ public class FixedLengthDataBindConfigConverter implements DataBindConfigConvert
             if (!MultiLayout.class.isAssignableFrom(beanClass)) {
                 throw new IllegalStateException("bean class must inherit " + MultiLayout.class.getName() + ". bean_class:" + beanClass.getName());
             }
-
-            builder.multiLayout(new MultiLayoutConfig(((MultiLayout) DataBindUtil.newInstance(beanClass)).getRecordIdentifier()));
+            final MultiLayoutBuilder layoutBuilder =
+                    builder.multiLayout().recordIdentifier(((MultiLayout) DataBindUtil.newInstance(beanClass)).getRecordIdentifier());
 
             for (java.lang.reflect.Field field : beanClass.getDeclaredFields()) {
 
                 final Record record = field.getAnnotation(Record.class);
                 if (record != null) {
-                    builder.addRecord(createRecordConfig(field.getType(), field.getName()));
+                    layoutBuilder.record(field.getName());
+                    addFields(layoutBuilder, field.getType());
                 }
             }
+            return layoutBuilder.build();
         } else {
-            builder.addRecord(createRecordConfig(beanClass, RecordConfig.SINGLE_LAYOUT_RECORD_NAME));
+            final SingleLayoutBuilder layoutBuilder = builder.singleLayout();
+            addFields(layoutBuilder, beanClass);
+            return layoutBuilder.build();
         }
-
-        return builder.build();
     }
 
     /**
-     * レコードの定義を生成する。
+     * フィールド定義を追加する。
      *
+     * @param layoutBuilder レイアウト構築クラス
      * @param beanClass レコードの定義を生成するBean
-     * @param recordName レコード名
-     * @return レコードの定義
      */
-    private RecordConfig createRecordConfig(final Class<?> beanClass, final String recordName) {
-        final RecordBuilder recordBuilder = new RecordBuilder();
+    private void addFields(LayoutBuilderSupport layoutBuilder, final Class<?> beanClass) {
         for (final java.lang.reflect.Field field : beanClass.getDeclaredFields()) {
             final Field fieldAnnotation = field.getAnnotation(Field.class);
             if (fieldAnnotation == null) {
@@ -62,14 +65,12 @@ public class FixedLengthDataBindConfigConverter implements DataBindConfigConvert
             }
 
             final FieldConvert.FieldConverter fieldConverter = getFieldConverter(field);
-            if (fieldConverter == null) {
-                recordBuilder.addField(field.getName(), fieldAnnotation.offset(), fieldAnnotation.length());
-            } else {
-                recordBuilder.addField(field.getName(), fieldAnnotation.offset(), fieldAnnotation.length(), fieldConverter);
-            }
-
+            layoutBuilder.field(
+                    field.getName(),
+                    fieldAnnotation.offset(),
+                    fieldAnnotation.length(),
+                    fieldConverter == null ? new DefaultConverter() : fieldConverter);
         }
-        return recordBuilder.recordName(recordName).build();
     }
 
     /**

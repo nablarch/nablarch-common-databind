@@ -33,16 +33,6 @@ public class RecordConfig {
     }
 
     /**
-     * レコードの定義を構築する。
-     *
-     * @param fieldConfigList フィールドの定義
-     */
-    public RecordConfig(final List<FieldConfig> fieldConfigList) {
-        recordName = SINGLE_LAYOUT_RECORD_NAME;
-        this.fieldConfigList = Collections.unmodifiableList(fieldConfigList);
-    }
-
-    /**
      * このレコードのレコード名を返す。
      * @return このレコードのレコード名
      */

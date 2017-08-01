@@ -26,9 +26,6 @@ public class FixedLengthDataBindConfigBuilder {
     /** 未定義部の埋め文字 */
     private char fillChar = ' ';
 
-    /** レコードの定義 */
-    private final Map<String, RecordConfig> recordConfigMap = new HashMap<String, RecordConfig>();
-
     /** マルチレイアウトの定義 */
     private MultiLayoutConfig multiLayoutConfig;
 
@@ -91,15 +88,12 @@ public class FixedLengthDataBindConfigBuilder {
         return this;
     }
 
-    /**
-     * レコードの定義を設定する。
-     *
-     * @param recordConfig レコードの定義
-     * @return 自身のインスタンス
-     */
-    public FixedLengthDataBindConfigBuilder addRecord(final RecordConfig recordConfig) {
-        recordConfigMap.put(recordConfig.getRecordName(), recordConfig);
-        return this;
+    public SingleLayoutBuilder singleLayout() {
+        return new SingleLayoutBuilder(this);
+    }
+
+    public MultiLayoutBuilder multiLayout() {
+        return new MultiLayoutBuilder(this);
     }
 
     /**
@@ -115,17 +109,26 @@ public class FixedLengthDataBindConfigBuilder {
     /**
      * 与えられた情報を元に{@link FixedLengthDataBindConfig}を生成して返す。
      *
+     * @param recordConfigMap レコード定義のマップ
      * @return {@code FixedLengthDataBindConfig}
      */
-    public FixedLengthDataBindConfig build() {
+    public FixedLengthDataBindConfig build(final Map<String, RecordConfig> recordConfigMap) {
         verifyFile();
-        verifyRecordConfig();
-        if (multiLayoutConfig == null) {
-            return new FixedLengthDataBindConfig(length, charset, lineSeparator, fillChar, recordConfigMap);
-        } else {
-            return new FixedLengthDataBindConfig(length, charset, lineSeparator, fillChar, recordConfigMap, multiLayoutConfig);
-        }
+        verifyRecordConfig(recordConfigMap);
+        return new FixedLengthDataBindConfig(length, charset, lineSeparator, fillChar, recordConfigMap);
+    }
 
+    /**
+     * 与えられた情報を元に{@link FixedLengthDataBindConfig}を生成して返す。
+     *
+     * @param recordConfigMap レコード定義のマップ
+     * @param recordIdentifier レコード識別クラス
+     * @return {@code FixedLengthDataBindConfig}
+     */
+    FixedLengthDataBindConfig build(final Map<String, RecordConfig> recordConfigMap, final MultiLayoutConfig.RecordIdentifier recordIdentifier) {
+        verifyFile();
+        verifyRecordConfig(recordConfigMap);
+        return new FixedLengthDataBindConfig(length, charset, lineSeparator, fillChar, recordConfigMap, new MultiLayoutConfig(recordIdentifier));
     }
 
     /**
@@ -140,15 +143,7 @@ public class FixedLengthDataBindConfigBuilder {
     /**
      * レコード定義の正しさを検証する。
      */
-    private void verifyRecordConfig() {
-        if (recordConfigMap.isEmpty()) {
-            throw new IllegalStateException("record config is undefined.");
-        }
-
-        if (multiLayoutConfig == null && recordConfigMap.size() >= 2) {
-            throw new IllegalStateException("single layout can not define multiple record config.");
-        }
-
+    private void verifyRecordConfig(final Map<String, RecordConfig> recordConfigMap) {
         for (final Map.Entry<String, RecordConfig> entry : recordConfigMap.entrySet()) {
             final String recordName = entry.getKey();
             final RecordConfig recordConfig = entry.getValue();

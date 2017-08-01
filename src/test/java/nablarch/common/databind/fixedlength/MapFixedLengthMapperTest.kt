@@ -28,18 +28,16 @@ class MapFixedLengthMapperTest {
     fun `シンプルなMapを固定長に変換できること`() {
 
         val stream = ByteArrayOutputStream()
-        val recordConfig = RecordBuilder()
-                .addField("name", 1, 8, Rpad.RpadConverter(' '))
-                .addField("text", 9, 8, Rpad.RpadConverter(' '))
-                .addField("age", 17, 3, Lpad.LpadConverter('0'))
-                .build()
 
         val config = FixedLengthDataBindConfigBuilder
                 .newBuilder()
                 .charset(MS932())
                 .length(19)
                 .lineSeparator("\r\n")
-                .addRecord(recordConfig)
+                .singleLayout()
+                .field("name", 1, 8, Rpad.RpadConverter(' '))
+                .field("text", 9, 8, Rpad.RpadConverter(' '))
+                .field("age", 17, 3, Lpad.LpadConverter('0'))
                 .build()
 
         ObjectMapperFactory.create(Map::class.java, stream, config).use { sut ->
@@ -62,24 +60,21 @@ class MapFixedLengthMapperTest {
                 .charset(MS932())
                 .length(8)
                 .lineSeparator("\r\n")
-                .addRecord(RecordBuilder()
-                        .recordName("header")
-                        .addField("id", 1, 1)
-                        .addField("field", 2, 7, Rpad.RpadConverter(' '))
-                        .build())
-                .addRecord(RecordBuilder()
-                        .recordName("data")
-                        .addField("id", 1, 1)
-                        .addField("name", 2, 4, Rpad.RpadConverter(' '))
-                        .addField("age", 6, 3, Lpad.LpadConverter('0'))
-                        .build())
-                .multiLayout(MultiLayoutConfig(MultiLayoutConfig.RecordIdentifier {
+                .multiLayout()
+                .record("header")
+                .field("id", 1, 1)
+                .field("field", 2, 7, Rpad.RpadConverter(' '))
+                .record("data")
+                .field("id", 1, 1)
+                .field("name", 2, 4, Rpad.RpadConverter(' '))
+                .field("age", 6, 3, Lpad.LpadConverter('0'))
+                .recordIdentifier(MultiLayoutConfig.RecordIdentifier {
                     if (it.first().toInt() == 0x31) {
                         RecordType.HEADER
                     } else {
                         RecordType.DATA
                     }
-                }))
+                })
                 .build()
 
         ObjectMapperFactory.create(Map::class.java, stream, config).use { sut ->
@@ -106,24 +101,21 @@ class MapFixedLengthMapperTest {
                 .charset(MS932())
                 .length(8)
                 .lineSeparator("\r\n")
-                .addRecord(RecordBuilder()
-                        .recordName("header")
-                        .addField("id", 1, 1)
-                        .addField("field", 2, 7, Rpad.RpadConverter(' '))
-                        .build())
-                .addRecord(RecordBuilder()
-                        .recordName("data")
-                        .addField("id", 1, 1)
-                        .addField("name", 2, 4, Rpad.RpadConverter(' '))
-                        .addField("age", 6, 3, Lpad.LpadConverter('0'))
-                        .build())
-                .multiLayout(MultiLayoutConfig(MultiLayoutConfig.RecordIdentifier {
+                .multiLayout()
+                .record("header")
+                .field("id", 1, 1)
+                .field("field", 2, 7, Rpad.RpadConverter(' '))
+                .record("data")
+                .field("id", 1, 1)
+                .field("name", 2, 4, Rpad.RpadConverter(' '))
+                .field("age", 6, 3, Lpad.LpadConverter('0'))
+                .recordIdentifier(MultiLayoutConfig.RecordIdentifier {
                     if (it.first().toInt() == 0x31) {
                         RecordType.HEADER
                     } else {
                         RecordType.DATA
                     }
-                }))
+                })
                 .build()
 
         ObjectMapperFactory.create(Map::class.java, stream, config).use { sut ->
@@ -144,24 +136,21 @@ class MapFixedLengthMapperTest {
                 .charset(MS932())
                 .length(8)
                 .lineSeparator("\r\n")
-                .addRecord(RecordBuilder()
-                        .recordName("header")
-                        .addField("id", 1, 1)
-                        .addField("field", 2, 7, Rpad.RpadConverter(' '))
-                        .build())
-                .addRecord(RecordBuilder()
-                        .recordName("data")
-                        .addField("id", 1, 1)
-                        .addField("name", 2, 4, Rpad.RpadConverter(' '))
-                        .addField("age", 6, 3, Lpad.LpadConverter('0'))
-                        .build())
-                .multiLayout(MultiLayoutConfig(MultiLayoutConfig.RecordIdentifier {
+                .multiLayout()
+                .record("header")
+                .field("id", 1, 1)
+                .field("field", 2, 7, Rpad.RpadConverter(' '))
+                .record("data")
+                .field("id", 1, 1)
+                .field("name", 2, 4, Rpad.RpadConverter(' '))
+                .field("age", 6, 3, Lpad.LpadConverter('0'))
+                .recordIdentifier(MultiLayoutConfig.RecordIdentifier {
                     if (it.first().toInt() == 0x31) {
                         RecordType.HEADER
                     } else {
                         RecordType.DATA
                     }
-                }))
+                })
                 .build()
 
         ObjectMapperFactory.create(Map::class.java, stream, config).use { sut ->
@@ -177,18 +166,16 @@ class MapFixedLengthMapperTest {
     fun `レコード長がオーバーしている場合に例外が発生すること`() {
 
         val stream = ByteArrayOutputStream()
-        val recordConfig = RecordBuilder()
-                .addField("name", 1, 8, CustomConverter())
-                .addField("text", 9, 8, CustomConverter())
-                .addField("age", 17, 3, CustomConverter())
-                .build()
 
         val config = FixedLengthDataBindConfigBuilder
                 .newBuilder()
                 .charset(MS932())
                 .length(19)
                 .lineSeparator("\r\n")
-                .addRecord(recordConfig)
+                .singleLayout()
+                .field("name", 1, 8, CustomConverter())
+                .field("text", 9, 8, CustomConverter())
+                .field("age", 17, 3, CustomConverter())
                 .build()
 
         ObjectMapperFactory.create(Map::class.java, stream, config).use { sut ->
@@ -206,16 +193,14 @@ class MapFixedLengthMapperTest {
     fun `readメソッドは使用できないこと`() {
 
         val stream = ByteArrayOutputStream()
-        val recordConfig = RecordBuilder()
-                .addField("name", 1, 8)
-                .build()
 
         val config = FixedLengthDataBindConfigBuilder
                 .newBuilder()
                 .charset(MS932())
                 .length(8)
                 .lineSeparator("\r\n")
-                .addRecord(recordConfig)
+                .singleLayout()
+                .field("name", 1, 8)
                 .build()
 
         ObjectMapperFactory.create(Map::class.java, stream, config).use { sut ->

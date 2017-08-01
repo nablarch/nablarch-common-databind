@@ -28,7 +28,8 @@ public class FixedLengthDataBindConfigBuilderTest {
                 .lineSeparator("\r\n")
                 .length(128)
                 .charset(Charset.forName("MS932"))
-                .addRecord(new RecordBuilder().addField("test", 1, 128).build())
+                .singleLayout()
+                .field("test", 1, 128)
                 .build();
 
         assertThat(config.getLineSeparator(), is("\r\n"));
@@ -52,7 +53,8 @@ public class FixedLengthDataBindConfigBuilderTest {
                 .newBuilder()
                 .lineSeparator("\r\n")
                 .charset(Charset.forName("MS932"))
-                .addRecord(new RecordBuilder().addField("test", 1, 128).build())
+                .singleLayout()
+                .field("test", 1, 128)
                 .build();
     }
 
@@ -65,7 +67,9 @@ public class FixedLengthDataBindConfigBuilderTest {
                 .lineSeparator("\r\n")
                 .length(128)
                 .charset(Charset.forName("MS932"))
-                .addRecord(new RecordBuilder().addField("test", 1, 8).addField("text", 2, 120).build())
+                .singleLayout()
+                .field("test", 1, 8)
+                .field("text", 2, 120)
                 .build();
     }
 
@@ -78,19 +82,9 @@ public class FixedLengthDataBindConfigBuilderTest {
                 .lineSeparator("\r\n")
                 .length(128)
                 .charset(Charset.forName("MS932"))
-                .addRecord(new RecordBuilder().addField("test", 1, 8).addField("text", 9, 121).build())
-                .build();
-    }
-
-    @Test
-    public void レコード定義が未定義の場合に例外が送出されること() throws Exception {
-        expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage("record config is undefined.");
-        FixedLengthDataBindConfigBuilder
-                .newBuilder()
-                .lineSeparator("\r\n")
-                .length(128)
-                .charset(Charset.forName("MS932"))
+                .singleLayout()
+                .field("test", 1, 8)
+                .field("text", 9, 121)
                 .build();
     }
 
@@ -103,7 +97,7 @@ public class FixedLengthDataBindConfigBuilderTest {
                 .lineSeparator("\r\n")
                 .length(128)
                 .charset(Charset.forName("MS932"))
-                .addRecord(new RecordBuilder().build())
+                .singleLayout()
                 .build();
     }
 
@@ -114,21 +108,18 @@ public class FixedLengthDataBindConfigBuilderTest {
                 .lineSeparator("\r\n")
                 .length(128)
                 .charset(Charset.forName("MS932"))
-                .addRecord(new RecordBuilder()
-                        .recordName("header")
-                        .addField("field1", 1, 64)
-                        .addField("field2", 65, 64)
-                        .build())
-                .addRecord(new RecordBuilder()
-                        .recordName("data")
-                        .addField("test", 1, 128, new Rpad.RpadConverter())
-                        .build())
-                .multiLayout(new MultiLayoutConfig(new MultiLayoutConfig.RecordIdentifier() {
+                .multiLayout()
+                .record("header")
+                .field("field1", 1, 64)
+                .field("field2", 65, 64)
+                .record("data")
+                .field("test", 1, 128, new Rpad.RpadConverter())
+                .recordIdentifier(new MultiLayoutConfig.RecordIdentifier() {
                     @Override
                     public MultiLayoutConfig.RecordName identifyRecordName(byte[] record) {
                         return record[0] == 0x31 ? RecordType.HEADER : RecordType.DATA;
                     }
-                }))
+                })
                 .build();
 
         assertThat(config.getLineSeparator(), is("\r\n"));
@@ -160,23 +151,43 @@ public class FixedLengthDataBindConfigBuilderTest {
     }
 
     @Test
-    public void シングルレイアウトで複数のレコードが定義されている場合に例外が送出されること() throws Exception {
+    public void マルチレイアウトでレコードを指定せずにフィールド指定した場合に例外が送出されること() throws Exception {
         expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage("single layout can not define multiple record config.");
+        expectedException.expectMessage("must be calling record method before calling field method.");
         FixedLengthDataBindConfigBuilder
                 .newBuilder()
                 .lineSeparator("\r\n")
                 .length(128)
                 .charset(Charset.forName("MS932"))
-                .addRecord(new RecordBuilder()
-                        .recordName("header")
-                        .addField("field1", 1, 64)
-                        .addField("field2", 65, 64)
-                        .build())
-                .addRecord(new RecordBuilder()
-                        .recordName("data")
-                        .addField("test", 1, 128, new Rpad.RpadConverter())
-                        .build())
+                .multiLayout()
+                .field("field1", 1, 64)
+                .field("field2", 65, 64)
+                .record("data")
+                .field("test", 1, 128, new Rpad.RpadConverter())
+                .recordIdentifier(new MultiLayoutConfig.RecordIdentifier() {
+                    @Override
+                    public MultiLayoutConfig.RecordName identifyRecordName(byte[] record) {
+                        return record[0] == 0x31 ? RecordType.HEADER : RecordType.DATA;
+                    }
+                })
+                .build();
+    }
+
+    @Test
+    public void マルチレイアウトでレコード識別クラスが未指定の場合に例外が送出されること() throws Exception {
+        expectedException.expect(IllegalStateException.class);
+        expectedException.expectMessage("record identifier is undefined.");
+        FixedLengthDataBindConfigBuilder
+                .newBuilder()
+                .lineSeparator("\r\n")
+                .length(128)
+                .charset(Charset.forName("MS932"))
+                .multiLayout()
+                .record("header")
+                .field("field1", 1, 64)
+                .field("field2", 65, 64)
+                .record("data")
+                .field("test", 1, 128, new Rpad.RpadConverter())
                 .build();
     }
 

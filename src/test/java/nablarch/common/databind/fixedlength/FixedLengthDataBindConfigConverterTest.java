@@ -397,7 +397,12 @@ public class FixedLengthDataBindConfigConverterTest {
 
         @Override
         public MultiLayoutConfig.RecordIdentifier getRecordIdentifier() {
-            return null;
+            return new MultiLayoutConfig.RecordIdentifier() {
+                @Override
+                public MultiLayoutConfig.RecordName identifyRecordName(byte[] record) {
+                    return null;
+                }
+            };
         }
     }
 
