@@ -176,21 +176,32 @@ public class FixedLengthDataBindConfigConverterTest {
 
         // assert record
         final RecordConfig recordConfig = ((FixedLengthDataBindConfig) actual).getRecordConfig(RecordConfig.SINGLE_LAYOUT_RECORD_NAME);
-        assertThat("フィールド数は2", recordConfig.getFieldConfigList(), hasSize(2));
-        assertThat("field:1", recordConfig.getFieldConfigList()
-                        .get(0),
+        assertThat(recordConfig.getFieldConfigList(), contains(
+                allOf(
+                        hasProperty("name", is("filler")),
+                        hasProperty("offset", is(1)),
+                        hasProperty("length", is(4))
+                ),
                 allOf(
                         hasProperty("name", is("name")),
                         hasProperty("offset", is(5)),
                         hasProperty("length", is(10))
-                ));
-        assertThat("field:2", recordConfig.getFieldConfigList()
-                        .get(1),
+                ),
+                allOf(
+                        hasProperty("name", is("filler")),
+                        hasProperty("offset", is(15)),
+                        hasProperty("length", is(3))
+                ),
                 allOf(
                         hasProperty("name", is("age")),
                         hasProperty("offset", is(18)),
                         hasProperty("length", is(3))
-                ));
+                ),
+                allOf(
+                        hasProperty("name", is("filler")),
+                        hasProperty("offset", is(21)),
+                        hasProperty("length", is(4))
+                )));
     }
 
     @Test

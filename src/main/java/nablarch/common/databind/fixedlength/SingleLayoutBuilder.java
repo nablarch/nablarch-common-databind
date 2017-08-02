@@ -1,7 +1,7 @@
 package nablarch.common.databind.fixedlength;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,11 +19,14 @@ public class SingleLayoutBuilder extends LayoutBuilderSupport {
     private final List<FieldConfig> fieldConfigList = new ArrayList<FieldConfig>();
 
     /**
-     * {@link FixedLengthDataBindConfigBuilder}をもとに本クラスを構築する。
-     * @param dataBindConfigBuilder 固定長データ用のデータバインドコンフィグ構築クラス
+     * 与えられた情報をもとに本クラスのインスタンスを生成する。
+     * @param length レコードの長さ
+     * @param charset 文字セット
+     * @param lineSeparator 改行を表す文字
+     * @param fillChar 未定義部の埋め文字
      */
-    public SingleLayoutBuilder(final FixedLengthDataBindConfigBuilder dataBindConfigBuilder) {
-        super(dataBindConfigBuilder);
+    public SingleLayoutBuilder(final int length, final Charset charset, final String lineSeparator, final char fillChar) {
+        super(length, charset, lineSeparator, fillChar);
     }
 
     @Override
@@ -39,9 +42,12 @@ public class SingleLayoutBuilder extends LayoutBuilderSupport {
 
     @Override
     public FixedLengthDataBindConfig build() {
-        Collections.sort(fieldConfigList, new FieldConfigComparator());
-        Map<String, RecordConfig> recordConfigMap = new HashMap<String, RecordConfig>();
+        addFillerFieldConfig(fieldConfigList);
+        final Map<String, RecordConfig> recordConfigMap = new HashMap<String, RecordConfig>();
         recordConfigMap.put(RecordConfig.SINGLE_LAYOUT_RECORD_NAME, new RecordConfig(RecordConfig.SINGLE_LAYOUT_RECORD_NAME, fieldConfigList));
-        return dataBindConfigBuilder.build(recordConfigMap);
+
+        verifyFile();
+        verifyRecordConfig(recordConfigMap);
+        return new FixedLengthDataBindConfig(length, charset, lineSeparator, fillChar, recordConfigMap);
     }
 }

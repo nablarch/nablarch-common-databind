@@ -45,7 +45,6 @@ public class FixedLengthWriter implements Closeable {
      */
     public void writeRecord(final Map<String, ?> map) {
         final int configLength = config.getLength();
-        final ByteBuffer byteBuffer = ByteBuffer.allocate(configLength);
         final MultiLayoutConfig multiLayoutConfig = config.getMultiLayoutConfig();
         final List<FieldConfig> fieldConfigList;
         final Map<String, ?> fields;
@@ -65,17 +64,21 @@ public class FixedLengthWriter implements Closeable {
             fieldConfigList = config.getRecordConfig(RecordConfig.SINGLE_LAYOUT_RECORD_NAME).getFieldConfigList();
         }
 
+        final ByteBuffer byteBuffer = ByteBuffer.allocate(configLength);
         for (final FieldConfig fieldConfig : fieldConfigList) {
-            final byte[] value = fieldConfig.getFieldConverter().convertOfWrite(config, fieldConfig, fields.get(fieldConfig.getName()));
+            final byte[] value;
+            if (FieldConfig.FILLER_FIELD_NAME.equals(fieldConfig.getName())) {
+                value = getFillBytes(fieldConfig.getLength());
+            } else {
+                value = fieldConfig.getFieldConverter().convertOfWrite(config, fieldConfig, fields.get(fieldConfig.getName()));
+            }
             try {
-                byteBuffer.put(getFillBytes(fieldConfig.getOffset() - byteBuffer.position() - 1));
                 byteBuffer.put(value);
             } catch (BufferOverflowException e) {
                 throw new IllegalArgumentException(
                         "record length is invalid. expected_length:" + configLength + ", actual_length:" + (byteBuffer.position() + value.length), e);
             }
         }
-        byteBuffer.put(getFillBytes(config.getLength() - byteBuffer.position()));
         write(byteBuffer);
         write(lineSeparatorByteBuffer);
     }
@@ -99,15 +102,12 @@ public class FixedLengthWriter implements Closeable {
      * @return 埋め字のバイト配列
      */
     private byte[] getFillBytes(final int length) {
-        if (length > 0) {
-            byte[] bytes = StringUtil.getBytes(Character.toString(config.getFillChar()), config.getCharset());
-            final ByteBuffer buffer = ByteBuffer.allocate(length);
-            while (buffer.position() < buffer.limit()) {
-                buffer.put(bytes);
-            }
-            return buffer.array();
+        final byte[] bytes = StringUtil.getBytes(Character.toString(config.getFillChar()), config.getCharset());
+        final ByteBuffer buffer = ByteBuffer.allocate(length);
+        while (buffer.position() < buffer.limit()) {
+            buffer.put(bytes);
         }
-        return new byte[0];
+        return buffer.array();
     }
 
     @Override

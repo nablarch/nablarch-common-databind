@@ -1,7 +1,7 @@
 package nablarch.common.databind.fixedlength;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +25,14 @@ public class MultiLayoutBuilder extends LayoutBuilderSupport {
     private String recordName;
 
     /**
-     * {@link FixedLengthDataBindConfigBuilder}をもとに本クラスを構築する。
-     * @param dataBindConfigBuilder 固定長データ用のデータバインドコンフィグ構築クラス
+     * 与えられた情報をもとに本クラスのインスタンスを生成する。
+     * @param length レコードの長さ
+     * @param charset 文字セット
+     * @param lineSeparator 改行を表す文字
+     * @param fillChar 未定義部の埋め文字
      */
-    public MultiLayoutBuilder(final FixedLengthDataBindConfigBuilder dataBindConfigBuilder) {
-        super(dataBindConfigBuilder);
+    public MultiLayoutBuilder(final int length, final Charset charset, final String lineSeparator, final char fillChar) {
+        super(length, charset, lineSeparator, fillChar);
     }
 
     @Override
@@ -73,11 +76,15 @@ public class MultiLayoutBuilder extends LayoutBuilderSupport {
             throw new IllegalStateException("record identifier is undefined.");
         }
 
-        Map<String, RecordConfig> recordConfigMap = new HashMap<String, RecordConfig>();
+        final Map<String, RecordConfig> recordConfigMap = new HashMap<String, RecordConfig>();
         for (Map.Entry<String, List<FieldConfig>> entry : fieldConfigMap.entrySet()) {
-            Collections.sort(entry.getValue(), new FieldConfigComparator());
+            addFillerFieldConfig(entry.getValue());
             recordConfigMap.put(entry.getKey(), new RecordConfig(entry.getKey(), entry.getValue()));
         }
-        return dataBindConfigBuilder.build(recordConfigMap, recordIdentifier);
+
+        verifyFile();
+        verifyRecordConfig(recordConfigMap);
+        return new FixedLengthDataBindConfig(
+                length, charset, lineSeparator, fillChar, recordConfigMap, new MultiLayoutConfig(recordIdentifier));
     }
 }
