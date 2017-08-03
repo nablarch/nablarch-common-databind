@@ -2,8 +2,6 @@ package nablarch.common.databind.fixedlength;
 
 import java.lang.annotation.Annotation;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 
 import nablarch.common.databind.DataBindConfig;
 import nablarch.common.databind.DataBindConfigConverter;
