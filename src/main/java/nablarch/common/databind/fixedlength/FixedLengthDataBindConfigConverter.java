@@ -35,8 +35,7 @@ public class FixedLengthDataBindConfigConverter implements DataBindConfigConvert
 
             for (java.lang.reflect.Field field : beanClass.getDeclaredFields()) {
 
-                final Record record = field.getAnnotation(Record.class);
-                if (record != null) {
+                if (field.isAnnotationPresent(Record.class)) {
                     layoutBuilder.record(field.getName());
                     addFields(layoutBuilder, field.getType());
                 }
