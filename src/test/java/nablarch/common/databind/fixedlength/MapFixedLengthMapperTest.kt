@@ -10,6 +10,7 @@ import org.junit.Test
 import org.junit.rules.ExpectedException
 import sun.nio.cs.ext.MS932
 import java.io.ByteArrayOutputStream
+import java.lang.ClassCastException
 import java.lang.annotation.ElementType
 import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
@@ -157,6 +158,7 @@ class MapFixedLengthMapperTest {
             assertThat(sut, Matchers.instanceOf(MapFixedLengthMapper::class.java))
 
             expectedException.expect(IllegalArgumentException::class.java)
+            expectedException.expectCause(Matchers.instanceOf(ClassCastException::class.java))
             expectedException.expectMessage("record data must be java.util.Map type.")
             sut.write(mapOf("recordName" to RecordType.HEADER, "header" to "invalid"))
         }

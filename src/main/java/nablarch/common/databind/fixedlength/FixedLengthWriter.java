@@ -53,7 +53,7 @@ public class FixedLengthWriter implements Closeable {
             try {
                 fields = (Map<String, ?>) map.get(recordName.getRecordName());
             } catch (ClassCastException e) {
-                throw new IllegalArgumentException("record data must be " + Map.class.getName() + " type.");
+                throw new IllegalArgumentException("record data must be " + Map.class.getName() + " type.", e);
             }
             if (fields == null) {
                 throw new IllegalArgumentException("record data is not found. record_name:" + recordName.getRecordName());
