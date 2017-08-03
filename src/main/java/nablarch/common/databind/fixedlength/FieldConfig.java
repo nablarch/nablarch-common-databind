@@ -9,6 +9,9 @@ import nablarch.common.databind.fixedlength.FieldConvert.FieldConverter;
  */
 public class FieldConfig {
 
+    /** fillerを表すフィールド名 */
+    public static final String FILLER_FIELD_NAME = "filler";
+
     /** フィールド名 */
     private final String name;
 

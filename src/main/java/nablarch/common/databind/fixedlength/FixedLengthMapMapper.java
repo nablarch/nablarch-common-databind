@@ -22,12 +22,12 @@ public class FixedLengthMapMapper implements ObjectMapper<Map<String, ?>> {
      * @param config 固定長の設定情報
      * @param stream 固定長データ
      */
-    public FixedLengthMapMapper(FixedLengthDataBindConfig config, InputStream stream) {
+    public FixedLengthMapMapper(final FixedLengthDataBindConfig config, final InputStream stream) {
         reader = new FixedLengthReader(stream, config);
     }
 
     @Override
-    public void write(Map<String, ?> object) {
+    public void write(final Map<String, ?> object) {
         throw new UnsupportedOperationException("unsupported write method.");
     }
 

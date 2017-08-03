@@ -19,7 +19,7 @@ class DefaultConverterTest {
     
     val sut = DefaultConverter()
 
-    private val fixedLengthDataBindConfig = FixedLengthDataBindConfig(5, MS932(), "", mutableMapOf())
+    private val fixedLengthDataBindConfig = FixedLengthDataBindConfig(5, MS932(), "", ' ', mutableMapOf())
 
     @Test
     fun 読み込み時は文字列に変換されること() {

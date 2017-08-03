@@ -43,20 +43,33 @@ public class FixedLengthWriter implements Closeable {
      */
     public void writeRecord(final Map<String, ?> map) {
         final int configLength = config.getLength();
+        final List<FieldConfig> fieldConfigList;
+        final Map<String, ?> fields;
+        if (config.isMultiLayout()) {
+            final MultiLayoutConfig.RecordName recordName = (MultiLayoutConfig.RecordName) map.get("recordName");
+            try {
+                fields = (Map<String, ?>) map.get(recordName.getRecordName());
+            } catch (ClassCastException e) {
+                throw new IllegalArgumentException("record data must be " + Map.class.getName() + " type.", e);
+            }
+            if (fields == null) {
+                throw new IllegalArgumentException("record data is not found. record_name:" + recordName.getRecordName());
+            }
+            fieldConfigList = config.getRecordConfig(recordName.getRecordName()).getFieldConfigList();
+        } else {
+            fields = map;
+            fieldConfigList = config.getRecordConfig(RecordConfig.SINGLE_LAYOUT_RECORD_NAME).getFieldConfigList();
+        }
+
         final ByteBuffer byteBuffer = ByteBuffer.allocate(configLength);
-        final List<FieldConfig> fieldConfigList = config.getRecordConfig().getFieldConfigList();
         for (final FieldConfig fieldConfig : fieldConfigList) {
-            final byte[] value = fieldConfig.getFieldConverter().convertOfWrite(config, fieldConfig, map.get(fieldConfig.getName()));
+            final byte[] value = fieldConfig.getFieldConverter().convertOfWrite(config, fieldConfig, fields.get(fieldConfig.getName()));
             try {
                 byteBuffer.put(value);
             } catch (BufferOverflowException e) {
                 throw new IllegalArgumentException(
                         "record length is invalid. expected_length:" + configLength + ", actual_length:" + (byteBuffer.position() + value.length), e);
             }
-        }
-        if (byteBuffer.position() < configLength) {
-            throw new IllegalArgumentException(
-                    "record length is invalid. expected_length:" + configLength + ", actual_length:" + byteBuffer.position());
         }
         write(byteBuffer);
         write(lineSeparatorByteBuffer);

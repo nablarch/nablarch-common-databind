@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * @author siosio
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target(ElementType.FIELD)
 @Documented
 public @interface Field {
 

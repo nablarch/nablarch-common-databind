@@ -1,8 +1,6 @@
 package nablarch.common.databind.fixedlength;
 
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
 
 import nablarch.core.util.annotation.Published;
 
@@ -23,8 +21,8 @@ public class FixedLengthDataBindConfigBuilder {
     /** 改行を現す文字 */
     private String lineSeparator;
 
-    /** レコードの定義 */
-    private final Map<String, RecordConfig> recordConfigMap = new HashMap<String, RecordConfig>();
+    /** 未定義部の埋め文字 */
+    private char fillChar = ' ';
 
     /**
      * 隠蔽コンストラクタ。
@@ -75,73 +73,29 @@ public class FixedLengthDataBindConfigBuilder {
     }
 
     /**
-     * レコードの定義を設定する。
+     * 未定義部の埋め文字を設定する。
      *
-     * @param recordConfig レコードの定義
+     * @param fillChar 未定義部の埋め文字
      * @return 自身のインスタンス
      */
-    public FixedLengthDataBindConfigBuilder addRecord(final RecordConfig recordConfig) {
-        recordConfigMap.put(RecordConfig.SINGLE_LAYOUT_RECORD_NAME, recordConfig);
+    public FixedLengthDataBindConfigBuilder fillChar(final char fillChar) {
+        this.fillChar = fillChar;
         return this;
     }
 
     /**
-     * 与えられた情報を元に{@link FixedLengthDataBindConfig}を生成して返す。
-     *
-     * @return {@code FixedLengthDataBindConfig}
+     * シングルレイアウト用の{@link FixedLengthDataBindConfig}を構築する。
+     * @return シングルレイアウト用の{@link FixedLengthDataBindConfig}を構築するクラス
      */
-    public FixedLengthDataBindConfig build() {
-        verifyFile();
-        verifyRecordConfig();
-        return new FixedLengthDataBindConfig(length, charset, lineSeparator, recordConfigMap);
+    public SingleLayoutBuilder singleLayout() {
+        return new SingleLayoutBuilder(length, charset, lineSeparator, fillChar);
     }
 
     /**
-     * 固定長定義部の正しさを検証する。
+     * マルチレイアウト用の{@link FixedLengthDataBindConfig}を構築する。
+     * @return マルチレイアウト用の{@link FixedLengthDataBindConfig}を構築するクラス
      */
-    private void verifyFile() {
-        if (length <= 0) {
-            throw new IllegalStateException("length is invalid. must set greater than 0.");
-        }
-    }
-
-    /**
-     * レコード定義の正しさを検証する。
-     */
-    private void verifyRecordConfig() {
-        if (recordConfigMap.isEmpty()) {
-            throw new IllegalStateException("record config is undefined.");
-        }
-
-        for (final Map.Entry<String, RecordConfig> entry : recordConfigMap.entrySet()) {
-            final String recordName = entry.getKey();
-            final RecordConfig recordConfig = entry.getValue();
-
-            int expectedOffset = 1;
-            FieldConfig lastField = null;
-            for (final FieldConfig fieldConfig : recordConfig.getFieldConfigList()) {
-                if (expectedOffset != fieldConfig.getOffset()) {
-                    throw new IllegalStateException(
-                            "field offset is invalid." 
-                                    + " record_name:" + recordName
-                                    + ", field_name:" + fieldConfig.getName()
-                                    + ", expected offset:" + expectedOffset + " but was " + fieldConfig.getOffset());
-                }
-                expectedOffset += fieldConfig.getLength();
-                lastField = fieldConfig;
-            }
-
-            if (lastField == null) {
-                throw new IllegalStateException("field was not found. record_name:" + recordName);
-            }
-            if (length != lastField.getOffset() + lastField.getLength() - 1) {
-                throw new IllegalStateException(
-                        "field length is invalid."
-                                + " record_name:" + recordName
-                                + ", field_name:" + lastField.getName()
-                                + ", expected length:" + (length - lastField.getOffset() + 1) + " but was "
-                                + lastField.getLength());
-            }
-        }
+    public MultiLayoutBuilder multiLayout() {
+        return new MultiLayoutBuilder(length, charset, lineSeparator, fillChar);
     }
 }

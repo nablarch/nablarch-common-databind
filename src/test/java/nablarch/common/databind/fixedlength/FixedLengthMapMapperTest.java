@@ -6,6 +6,7 @@ import nablarch.common.databind.ObjectMapper;
 import nablarch.common.databind.ObjectMapperFactory;
 import nablarch.common.databind.fixedlength.converter.Lpad;
 import nablarch.common.databind.fixedlength.converter.Rpad;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,18 +50,10 @@ public class FixedLengthMapMapperTest {
                         .length(11)
                         .charset(Charset.forName("MS932"))
                         .lineSeparator("\r\n")
-                        .addRecord(
-                                new RecordConfig(
-                                        Arrays.asList(
-                                                new FieldConfig("name", 1, 4,
-                                                        new Rpad.RpadConverter(' ')),
-                                                new FieldConfig("text", 5, 4,
-                                                        new Rpad.RpadConverter('　')),
-                                                new FieldConfig("age", 9, 3,
-                                                        new Lpad.LpadConverter('0'))
-                                        )
-                                )
-                        )
+                        .singleLayout()
+                        .field("name", 1, 4, new Rpad.RpadConverter(' '))
+                        .field("text", 5, 4, new Rpad.RpadConverter('　'))
+                        .field("age", 9, 3, new Lpad.LpadConverter('0'))
                         .build();
 
         sut = ObjectMapperFactory.create(
@@ -84,6 +77,62 @@ public class FixedLengthMapMapperTest {
     }
 
     @Test
+    public void マルチレイアウトの固定長をMapに変換できること() throws Exception {
+        inputStream = new ByteArrayInputStream("1test   \r\n2aaa 012\r\n2bb  345".getBytes("MS932"));
+
+        final DataBindConfig dataBindConfig =
+                FixedLengthDataBindConfigBuilder
+                        .newBuilder()
+                        .length(8)
+                        .charset(Charset.forName("MS932"))
+                        .lineSeparator("\r\n")
+                        .multiLayout()
+                        .record("header")
+                        .field("id", 1, 1)
+                        .field("field", 2, 7, new Rpad.RpadConverter(' '))
+                        .record("data")
+                        .field("id", 1, 1)
+                        .field("name", 2, 4, new Rpad.RpadConverter(' '))
+                        .field("age", 6, 3, new Lpad.LpadConverter('0'))
+                        .recordIdentifier(new MultiLayoutConfig.RecordIdentifier() {
+                            @Override
+                            public MultiLayoutConfig.RecordName identifyRecordName(byte[] record) {
+                                return record[0] == 0x31 ? RecordType.HEADER : RecordType.DATA;
+                            }
+                        })
+                        .build();
+
+        sut = ObjectMapperFactory.create(
+                Map.class,
+                inputStream,
+                dataBindConfig
+        );
+        Map<String, ?> map = sut.read();
+        assertThat(map.get("recordName"), Matchers.<Object>is(RecordType.HEADER));
+        final Map<String, ?> header = (Map<String, ?>) map.get("header");
+        assertThat(header.get("id").toString(), is("1"));
+        assertThat(header.get("field").toString(), is("test"));
+
+        map = sut.read();
+        assertThat(map.get("recordName"), Matchers.<Object>is(RecordType.DATA));
+        Map<String, ?> data = (Map<String, ?>) map.get("data");
+        assertThat(data.get("id").toString(), is("2"));
+        assertThat(data.get("name").toString(), is("aaa"));
+        assertThat(data.get("age").toString(), is("12"));
+
+        map = sut.read();
+        assertThat(map.get("recordName"), Matchers.<Object>is(RecordType.DATA));
+        data = (Map<String, ?>) map.get("data");
+        assertThat(data.get("id").toString(), is("2"));
+        assertThat(data.get("name").toString(), is("bb"));
+        assertThat(data.get("age").toString(), is("345"));
+
+        map = sut.read();
+        assertThat(map, nullValue());
+        sut.close();
+    }
+
+    @Test
     public void 改行コードの存在しないデータでもMapに変換できること() throws Exception {
         inputStream = new ByteArrayInputStream("ab  あい003efg か　000".getBytes("MS932"));
 
@@ -93,18 +142,10 @@ public class FixedLengthMapMapperTest {
                         .length(11)
                         .charset(Charset.forName("MS932"))
                         .lineSeparator("")
-                        .addRecord(
-                                new RecordConfig(
-                                        Arrays.asList(
-                                                new FieldConfig("name", 1, 4,
-                                                        new Rpad.RpadConverter(' ')),
-                                                new FieldConfig("text", 5, 4,
-                                                        new Rpad.RpadConverter('　')),
-                                                new FieldConfig("age", 9, 3,
-                                                        new Lpad.LpadConverter('0'))
-                                        )
-                                )
-                        )
+                        .singleLayout()
+                        .field("name", 1, 4, new Rpad.RpadConverter(' '))
+                        .field("text", 5, 4, new Rpad.RpadConverter('　'))
+                        .field("age", 9, 3, new Lpad.LpadConverter('0'))
                         .build();
 
         sut = ObjectMapperFactory.create(
@@ -135,18 +176,10 @@ public class FixedLengthMapMapperTest {
                         .length(11)
                         .charset(Charset.forName("MS932"))
                         .lineSeparator("\r\n")
-                        .addRecord(
-                                new RecordConfig(
-                                        Arrays.asList(
-                                                new FieldConfig("name", 1, 4,
-                                                        new Rpad.RpadConverter(' ')),
-                                                new FieldConfig("text", 5, 4,
-                                                        new Rpad.RpadConverter('　')),
-                                                new FieldConfig("age", 9, 3,
-                                                        new Lpad.LpadConverter('0'))
-                                        )
-                                )
-                        )
+                        .singleLayout()
+                        .field("name", 1, 4, new Rpad.RpadConverter(' '))
+                        .field("text", 5, 4, new Rpad.RpadConverter('　'))
+                        .field("age", 9, 3, new Lpad.LpadConverter('0'))
                         .build();
         sut = ObjectMapperFactory.create(
                 Map.class,
@@ -165,18 +198,10 @@ public class FixedLengthMapMapperTest {
                         .length(11)
                         .charset(Charset.forName("MS932"))
                         .lineSeparator("\r\n")
-                        .addRecord(
-                                new RecordConfig(
-                                        Arrays.asList(
-                                                new FieldConfig("name", 1, 4,
-                                                        new Rpad.RpadConverter(' ')),
-                                                new FieldConfig("text", 5, 4,
-                                                        new Rpad.RpadConverter('　')),
-                                                new FieldConfig("age", 9, 3,
-                                                        new Lpad.LpadConverter('0'))
-                                        )
-                                )
-                        )
+                        .singleLayout()
+                        .field("name", 1, 4, new Rpad.RpadConverter(' '))
+                        .field("text", 5, 4, new Rpad.RpadConverter('　'))
+                        .field("age", 9, 3, new Lpad.LpadConverter('0'))
                         .build();
 
         sut = ObjectMapperFactory.create(
@@ -206,18 +231,10 @@ public class FixedLengthMapMapperTest {
                         .length(11)
                         .charset(Charset.forName("MS932"))
                         .lineSeparator("\r\n")
-                        .addRecord(
-                                new RecordConfig(
-                                        Arrays.asList(
-                                                new FieldConfig("name", 1, 4,
-                                                        new Rpad.RpadConverter(' ')),
-                                                new FieldConfig("text", 5, 4,
-                                                        new Rpad.RpadConverter('　')),
-                                                new FieldConfig("age", 9, 3,
-                                                        new Lpad.LpadConverter('0'))
-                                        )
-                                )
-                        )
+                        .singleLayout()
+                        .field("name", 1, 4, new Rpad.RpadConverter(' '))
+                        .field("text", 5, 4, new Rpad.RpadConverter('　'))
+                        .field("age", 9, 3, new Lpad.LpadConverter('0'))
                         .build();
 
         sut = ObjectMapperFactory.create(
@@ -241,19 +258,12 @@ public class FixedLengthMapMapperTest {
                         .length(11)
                         .charset(Charset.forName("MS932"))
                         .lineSeparator("\r\n")
-                        .addRecord(
-                                new RecordConfig(
-                                        Arrays.asList(
-                                                new FieldConfig("name", 1, 4,
-                                                        new Rpad.RpadConverter(' ')),
-                                                new FieldConfig("text", 5, 4,
-                                                        new Rpad.RpadConverter('　')),
-                                                new FieldConfig("age", 9, 3,
-                                                        new Lpad.LpadConverter('0'))
-                                        )
-                                )
-                        )
+                        .singleLayout()
+                        .field("name", 1, 4, new Rpad.RpadConverter(' '))
+                        .field("text", 5, 4, new Rpad.RpadConverter('　'))
+                        .field("age", 9, 3, new Lpad.LpadConverter('0'))
                         .build();
+
         sut = ObjectMapperFactory.create(
                 Map.class,
                 inputStream,
@@ -274,18 +284,10 @@ public class FixedLengthMapMapperTest {
                         .length(11)
                         .charset(Charset.forName("MS932"))
                         .lineSeparator("\r\n")
-                        .addRecord(
-                                new RecordConfig(
-                                        Arrays.asList(
-                                                new FieldConfig("name", 1, 4,
-                                                        new Rpad.RpadConverter(' ')),
-                                                new FieldConfig("text", 5, 4,
-                                                        new Rpad.RpadConverter('　')),
-                                                new FieldConfig("age", 9, 3,
-                                                        new Lpad.LpadConverter('0'))
-                                        )
-                                )
-                        )
+                        .singleLayout()
+                        .field("name", 1, 4, new Rpad.RpadConverter(' '))
+                        .field("text", 5, 4, new Rpad.RpadConverter('　'))
+                        .field("age", 9, 3, new Lpad.LpadConverter('0'))
                         .build();
 
         sut = ObjectMapperFactory.create(
@@ -312,18 +314,10 @@ public class FixedLengthMapMapperTest {
                         .length(11)
                         .charset(Charset.forName("MS932"))
                         .lineSeparator("\r\n")
-                        .addRecord(
-                                new RecordConfig(
-                                        Arrays.asList(
-                                                new FieldConfig("name", 1, 4,
-                                                        new Rpad.RpadConverter(' ')),
-                                                new FieldConfig("text", 5, 4,
-                                                        new Rpad.RpadConverter('　')),
-                                                new FieldConfig("age", 9, 3,
-                                                        new Lpad.LpadConverter('0'))
-                                        )
-                                )
-                        )
+                        .singleLayout()
+                        .field("name", 1, 4, new Rpad.RpadConverter(' '))
+                        .field("text", 5, 4, new Rpad.RpadConverter('　'))
+                        .field("age", 9, 3, new Lpad.LpadConverter('0'))
                         .build();
 
         sut = ObjectMapperFactory.create(
@@ -334,5 +328,20 @@ public class FixedLengthMapMapperTest {
         expectedException.expect(UnsupportedOperationException.class);
         expectedException.expectMessage("unsupported write method.");
         sut.write(null);
+    }
+
+    enum RecordType implements MultiLayoutConfig.RecordName {
+        HEADER {
+            @Override
+            public String getRecordName() {
+                return "header";
+            }
+        },
+        DATA {
+            @Override
+            public String getRecordName() {
+                return "data";
+            }
+        }
     }
 }

@@ -22,8 +22,14 @@ public class FixedLengthDataBindConfig implements DataBindConfig {
     /** 改行をあらす文字 */
     private final String lineSeparator;
 
+    /** 未定義部の埋め文字 */
+    private final char fillChar;
+
     /** レコードの定義 */
     private final Map<String, RecordConfig> recordConfigs;
+
+    /** マルチレイアウトの定義 */
+    private MultiLayoutConfig multiLayoutConfig;
 
     /**
      * 固定長のフォーマットを構築する。
@@ -31,17 +37,46 @@ public class FixedLengthDataBindConfig implements DataBindConfig {
      * @param length レコードの長さ(バイト数)
      * @param charset 文字セット
      * @param lineSeparator 改行をあらす文字
+     * @param fillChar 未定義部の埋め文字
+     * @param recordConfigs レコードの定義
+     * @param multiLayoutConfig マルチレイアウトの定義
+     */
+    public FixedLengthDataBindConfig(
+            final int length,
+            final Charset charset,
+            final String lineSeparator,
+            final char fillChar,
+            final Map<String, RecordConfig> recordConfigs,
+            final MultiLayoutConfig multiLayoutConfig) {
+
+        this.length = length;
+        this.charset = charset;
+        this.lineSeparator = lineSeparator;
+        this.fillChar = fillChar;
+        this.recordConfigs = Collections.unmodifiableMap(recordConfigs);
+        this.multiLayoutConfig = multiLayoutConfig;
+    }
+
+    /**
+     * 固定長のフォーマットを構築する。
+     *
+     * @param length レコードの長さ(バイト数)
+     * @param charset 文字セット
+     * @param lineSeparator 改行をあらす文字
+     * @param fillChar 未定義部の埋め文字
      * @param recordConfigs レコードの定義
      */
     public FixedLengthDataBindConfig(
             final int length,
             final Charset charset,
             final String lineSeparator,
+            final char fillChar,
             final Map<String, RecordConfig> recordConfigs) {
 
         this.length = length;
         this.charset = charset;
         this.lineSeparator = lineSeparator;
+        this.fillChar = fillChar;
         this.recordConfigs = Collections.unmodifiableMap(recordConfigs);
     }
 
@@ -73,11 +108,38 @@ public class FixedLengthDataBindConfig implements DataBindConfig {
     }
 
     /**
+     * 未定義部の埋め文字を返す。
+     *
+     * @return 未定義部の埋め文字
+     */
+    public char getFillChar() {
+        return fillChar;
+    }
+
+    /**
      * レコードの定義を返す。
      *
+     * @param recordName レコード名
      * @return レコードの定義
      */
-    public RecordConfig getRecordConfig() {
-        return recordConfigs.get(RecordConfig.SINGLE_LAYOUT_RECORD_NAME);
+    public RecordConfig getRecordConfig(final String recordName) {
+        return recordConfigs.get(recordName);
+    }
+
+    /**
+     * マルチレイアウトか否かを返す。
+     * @return マルチレイアウトであれば {@code true}
+     */
+    public boolean isMultiLayout() {
+        return multiLayoutConfig != null;
+    }
+
+    /**
+     * マルチレイアウトの定義を返す。
+     *
+     * @return マルチレイアウトの定義
+     */
+    public MultiLayoutConfig getMultiLayoutConfig() {
+        return multiLayoutConfig;
     }
 }

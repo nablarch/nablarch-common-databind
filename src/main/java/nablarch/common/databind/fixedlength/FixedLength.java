@@ -36,4 +36,20 @@ public @interface FixedLength {
      * @return 改行を現す文字
      */
     String lineSeparator();
+
+    /**
+     * 未定義領域を埋める文字
+     * <p>
+     * デフォルトは半角スペース。
+     * @return 未定義領域を埋める文字
+     */
+    char fillChar() default ' ';
+
+    /**
+     * マルチレイアウトか否か
+     * <p>
+     * デフォルトは{@code false}
+     * @return マルチレイアウトか否か
+     */
+    boolean multiLayout() default false;
 }
