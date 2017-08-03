@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import nablarch.common.databind.fixedlength.converter.DefaultConverter;
+import nablarch.common.databind.fixedlength.converter.FillerConverter;
 
 /**
  * シングルレイアウトやマルチレイアウト用の設定を構築するクラスのサポートクラス。
@@ -80,13 +81,13 @@ public abstract class LayoutBuilderSupport {
         for (FieldConfig fieldConfig : fieldConfigList) {
             final int fillSize = fieldConfig.getOffset() - position;
             if (fillSize > 0) {
-                fillers.add(new FieldConfig("filler", position, fillSize, new DefaultConverter()));
+                fillers.add(new FieldConfig("filler", position, fillSize, new FillerConverter(fillChar)));
             }
             position = fieldConfig.getOffset() + fieldConfig.getLength();
         }
         final int fillSize = (length + 1) - position;
         if (fillSize > 0) {
-            fillers.add(new FieldConfig("filler", position, fillSize, new DefaultConverter()));
+            fillers.add(new FieldConfig("filler", position, fillSize, new FillerConverter(fillChar)));
         }
         fieldConfigList.addAll(fillers);
         Collections.sort(fieldConfigList, new FieldConfigComparator());

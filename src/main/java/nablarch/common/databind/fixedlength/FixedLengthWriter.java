@@ -10,8 +10,6 @@ import java.nio.channels.WritableByteChannel;
 import java.util.List;
 import java.util.Map;
 
-import nablarch.core.util.StringUtil;
-
 /**
  * 固定長データを出力するクラス。
  * @author Naoki Yamamoto
@@ -65,12 +63,7 @@ public class FixedLengthWriter implements Closeable {
 
         final ByteBuffer byteBuffer = ByteBuffer.allocate(configLength);
         for (final FieldConfig fieldConfig : fieldConfigList) {
-            final byte[] value;
-            if (FieldConfig.FILLER_FIELD_NAME.equals(fieldConfig.getName())) {
-                value = getFillBytes(fieldConfig.getLength());
-            } else {
-                value = fieldConfig.getFieldConverter().convertOfWrite(config, fieldConfig, fields.get(fieldConfig.getName()));
-            }
+            final byte[] value = fieldConfig.getFieldConverter().convertOfWrite(config, fieldConfig, fields.get(fieldConfig.getName()));
             try {
                 byteBuffer.put(value);
             } catch (BufferOverflowException e) {
@@ -93,20 +86,6 @@ public class FixedLengthWriter implements Closeable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * 指定された長さの埋め時のバイト配列を返す。
-     * @param length 長さ
-     * @return 埋め字のバイト配列
-     */
-    private byte[] getFillBytes(final int length) {
-        final byte[] bytes = StringUtil.getBytes(Character.toString(config.getFillChar()), config.getCharset());
-        final ByteBuffer buffer = ByteBuffer.allocate(length);
-        while (buffer.position() < buffer.limit()) {
-            buffer.put(bytes);
-        }
-        return buffer.array();
     }
 
     @Override
