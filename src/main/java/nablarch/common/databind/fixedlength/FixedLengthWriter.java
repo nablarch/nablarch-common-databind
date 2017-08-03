@@ -45,10 +45,9 @@ public class FixedLengthWriter implements Closeable {
      */
     public void writeRecord(final Map<String, ?> map) {
         final int configLength = config.getLength();
-        final MultiLayoutConfig multiLayoutConfig = config.getMultiLayoutConfig();
         final List<FieldConfig> fieldConfigList;
         final Map<String, ?> fields;
-        if (multiLayoutConfig != null) {
+        if (config.isMultiLayout()) {
             final MultiLayoutConfig.RecordName recordName = (MultiLayoutConfig.RecordName) map.get("recordName");
             try {
                 fields = (Map<String, ?>) map.get(recordName.getRecordName());

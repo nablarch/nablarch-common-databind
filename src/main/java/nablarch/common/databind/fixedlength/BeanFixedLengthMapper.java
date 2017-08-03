@@ -35,7 +35,7 @@ public class BeanFixedLengthMapper<T> implements ObjectMapper<T> {
     @Override
     public void write(final T object) {
         Map<String, Object> map;
-        if (config.getMultiLayoutConfig() != null) {
+        if (config.isMultiLayout()) {
             final MultiLayoutConfig.RecordName recordName =
                     (MultiLayoutConfig.RecordName) BeanUtil.getProperty(object, "recordName");
             final Object record = BeanUtil.getProperty(object, recordName.getRecordName());

@@ -49,7 +49,7 @@ public class FixedLengthBeanMapper<T> implements ObjectMapper<T> {
             return null;
         }
 
-        if (config.getMultiLayoutConfig() != null) {
+        if (config.isMultiLayout()) {
             final T bean = BeanUtil.createAndCopy(clazz, read);
             final MultiLayoutConfig.RecordName recordName = (MultiLayoutConfig.RecordName) read.get("recordName");
             final PropertyDescriptor descriptor = BeanUtil.getPropertyDescriptor(clazz, recordName.getRecordName());

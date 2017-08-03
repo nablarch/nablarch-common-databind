@@ -127,6 +127,14 @@ public class FixedLengthDataBindConfig implements DataBindConfig {
     }
 
     /**
+     * マルチレイアウトか否かを返す。
+     * @return マルチレイアウトであれば {@code true}
+     */
+    public boolean isMultiLayout() {
+        return multiLayoutConfig != null;
+    }
+
+    /**
      * マルチレイアウトの定義を返す。
      *
      * @return マルチレイアウトの定義
