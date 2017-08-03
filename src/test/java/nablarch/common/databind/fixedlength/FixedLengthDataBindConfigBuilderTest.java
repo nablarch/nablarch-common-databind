@@ -191,6 +191,21 @@ public class FixedLengthDataBindConfigBuilderTest {
                 .build();
     }
 
+    @Test
+    public void fillCharに非シングルバイト文字が設定された場合に例外が送出されること() throws Exception {
+        expectedException.expect(IllegalStateException.class);
+        expectedException.expectMessage("fillChar is invalid. must be single byte character.");
+        FixedLengthDataBindConfigBuilder
+                .newBuilder()
+                .lineSeparator("\r\n")
+                .length(128)
+                .charset(Charset.forName("MS932"))
+                .fillChar('　')
+                .singleLayout()
+                .build();
+    }
+
+
     enum RecordType implements MultiLayoutConfig.RecordName {
         HEADER {
             @Override

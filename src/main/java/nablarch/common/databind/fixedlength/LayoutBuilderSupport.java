@@ -7,8 +7,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import nablarch.common.databind.fixedlength.converter.DefaultConverter;
 import nablarch.common.databind.fixedlength.converter.FillerConverter;
+import nablarch.core.util.StringUtil;
 
 /**
  * シングルレイアウトやマルチレイアウト用の設定を構築するクラスのサポートクラス。
@@ -100,6 +100,11 @@ public abstract class LayoutBuilderSupport {
         if (length <= 0) {
             throw new IllegalStateException("length is invalid. must set greater than 0.");
         }
+        final byte[] bytes = StringUtil.getBytes(Character.toString(fillChar), charset);
+        if (bytes.length != 1) {
+            throw new IllegalStateException("fillChar is invalid. must be single byte character.");
+        }
+
     }
 
     /**
