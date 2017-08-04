@@ -87,7 +87,7 @@ enum MapperType {
 
         @Override
         <T> ObjectMapper<T> createMapper(final Class<T> clazz, final DataBindConfig config, final Reader reader) {
-            return null;
+            throw new UnsupportedOperationException("fixed length type does not support reader.");
         }
 
         @Override
@@ -98,7 +98,7 @@ enum MapperType {
 
         @Override
         <T> ObjectMapper<T> createMapper(final Class<T> clazz, final DataBindConfig config, final Writer writer) {
-            return null;
+            throw new UnsupportedOperationException("fixed length type does not support writer.");
         }
     },
     /** 固定長とMapとのマッパー */
@@ -111,7 +111,7 @@ enum MapperType {
 
         @Override
         <T> ObjectMapper<T> createMapper(final Class<T> clazz, final DataBindConfig config, final Reader reader) {
-            return null;
+            throw new UnsupportedOperationException("fixed length type does not support reader.");
         }
 
         @Override
@@ -122,7 +122,7 @@ enum MapperType {
 
         @Override
         <T> ObjectMapper<T> createMapper(final Class<T> clazz, final DataBindConfig config, final Writer writer) {
-            return null;
+            throw new UnsupportedOperationException("fixed length type does not support writer.");
         }
     };
 

@@ -14,19 +14,32 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.Map;
+
+import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 
 import nablarch.common.databind.csv.Csv;
 import nablarch.common.databind.csv.CsvDataBindConfig;
 import nablarch.common.databind.csv.CsvMapMapper;
 import nablarch.common.databind.csv.MapCsvMapper;
 
+import nablarch.common.databind.fixedlength.Field;
+import nablarch.common.databind.fixedlength.FixedLength;
+import nablarch.common.databind.fixedlength.FixedLengthDataBindConfigBuilder;
+import nablarch.common.databind.fixedlength.converter.Lpad;
+import nablarch.common.databind.fixedlength.converter.Rpad;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /**
  * {@link BasicObjectMapperFactory}のテスト。
  */
 public class BasicObjectMapperFactoryTest {
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
     
     /** テスト対象 */
     private final BasicObjectMapperFactory sut = new BasicObjectMapperFactory();
@@ -427,4 +440,117 @@ public class BasicObjectMapperFactoryTest {
         }
     }
 
+    @Test
+    public void 固定長からBeanでReaderが指定された場合に例外が送出されること() throws Exception {
+        expectedException.expect(UnsupportedOperationException.class);
+        expectedException.expectMessage("fixed length type does not support reader.");
+        sut.createMapper(FixedLengthBean.class, new StringReader("test"));
+    }
+
+    @Test
+    public void Beanから固定長でWriterが指定された場合に例外が送出されること() throws Exception {
+        expectedException.expect(UnsupportedOperationException.class);
+        expectedException.expectMessage("fixed length type does not support writer.");
+        sut.createMapper(FixedLengthBean.class, new StringWriter());
+    }
+
+    @Test
+    public void 固定長からMapでReaderが指定された場合に例外が送出されること() throws Exception {
+        expectedException.expect(UnsupportedOperationException.class);
+        expectedException.expectMessage("fixed length type does not support reader.");
+        sut.createMapper(Map.class, new StringReader("test"),
+                FixedLengthDataBindConfigBuilder.newBuilder()
+                                                .charset(Charset.forName("ms932"))
+                                                .length(10)
+                                                .singleLayout()
+                                                .field("hoge", 1, 10)
+                                                .build()
+        );
+    }
+
+    @Test
+    public void Mapから固定長でWriterが指定された場合に例外が送出されること() throws Exception {
+        expectedException.expect(UnsupportedOperationException.class);
+        expectedException.expectMessage("fixed length type does not support writer.");
+        sut.createMapper(Map.class, new StringWriter(),
+                FixedLengthDataBindConfigBuilder.newBuilder()
+                                                .charset(Charset.forName("ms932"))
+                                                .length(10)
+                                                .singleLayout()
+                                                .field("hoge", 1, 10)
+                                                .build()
+        );
+    }
+    
+    @Test
+    public void 固定長からBean_streamでConfigを明示的に指定した場合例外が送出されること() throws Exception {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("this class should not be set config. class");
+        sut.createMapper(FixedLengthBean.class, new ByteInputStream(),
+                FixedLengthDataBindConfigBuilder.newBuilder()
+                                                .charset(Charset.forName("ms932"))
+                                                .length(10)
+                                                .singleLayout()
+                                                .field("hoge", 1, 10)
+                                                .build()
+        );
+    }
+    
+    @Test
+    public void 固定長からBean_readerでConfigを明示的に指定した場合例外が送出されること() throws Exception {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("this class should not be set config. class");
+        sut.createMapper(FixedLengthBean.class, new StringReader(""),
+                FixedLengthDataBindConfigBuilder.newBuilder()
+                                                .charset(Charset.forName("ms932"))
+                                                .length(10)
+                                                .singleLayout()
+                                                .field("hoge", 1, 10)
+                                                .build()
+        );
+    }
+
+    @Test
+    public void Beanから固定長_streamでConfigを明示的に指定した場合例外が送出されること() throws Exception {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("this class should not be set config. class");
+        sut.createMapper(FixedLengthBean.class, new ByteArrayOutputStream(),
+                FixedLengthDataBindConfigBuilder.newBuilder()
+                                                .charset(Charset.forName("ms932"))
+                                                .length(10)
+                                                .singleLayout()
+                                                .field("hoge", 1, 10)
+                                                .build()
+        );
+    }
+    
+    @Test
+    public void Beanから固定長_writerでConfigを明示的に指定した場合例外が送出されること() throws Exception {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("this class should not be set config. class");
+        sut.createMapper(FixedLengthBean.class, new StringWriter(),
+                FixedLengthDataBindConfigBuilder.newBuilder()
+                                                .charset(Charset.forName("ms932"))
+                                                .length(10)
+                                                .singleLayout()
+                                                .field("hoge", 1, 10)
+                                                .build()
+        );
+    }
+
+    @FixedLength(length = 4, charset = "MS932", lineSeparator = "\r\n")
+    public static class FixedLengthBean {
+
+        @Field(offset = 1, length = 4)
+        @Rpad
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
 }
