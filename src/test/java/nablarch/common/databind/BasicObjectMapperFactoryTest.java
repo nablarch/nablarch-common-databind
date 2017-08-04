@@ -17,18 +17,15 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Map;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
-
 import nablarch.common.databind.csv.Csv;
 import nablarch.common.databind.csv.CsvDataBindConfig;
 import nablarch.common.databind.csv.CsvMapMapper;
 import nablarch.common.databind.csv.MapCsvMapper;
-
 import nablarch.common.databind.fixedlength.Field;
 import nablarch.common.databind.fixedlength.FixedLength;
 import nablarch.common.databind.fixedlength.FixedLengthDataBindConfigBuilder;
-import nablarch.common.databind.fixedlength.converter.Lpad;
 import nablarch.common.databind.fixedlength.converter.Rpad;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
