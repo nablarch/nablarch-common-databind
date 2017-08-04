@@ -486,7 +486,7 @@ public class BasicObjectMapperFactoryTest {
     public void 固定長からBean_streamでConfigを明示的に指定した場合例外が送出されること() throws Exception {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("this class should not be set config. class");
-        sut.createMapper(FixedLengthBean.class, new ByteInputStream(),
+        sut.createMapper(FixedLengthBean.class, new ByteArrayInputStream(new byte[0]),
                 FixedLengthDataBindConfigBuilder.newBuilder()
                                                 .charset(Charset.forName("ms932"))
                                                 .length(10)
