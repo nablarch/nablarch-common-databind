@@ -12,6 +12,7 @@ import nablarch.common.databind.fixedlength.FieldConvert;
 import nablarch.common.databind.fixedlength.FixedLengthDataBindConfig;
 import nablarch.common.databind.fixedlength.converter.Lpad.LpadConverter;
 import nablarch.core.util.StringUtil;
+import nablarch.core.util.annotation.Published;
 
 /**
  * 値の先頭に指定の文字を付加(読み込み時は除去)することを示す。
@@ -45,6 +46,7 @@ public @interface Lpad {
         /**
          * 値の変換処理を行うクラスを構築する。
          */
+        @Published
         public LpadConverter() {
         }
 
