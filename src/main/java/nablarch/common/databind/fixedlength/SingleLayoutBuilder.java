@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import nablarch.common.databind.fixedlength.converter.DefaultConverter;
+import nablarch.core.util.annotation.Published;
 
 /**
  * シングルレイアウト用の設定構築クラス。
@@ -30,17 +31,20 @@ public class SingleLayoutBuilder extends LayoutBuilderSupport {
     }
 
     @Override
+    @Published
     public SingleLayoutBuilder field(final String name, final int offset, final int length) {
         return field(name, offset, length, new DefaultConverter());
     }
 
     @Override
+    @Published
     public SingleLayoutBuilder field(final String name, final int offset, final int length, final FieldConvert.FieldConverter converter) {
         fieldConfigList.add(new FieldConfig(name, offset, length, converter));
         return this;
     }
 
     @Override
+    @Published
     public FixedLengthDataBindConfig build() {
         addFillerFieldConfig(fieldConfigList);
         final Map<String, RecordConfig> recordConfigMap = new HashMap<String, RecordConfig>();

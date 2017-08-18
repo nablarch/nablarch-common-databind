@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import nablarch.common.databind.fixedlength.converter.DefaultConverter;
+import nablarch.core.util.annotation.Published;
 
 /**
  * マルチレイアウト用の設定構築クラス。
@@ -36,11 +37,13 @@ public class MultiLayoutBuilder extends LayoutBuilderSupport {
     }
 
     @Override
+    @Published
     public MultiLayoutBuilder field(final String name, final int offset, final int length) {
         return field(name, offset, length, new DefaultConverter());
     }
 
     @Override
+    @Published
     public MultiLayoutBuilder field(final String name, final int offset, final int length, final FieldConvert.FieldConverter converter) {
         if (recordName == null) {
             throw new IllegalStateException("must be calling record method before calling field method.");
@@ -54,6 +57,7 @@ public class MultiLayoutBuilder extends LayoutBuilderSupport {
      * @param name レコード名
      * @return 本インスタンス
      */
+    @Published
     public MultiLayoutBuilder record(final String name) {
         fieldConfigMap.put(name, new ArrayList<FieldConfig>());
         recordName = name;
@@ -65,12 +69,14 @@ public class MultiLayoutBuilder extends LayoutBuilderSupport {
      * @param recordIdentifier レコード識別クラス
      * @return 本インスタンス
      */
+    @Published
     public MultiLayoutBuilder recordIdentifier(final MultiLayoutConfig.RecordIdentifier recordIdentifier) {
         this.recordIdentifier = recordIdentifier;
         return this;
     }
 
     @Override
+    @Published
     public FixedLengthDataBindConfig build() {
         if (recordIdentifier == null) {
             throw new IllegalStateException("record identifier is undefined.");

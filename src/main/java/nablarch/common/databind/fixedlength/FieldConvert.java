@@ -7,6 +7,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import nablarch.core.util.annotation.Published;
+
 /**
  * 値を変換することを示すアノテーション。
  *
@@ -27,6 +29,7 @@ public @interface FieldConvert {
     /**
      * 値を変換するインタフェース。
      */
+    @Published(tag = "architect")
     interface FieldConverter<T extends Annotation> {
 
         /**

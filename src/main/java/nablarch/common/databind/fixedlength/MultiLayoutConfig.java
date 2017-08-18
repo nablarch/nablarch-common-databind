@@ -1,5 +1,7 @@
 package nablarch.common.databind.fixedlength;
 
+import nablarch.core.util.annotation.Published;
+
 /**
  * マルチレイアウトの定義を表すクラス
  *
@@ -30,6 +32,7 @@ public class MultiLayoutConfig {
     /**
      * マルチレイアウトな固定長データのレコードを識別するインタフェース。
      */
+    @Published
     public interface RecordIdentifier {
         /**
          * レコードを識別する。
@@ -42,6 +45,7 @@ public class MultiLayoutConfig {
     /**
      * レコード名を扱うインタフェース
      */
+    @Published
     public interface RecordName {
         /**
          * レコード名を取得する。

@@ -12,6 +12,7 @@ import nablarch.common.databind.fixedlength.FieldConvert;
 import nablarch.common.databind.fixedlength.FixedLengthDataBindConfig;
 import nablarch.common.databind.fixedlength.converter.Rpad.RpadConverter;
 import nablarch.core.util.StringUtil;
+import nablarch.core.util.annotation.Published;
 
 /**
  * 値の末尾に指定の文字を付加(読み込み時は除去)することを示す。
@@ -45,6 +46,7 @@ public @interface Rpad {
         /**
          * 値の変換処理を行うクラスを構築する。
          */
+        @Published
         public RpadConverter() {
         }
 

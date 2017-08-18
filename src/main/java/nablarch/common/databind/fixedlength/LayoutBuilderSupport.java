@@ -9,6 +9,7 @@ import java.util.Map;
 
 import nablarch.common.databind.fixedlength.converter.FillerConverter;
 import nablarch.core.util.StringUtil;
+import nablarch.core.util.annotation.Published;
 
 /**
  * シングルレイアウトやマルチレイアウト用の設定を構築するクラスのサポートクラス。
@@ -50,6 +51,7 @@ public abstract class LayoutBuilderSupport {
      * @param length 長さ
      * @return 本インスタンス
      */
+    @Published
     public abstract LayoutBuilderSupport field(final String name, final int offset, final int length);
 
     /**
@@ -60,6 +62,7 @@ public abstract class LayoutBuilderSupport {
      * @param converter フィールドコンバータ
      * @return 本インスタンス
      */
+    @Published
     public abstract LayoutBuilderSupport field(final String name, final int offset, final int length, final FieldConvert.FieldConverter converter);
 
     /**
@@ -67,6 +70,7 @@ public abstract class LayoutBuilderSupport {
      *
      * @return {@code FixedLengthDataBindConfig}
      */
+    @Published
     public abstract FixedLengthDataBindConfig build();
 
     /**

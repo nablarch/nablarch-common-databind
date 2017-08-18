@@ -8,6 +8,7 @@ import java.lang.annotation.Target;
 import nablarch.common.databind.fixedlength.FieldConfig;
 import nablarch.common.databind.fixedlength.FieldConvert;
 import nablarch.common.databind.fixedlength.FixedLengthDataBindConfig;
+import nablarch.core.util.annotation.Published;
 
 /**
  * バイナリであることを示す。
@@ -23,6 +24,13 @@ public @interface Binary {
      * バイナリのため変換を行わずそのまま移送する。
      */
     class BinaryConverter implements FieldConvert.FieldConverter<Binary> {
+
+        /**
+         * コンストラクタ。
+         */
+        @Published
+        public BinaryConverter() {
+        }
 
         @Override
         public void initialize(final Binary annotation) {
