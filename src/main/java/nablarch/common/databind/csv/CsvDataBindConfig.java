@@ -13,7 +13,7 @@ import nablarch.core.util.annotation.Published;
  * CSVのフォーマットを表すクラス。
  * <p/>
  * デフォルト設定を使用する場合は、{@link #DEFAULT}オブジェクトを使用する。<br/>
- * 独自の設定を行う場合は、{@link #CsvDataBindConfig(char, String, char, boolean, boolean, String[], Charset, boolean, QuoteMode, List)}
+ * 独自の設定を行う場合は、{@link #CsvDataBindConfig(char, String, char, boolean, boolean, String[], String[], Charset, boolean, QuoteMode, List)}
  * を使用しオブジェクトを生成するか、{@link #DEFAULT}オブジェクトのセッタを実行して値を設定する。
  * <p/>
  * 下記にデフォルトの設定値を示す。
@@ -24,6 +24,7 @@ import nablarch.core.util.annotation.Published;
  * 空行を無視するか否か                  -->  無視する(true)
  * ヘッダ行が必須か否か                  -->  必須(true)
  * ヘッダーに出力するタイトル            -->  空のString型配列
+ * プロパティ名リスト                    -->  空のString型配列
  * 文字コード                            -->  UTF-8
  * 空のフィールドをnullに変換するか否か  --> 変換する(true)
  * フィールド囲み文字で囲む
@@ -70,6 +71,9 @@ public class CsvDataBindConfig implements DataBindConfig {
     /** ヘッダーレコードに出力するタイトルリスト */
     private final String[] headerTitles;
 
+    /** プロパティ名リスト */
+    private final String[] properties;
+
     /** デフォルトのフォーマット定義 */
     public static final CsvDataBindConfig DEFAULT = new CsvDataBindConfig(
             ',',                        // フィールドセパレータ
@@ -78,6 +82,7 @@ public class CsvDataBindConfig implements DataBindConfig {
             true,                       // 空行の扱い
             true,                       // ヘッダー
             new String[0],              // ヘッダーに出力するタイトル
+            new String[0],              // プロパティ名リスト
             Charset.forName("UTF-8"),   // 文字コード
             true,                      // 空のフィールドをnullに変換するかどうか
             QuoteMode.NORMAL,           // 出力時にフィールド囲み文字で囲むフィールドを指定するモード
@@ -136,6 +141,53 @@ public class CsvDataBindConfig implements DataBindConfig {
         this.charset = charset;
         this.emptyToNull = emptyToNull;
         this.headerTitles = headerTitles;
+        this.properties = new String[0];
+        this.quoteMode = quoteMode;
+        this.quotedColumnNames = quotedColumnNames;
+    }
+
+    /**
+     * CSVのフォーマット定義を生成する。
+     *
+     * @param fieldSeparator 列区切り文字
+     * @param lineSeparator 行区切り文字(\r\n(CRLF) or \r(CR) or \n(LF)であること)
+     * @param quote フィールド囲み文字
+     * @param ignoreEmptyLine 空行を無視するか否か
+     * @param requiredHeader ヘッダ行(タイトル行)が必須か否か
+     * @param headerTitles ヘッダーに出力するタイトル
+     * @param properties プロパティ名リスト
+     * @param charset 文字コード
+     * @param emptyToNull 空のフィールドをnullに変換するかどうか
+     * @param quoteMode 出力時にフィールド囲み文字で囲むフィールドを指定するモード
+     * @param quotedColumnNames フィールド囲み文字で囲むフィールドのリスト
+     * @throws IllegalArgumentException 行区切り文字が「\r\n(CRLF)・\r(CR)・\n(LF)」以外の場合
+     */
+    public CsvDataBindConfig(
+            final char fieldSeparator,
+            final String lineSeparator,
+            final char quote,
+            final boolean ignoreEmptyLine,
+            final boolean requiredHeader,
+            final String[] headerTitles,
+            final String[] properties,
+            final Charset charset,
+            final boolean emptyToNull,
+            final QuoteMode quoteMode,
+            final List<String> quotedColumnNames) {
+
+        if (!VALID_LINE_SEPARATOR.matcher(lineSeparator)
+                .matches()) {
+            throw new IllegalArgumentException("invalid line separator. must be set '\\r\\n or \\n or \\r'");
+        }
+        this.fieldSeparator = fieldSeparator;
+        this.lineSeparator = lineSeparator;
+        this.quote = quote;
+        this.ignoreEmptyLine = ignoreEmptyLine;
+        this.requiredHeader = requiredHeader;
+        this.charset = charset;
+        this.emptyToNull = emptyToNull;
+        this.headerTitles = headerTitles;
+        this.properties = properties;
         this.quoteMode = quoteMode;
         this.quotedColumnNames = quotedColumnNames;
     }
@@ -163,6 +215,7 @@ public class CsvDataBindConfig implements DataBindConfig {
                 ignoreEmptyLine,
                 requiredHeader,
                 headerTitles,
+                properties,
                 charset,
                 emptyToNull,
                 quoteMode,
@@ -194,6 +247,7 @@ public class CsvDataBindConfig implements DataBindConfig {
                 ignoreEmptyLine,
                 requiredHeader,
                 headerTitles,
+                properties,
                 charset,
                 emptyToNull,
                 quoteMode,
@@ -223,6 +277,7 @@ public class CsvDataBindConfig implements DataBindConfig {
                 ignoreEmptyLine,
                 requiredHeader,
                 headerTitles,
+                properties,
                 charset,
                 emptyToNull,
                 quoteMode,
@@ -261,6 +316,7 @@ public class CsvDataBindConfig implements DataBindConfig {
                 newOption,
                 requiredHeader,
                 headerTitles,
+                properties,
                 charset,
                 emptyToNull,
                 quoteMode,
@@ -299,6 +355,7 @@ public class CsvDataBindConfig implements DataBindConfig {
                 ignoreEmptyLine,
                 newOption,
                 headerTitles,
+                properties,
                 charset,
                 emptyToNull,
                 quoteMode,
@@ -328,6 +385,37 @@ public class CsvDataBindConfig implements DataBindConfig {
                 ignoreEmptyLine,
                 requiredHeader,
                 newHeaderTitles,
+                properties,
+                charset,
+                emptyToNull,
+                quoteMode,
+                quotedColumnNames);
+    }
+
+    /**
+     * プロパティ名リストを取得する。
+     *
+     * @return プロパティ名リスト
+     */
+    public String[] getProperties() {
+        return properties;
+    }
+
+    /**
+     * プロパティ名リストを設定する。
+     *
+     * @param newProperties プロパティ名リスト
+     * @return 新しい{@link CsvDataBindConfig}
+     */
+    public CsvDataBindConfig withProperties(final String... newProperties) {
+        return new CsvDataBindConfig(
+                fieldSeparator,
+                lineSeparator,
+                quote,
+                ignoreEmptyLine,
+                requiredHeader,
+                headerTitles,
+                newProperties,
                 charset,
                 emptyToNull,
                 quoteMode,
@@ -367,6 +455,7 @@ public class CsvDataBindConfig implements DataBindConfig {
                 ignoreEmptyLine,
                 requiredHeader,
                 headerTitles,
+                properties,
                 newCharset,
                 emptyToNull,
                 quoteMode,
@@ -396,6 +485,7 @@ public class CsvDataBindConfig implements DataBindConfig {
                 ignoreEmptyLine,
                 requiredHeader,
                 headerTitles,
+                properties,
                 charset,
                 newEmptyToNull,
                 quoteMode,
@@ -425,6 +515,7 @@ public class CsvDataBindConfig implements DataBindConfig {
                 ignoreEmptyLine,
                 requiredHeader,
                 headerTitles,
+                properties,
                 charset,
                 emptyToNull,
                 newQuoteMode,
@@ -457,6 +548,7 @@ public class CsvDataBindConfig implements DataBindConfig {
                 ignoreEmptyLine,
                 requiredHeader,
                 headerTitles,
+                properties,
                 charset,
                 emptyToNull,
                 quoteMode,

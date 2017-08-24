@@ -78,20 +78,98 @@ public class MapCsvMapperTest {
     }
 
     /**
-     * ヘッダなしの設定の場合、例外を送出すること
+     * ヘッダ、プロパティともに設定されている場合、プロパティをキーとしてレコード出力できること
      *
      * @throws Exception
      */
     @Test
-    public void testWrite_header() throws Exception {
+    public void testWrite_header_property() throws Exception {
+        StringWriter writer = new StringWriter();
+        final ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, writer,
+                CsvDataBindConfig.DEFAULT.withHeaderTitles("年齢", "氏名").withProperties("age", "name"));
+
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("age",20);
+        map.put("name", "山田太郎");
+        mapper.write(map);
+        mapper.close();
+
+        assertThat("CSVが書き込まれていること", readFile(new StringReader(writer.toString())),
+                is("年齢,氏名\r\n20,山田太郎\r\n"));
+    }
+
+    /**
+     * ヘッダなしの場合、プロパティをキーとしてレコード出力できること
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testWrite_no_header_property() throws Exception {
+        StringWriter writer = new StringWriter();
+        final ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, writer,
+                CsvDataBindConfig.DEFAULT.withRequiredHeader(false).withProperties("age", "name"));
+
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("age",20);
+        map.put("name", "山田太郎");
+        mapper.write(map);
+        mapper.close();
+
+        assertThat("CSVが書き込まれていること", readFile(new StringReader(writer.toString())),
+                is("20,山田太郎\r\n"));
+    }
+
+    /**
+     * ヘッダとプロパティの数が一致しない場合、例外が送出されること
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testWrite_header_property_unmatch() throws Exception {
+        StringWriter writer = new StringWriter();
+
+        try {
+            ObjectMapperFactory.create(Map.class, writer,
+                    CsvDataBindConfig.DEFAULT.withHeaderTitles("年齢", "氏名").withProperties("age"));
+            fail("ヘッダ数とプロパティ数が一致しないため例外が発生");
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage(), is("csv header size and property size does not match."));
+        }
+    }
+
+    /**
+     * ヘッダなしの設定でプロパティが未設定の場合例外を送出すること
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testWrite_no_header_empty_property() throws Exception {
         StringWriter writer = new StringWriter();
 
         try {
             ObjectMapperFactory.create(Map.class, writer,
                     CsvDataBindConfig.DEFAULT.withRequiredHeader(false));
-            fail("ヘッダなしが設定されたため、例外が発生");
+            fail("ヘッダとプロパティなしのため例外が発生");
         } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage(), is("csv header is required."));
+            assertThat(e.getMessage(), is("csv header or property is required."));
+        }
+    }
+
+    /**
+     * ヘッダなしの設定でプロパティがnullの場合例外を送出すること
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testWrite_no_header_null_property() throws Exception {
+        StringWriter writer = new StringWriter();
+
+        try {
+            ObjectMapperFactory.create(Map.class, writer,
+                    CsvDataBindConfig.DEFAULT.withRequiredHeader(false).withProperties((String[]) null));
+            fail("ヘッダとプロパティなしのため例外が発生");
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage(), is("csv header or property is required."));
         }
     }
 

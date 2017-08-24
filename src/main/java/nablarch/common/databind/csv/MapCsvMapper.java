@@ -5,6 +5,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Map;
 
+import nablarch.core.util.StringUtil;
+
 /**
  * MapをCSVにマッピングするのをサポートするクラス。
  *
@@ -29,7 +31,7 @@ public class MapCsvMapper extends ObjectCsvMapperSupport<Map<String, ?>> {
      * @param writer 出力リソース
      */
     public MapCsvMapper(final CsvDataBindConfig config, final Writer writer) {
-        super(config, writer, config.getHeaderTitles());
+        super(config, writer);
         verify();
         writeHeader();
     }
@@ -37,21 +39,35 @@ public class MapCsvMapper extends ObjectCsvMapperSupport<Map<String, ?>> {
     /**
      * オブジェクトの妥当性検証を行う。
      * <p/>
-     * ヘッダーが任意の場合やヘッダータイトルが未設定の場合は検証エラーとする。
+     * 以下の場合に検証エラーとする。
+     * <ul>
+     *     <li>ヘッダが必須でヘッダタイトルが未設定</li>
+     *     <li>ヘッダが任意でプロパティ名が未設定</li>
+     *     <li>ヘッダが必須でヘッダタイトルとプロパティ名のサイズが一致しない</li>
+     * </ul>
      */
     private void verify() {
         final String[] headers = config.getHeaderTitles();
-        if (!config.isRequiredHeader() || headers == null || headers.length == 0) {
+        final String[] properties = config.getProperties();
+
+        if (config.isRequiredHeader() && StringUtil.isNullOrEmpty(headers)) {
             throw new IllegalArgumentException("csv header is required.");
+        }
+
+        if (!config.isRequiredHeader() && StringUtil.isNullOrEmpty(properties)) {
+            throw new IllegalArgumentException("csv header or property is required.");
+        }
+
+        if (config.isRequiredHeader() && StringUtil.hasValue(properties) && headers.length != properties.length) {
+            throw new IllegalArgumentException("csv header size and property size does not match.");
         }
     }
 
     @Override
     public Object[] convertValues(final Map<String, ?> object) {
-        final String[] headers = config.getHeaderTitles();
-        final Object[] fieldValues = new Object[headers.length];
-        for (int i = 0; i < headers.length; i++) {
-            fieldValues[i] = object.get(headers[i]);
+        final Object[] fieldValues = new Object[properties.length];
+        for (int i = 0; i < properties.length; i++) {
+            fieldValues[i] = object.get(properties[i]);
         }
         return fieldValues;
     }

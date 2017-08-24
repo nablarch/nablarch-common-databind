@@ -4,7 +4,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
-import nablarch.common.databind.DataBindUtil;
 import nablarch.core.beans.BeanUtil;
 
 /**
@@ -14,9 +13,6 @@ import nablarch.core.beans.BeanUtil;
  * @author Hisaaki Shioiri
  */
 public class BeanCsvMapper<T> extends ObjectCsvMapperSupport<T> {
-
-    /** プロパティ名リスト */
-    private final String[] properties;
 
     /**
      * コンストラクタ。
@@ -37,8 +33,7 @@ public class BeanCsvMapper<T> extends ObjectCsvMapperSupport<T> {
      * @param writer 出力リソース
      */
     public BeanCsvMapper(final Class<T> clazz, final CsvDataBindConfig config, final Writer writer) {
-        super(config, writer, DataBindUtil.findCsvProperties(clazz));
-        properties = DataBindUtil.findCsvProperties(clazz);
+        super(config, writer);
         writeHeader();
     }
 

@@ -99,6 +99,45 @@ public class CsvMapMapperTest {
     }
 
     /**
+     *  ヘッダ、プロパティともに設定されている場合、プロパティをキーとして読み込めること
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testRead_header_property() throws Exception {
+        resource.writeLine("年齢,氏名");
+        resource.writeLine("20,山田太郎");
+        resource.close();
+
+        final ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, resource.createInputStream(),
+                CsvDataBindConfig.DEFAULT.withHeaderTitles(new String[]{"年齢", "氏名"}).withProperties("age", "name"));
+        Map<String, String> map  = mapper.read();
+        mapper.close();
+
+        assertThat(map.get("age"), is("20"));
+        assertThat(map.get("name"), is("山田太郎"));
+    }
+
+    /**
+     *  プロパティのみ設定されている場合、プロパティをキーとして読み込めること
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testRead_property() throws Exception {
+        resource.writeLine("20,山田太郎");
+        resource.close();
+
+        final ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, resource.createInputStream(),
+                CsvDataBindConfig.DEFAULT.withRequiredHeader(false).withProperties("age", "name"));
+        Map<String, String> map  = mapper.read();
+        mapper.close();
+
+        assertThat(map.get("age"), is("20"));
+        assertThat(map.get("name"), is("山田太郎"));
+    }
+
+    /**
      * 空行を無視する設定で、空行を含むCSVを読み込んだ場合、空行をスキップすること
      *
      * @throws Exception
@@ -158,24 +197,66 @@ public class CsvMapMapperTest {
     }
 
     /**
-     * ヘッダなしの設定でCSVを読み込んだ場合、例外を送出すること
+     * ヘッダとプロパティの数が一致しないCSVを読み込んだ場合、例外を送出すること
      *
      * @throws Exception
      */
     @Test
-    public void testRead_not_exists_header() throws Exception {
+    public void testRead_header_property_unmatch() throws Exception {
         resource.writeLine("年齢,氏名");
         resource.writeLine("20,山田太郎");
         resource.writeLine("25,田中次郎");
         resource.writeLine("30,鈴木三郎");
         resource.close();
 
+        try {
+            ObjectMapperFactory.create(Map.class, resource.createReader(),
+                    CsvDataBindConfig.DEFAULT.withHeaderTitles("年齢", "氏名").withProperties("age"));
+            fail("ヘッダとプロパティの数が一致しないため例外発生");
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage(), is("header size and property size does not match."));
+        }
+    }
+
+    /**
+     * ヘッダとプロパティが未設定でCSVを読み込んだ場合、例外を送出すること
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testRead_no_header_no_property() throws Exception {
+        resource.writeLine("20,山田太郎");
+        resource.writeLine("25,田中次郎");
+        resource.writeLine("30,鈴木三郎");
+        resource.close();
 
         try {
-            final ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, resource.createReader(),
+            ObjectMapperFactory.create(Map.class, resource.createReader(),
                     CsvDataBindConfig.DEFAULT.withRequiredHeader(false));
+            fail("ヘッダとプロパティが未設定のため例外発生");
         } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage(), is("this csv is require header."));
+            assertThat(e.getMessage(), is("this csv is require header or property."));
+        }
+    }
+
+    /**
+     * ヘッダなし、プロパティがnullでCSVを読み込んだ場合、例外を送出すること
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testRead_no_header_null_property() throws Exception {
+        resource.writeLine("20,山田太郎");
+        resource.writeLine("25,田中次郎");
+        resource.writeLine("30,鈴木三郎");
+        resource.close();
+
+        try {
+            ObjectMapperFactory.create(Map.class, resource.createReader(),
+                    CsvDataBindConfig.DEFAULT.withRequiredHeader(false).withProperties((String[]) null));
+            fail("ヘッダなし、プロパティがnullのため例外発生");
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage(), is("this csv is require header or property."));
         }
     }
 
@@ -197,6 +278,7 @@ public class CsvMapMapperTest {
         try {
             ObjectMapperFactory.create(Map.class, resource.createReader(),
                     CsvDataBindConfig.DEFAULT.withRequiredHeader(true).withHeaderTitles((String[]) null));
+            fail("ヘッダ必須でヘッダnullのため例外発生");
         } catch (IllegalArgumentException e) {
             assertThat(e.getMessage(), is("this csv is require header."));
         }
@@ -205,6 +287,7 @@ public class CsvMapMapperTest {
         try {
             ObjectMapperFactory.create(Map.class, resource.createReader(),
                     CsvDataBindConfig.DEFAULT.withRequiredHeader(true).withHeaderTitles());
+            fail("ヘッダ必須でヘッダ空のため例外発生");
         } catch (IllegalArgumentException e) {
             assertThat(e.getMessage(), is("this csv is require header."));
         }

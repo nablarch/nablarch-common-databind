@@ -26,7 +26,7 @@ public class CsvDataBindConfigConverter implements DataBindConfigConverter<Csv> 
 
         CsvDataBindConfig config;
         if (csvFormat == null) {
-            config = (CsvDataBindConfig) csv.type().getConfig();
+            config = ((CsvDataBindConfig) csv.type().getConfig()).withProperties(csv.properties());
         } else {
             config = CsvDataBindConfig.DEFAULT
                     .withFieldSeparator(csvFormat.fieldSeparator())
@@ -34,6 +34,7 @@ public class CsvDataBindConfigConverter implements DataBindConfigConverter<Csv> 
                     .withQuote(csvFormat.quote())
                     .withIgnoreEmptyLine(csvFormat.ignoreEmptyLine())
                     .withRequiredHeader(csvFormat.requiredHeader())
+                    .withProperties(csv.properties())
                     .withCharset(csvFormat.charset())
                     .withEmptyToNull(csvFormat.emptyToNull())
                     .withQuoteMode(csvFormat.quoteMode());
