@@ -49,16 +49,17 @@ public class CsvBeanMapper<T> extends CsvObjectMapperSupport<T> {
 
     @Override
     protected T createObject(final String[] record) {
-        if (properties.length != record.length) {
+        final String[] keys = config.getKeys();
+        if (keys.length != record.length) {
             throw new InvalidDataFormatException(
-                    "property size does not match. expected field count = [" + properties.length + "],"
+                    "property size does not match. expected field count = [" + keys.length + "],"
                             + " actual field count = [" + record.length + "].", reader.getLineNumber());
         }
 
         if(StringUtil.isNullOrEmpty(lineNumberPropertyName)){
-            return DataBindUtil.getInstance(clazz, properties, record);
+            return DataBindUtil.getInstance(clazz, keys, record);
         }else{
-            return DataBindUtil.getInstanceWithLineNumber(clazz, properties, record, lineNumberPropertyName, reader.getLineNumber());
+            return DataBindUtil.getInstanceWithLineNumber(clazz, keys, record, lineNumberPropertyName, reader.getLineNumber());
         }
     }
 }

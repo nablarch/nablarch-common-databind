@@ -54,8 +54,9 @@ public class CsvMapMapper extends CsvObjectMapperSupport<Map<String, ?>> {
      */
     private Map<String, String> createMap(final String[] record) {
         final Map<String, String> map = new HashMap<String, String>();
+        final String[] keys = config.getKeys();
         for (int i = 0; i < record.length; i++) {
-            map.put(properties[i], record[i]);
+            map.put(keys[i], record[i]);
         }
         return map;
     }
@@ -66,9 +67,9 @@ public class CsvMapMapper extends CsvObjectMapperSupport<Map<String, ?>> {
      * @param record 検証対象のレコード
      */
     private void verifyFieldCount(final String[] record) {
-        if (properties.length != record.length) {
+        if (config.getKeys().length != record.length) {
             throw new InvalidDataFormatException("property size does not match."
-                    + " expected field count = [" + properties.length + "],"
+                    + " expected field count = [" + config.getKeys().length + "],"
                     + " actual field count = [" + record.length + "].", reader.getLineNumber());
         }
     }

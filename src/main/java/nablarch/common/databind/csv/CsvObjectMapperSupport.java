@@ -18,9 +18,6 @@ public abstract class CsvObjectMapperSupport<T> implements ObjectMapper<T> {
     /** CSV用の設定情報 */
     protected final CsvDataBindConfig config;
 
-    /** プロパティ名の配列 */
-    protected final String[] properties;
-
     /** CSVのリーダ */
     protected final CsvDataReader reader;
 
@@ -32,7 +29,6 @@ public abstract class CsvObjectMapperSupport<T> implements ObjectMapper<T> {
      */
     public CsvObjectMapperSupport(final CsvDataBindConfig config, final Reader reader) {
         this.config = config;
-        this.properties = getProperties();
         this.reader = new CsvDataReader(toBufferedReader(reader), config);
     }
 
@@ -108,18 +104,6 @@ public abstract class CsvObjectMapperSupport<T> implements ObjectMapper<T> {
      */
     private static boolean isEmptyLine(final String[] record) {
         return record != null && record.length == 1 && StringUtil.isNullOrEmpty(record[0]);
-    }
-
-    /**
-     * オブジェクトにマッピングする際に使用するプロパティ名のリストを取得する。
-     * @return プロパティ名リスト
-     */
-    protected String[] getProperties() {
-        if (StringUtil.hasValue(config.getProperties())) {
-            return config.getProperties();
-        } else {
-            return config.getHeaderTitles();
-        }
     }
 }
 

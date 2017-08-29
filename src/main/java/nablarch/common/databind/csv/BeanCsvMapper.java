@@ -39,9 +39,10 @@ public class BeanCsvMapper<T> extends ObjectCsvMapperSupport<T> {
 
     @Override
     public Object[] convertValues(T object) {
-        final Object[] fieldValues = new Object[properties.length];
-        for (int i = 0; i < properties.length; i++) {
-            final String propertyName = properties[i];
+        final String[] keys = config.getKeys();
+        final Object[] fieldValues = new Object[keys.length];
+        for (int i = 0; i < keys.length; i++) {
+            final String propertyName = keys[i];
             fieldValues[i] = BeanUtil.getProperty(object, propertyName);
         }
         return fieldValues;

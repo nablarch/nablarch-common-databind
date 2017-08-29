@@ -65,9 +65,10 @@ public class MapCsvMapper extends ObjectCsvMapperSupport<Map<String, ?>> {
 
     @Override
     public Object[] convertValues(final Map<String, ?> object) {
-        final Object[] fieldValues = new Object[properties.length];
-        for (int i = 0; i < properties.length; i++) {
-            fieldValues[i] = object.get(properties[i]);
+        final String[] keys = config.getKeys();
+        final Object[] fieldValues = new Object[keys.length];
+        for (int i = 0; i < keys.length; i++) {
+            fieldValues[i] = object.get(keys[i]);
         }
         return fieldValues;
     }

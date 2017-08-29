@@ -6,7 +6,6 @@ import java.io.Writer;
 
 import nablarch.common.databind.ObjectMapper;
 import nablarch.core.util.FileUtil;
-import nablarch.core.util.StringUtil;
 
 /**
  * オブジェクトをCSVにマッピングするのをサポートするクラス。
@@ -19,9 +18,6 @@ public abstract class ObjectCsvMapperSupport<T> implements ObjectMapper<T> {
     /** CSV用の設定情報 */
     protected final CsvDataBindConfig config;
 
-    /** プロパティ名のリスト */
-    protected final String[] properties;
-
     /** 1レコードずつ書き込むライター */
     private final CsvDataWriter writer;
 
@@ -33,20 +29,7 @@ public abstract class ObjectCsvMapperSupport<T> implements ObjectMapper<T> {
      */
     public ObjectCsvMapperSupport(final CsvDataBindConfig config, final Writer writer) {
         this.config = config;
-        this.properties = getProperties();
-        this.writer = new CsvDataWriter(toBufferedWriter(writer), config, properties);
-    }
-
-    /**
-     * オブジェクトのプロパティ名のリストを取得する。
-     * @return プロパティ名リスト
-     */
-    protected String[] getProperties() {
-        if (StringUtil.hasValue(config.getProperties())) {
-            return config.getProperties();
-        } else {
-            return config.getHeaderTitles();
-        }
+        this.writer = new CsvDataWriter(toBufferedWriter(writer), config, config.getKeys());
     }
 
     /**

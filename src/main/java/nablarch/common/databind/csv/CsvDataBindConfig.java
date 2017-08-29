@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import nablarch.common.databind.DataBindConfig;
+import nablarch.core.util.StringUtil;
 import nablarch.core.util.annotation.Published;
 
 /**
@@ -420,6 +421,17 @@ public class CsvDataBindConfig implements DataBindConfig {
                 emptyToNull,
                 quoteMode,
                 quotedColumnNames);
+    }
+
+    /**
+     * オブジェクトにマッピングする際に使用するキーのリストを取得する。
+     * <p>
+     * {@link #properties}が設定されていれば、{@link #properties}をキーとして返す。<br>
+     * {@link #properties}が設定されていなければ、{@link #headerTitles}をキーとして返す。
+     * @return キーのリスト
+     */
+    public String[] getKeys() {
+        return StringUtil.hasValue(properties) ? properties : headerTitles;
     }
 
     /**
