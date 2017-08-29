@@ -160,14 +160,14 @@ public class BasicObjectMapperFactoryTest {
     public void create_class_null() throws Exception {
 
         try {
-            sut.createMapper(null, new ByteArrayInputStream(new byte[0]), CsvDataBindConfig.DEFAULT);
+            sut.createMapper(null, new ByteArrayInputStream(new byte[0]), CsvDataBindConfig.DEFAULT.withHeaderTitles("test"));
             fail("classがNULLのため、例外が発生する");
         } catch (Exception e) {
             assertThat("class", e, instanceOf(NullPointerException.class));
         }
 
         try {
-            sut.createMapper(Map.class, (Reader) null, CsvDataBindConfig.DEFAULT);
+            sut.createMapper(Map.class, (Reader) null, CsvDataBindConfig.DEFAULT.withHeaderTitles("test"));
             fail("readerがNULLのため、例外が発生する");
         } catch (Exception e) {
             assertThat("reader", e, instanceOf(NullPointerException.class));

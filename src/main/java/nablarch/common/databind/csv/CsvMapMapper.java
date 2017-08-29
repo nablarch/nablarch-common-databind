@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nablarch.common.databind.InvalidDataFormatException;
-import nablarch.core.util.StringUtil;
 
 /**
  * CSVフォーマットと{@link Map}をマッピングするクラス。
@@ -34,7 +33,6 @@ public class CsvMapMapper extends CsvObjectMapperSupport<Map<String, ?>> {
      */
     public CsvMapMapper(final CsvDataBindConfig config, final Reader reader) {
         super(config, reader);
-        verify();
         readHeader();
     }
 
@@ -71,33 +69,6 @@ public class CsvMapMapper extends CsvObjectMapperSupport<Map<String, ?>> {
             throw new InvalidDataFormatException("property size does not match."
                     + " expected field count = [" + config.getKeys().length + "],"
                     + " actual field count = [" + record.length + "].", reader.getLineNumber());
-        }
-    }
-
-    /**
-     * オブジェクトの妥当性検証を行う。
-     * <p/>
-     * 以下の場合に検証エラーとする。
-     * <ul>
-     *     <li>ヘッダが必須でヘッダタイトルが未設定</li>
-     *     <li>ヘッダが任意でプロパティ名が未設定</li>
-     *     <li>ヘッダが必須でヘッダタイトルとプロパティ名のサイズが一致しない</li>
-     * </ul>
-     */
-    private void verify() {
-        final String[] headers = config.getHeaderTitles();
-        final String[] properties = config.getProperties();
-
-        if (config.isRequiredHeader() && StringUtil.isNullOrEmpty(headers)) {
-            throw new IllegalArgumentException("this csv is require header.");
-        }
-
-        if (!config.isRequiredHeader() && StringUtil.isNullOrEmpty(properties)) {
-            throw new IllegalArgumentException("this csv is require header or property.");
-        }
-
-        if (config.isRequiredHeader() && StringUtil.hasValue(properties) && headers.length != properties.length) {
-            throw new IllegalArgumentException("header size and property size does not match.");
         }
     }
 }

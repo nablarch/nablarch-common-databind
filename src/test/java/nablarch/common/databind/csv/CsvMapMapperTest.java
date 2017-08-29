@@ -214,7 +214,7 @@ public class CsvMapMapperTest {
                     CsvDataBindConfig.DEFAULT.withHeaderTitles("年齢", "氏名").withProperties("age"));
             fail("ヘッダとプロパティの数が一致しないため例外発生");
         } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage(), is("header size and property size does not match."));
+            assertThat(e.getMessage(), is("csv header size and property size does not match."));
         }
     }
 
@@ -235,7 +235,7 @@ public class CsvMapMapperTest {
                     CsvDataBindConfig.DEFAULT.withRequiredHeader(false));
             fail("ヘッダとプロパティが未設定のため例外発生");
         } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage(), is("this csv is require header or property."));
+            assertThat(e.getMessage(), is("csv header or property is required."));
         }
     }
 
@@ -256,7 +256,7 @@ public class CsvMapMapperTest {
                     CsvDataBindConfig.DEFAULT.withRequiredHeader(false).withProperties((String[]) null));
             fail("ヘッダなし、プロパティがnullのため例外発生");
         } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage(), is("this csv is require header or property."));
+            assertThat(e.getMessage(), is("csv header or property is required."));
         }
     }
 
@@ -280,7 +280,7 @@ public class CsvMapMapperTest {
                     CsvDataBindConfig.DEFAULT.withRequiredHeader(true).withHeaderTitles((String[]) null));
             fail("ヘッダ必須でヘッダnullのため例外発生");
         } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage(), is("this csv is require header."));
+            assertThat(e.getMessage(), is("csv header is required."));
         }
 
         // ヘッダが空のケース
@@ -289,7 +289,7 @@ public class CsvMapMapperTest {
                     CsvDataBindConfig.DEFAULT.withRequiredHeader(true).withHeaderTitles());
             fail("ヘッダ必須でヘッダ空のため例外発生");
         } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage(), is("this csv is require header."));
+            assertThat(e.getMessage(), is("csv header is required."));
         }
     }
 

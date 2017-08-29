@@ -581,4 +581,28 @@ public class CsvDataBindConfig implements DataBindConfig {
         /** フィールドを任意に定義するモード */
         CUSTOM
     }
+
+    /**
+     * コンフィグの妥当性検証を行う。
+     * <p/>
+     * 以下の場合に検証エラーとする。
+     * <ul>
+     *     <li>ヘッダが必須でヘッダタイトルが未設定</li>
+     *     <li>ヘッダが任意でプロパティ名が未設定</li>
+     *     <li>ヘッダが必須でヘッダタイトルとプロパティ名のサイズが一致しない</li>
+     * </ul>
+     */
+    public void verify() {
+        if (requiredHeader && StringUtil.isNullOrEmpty(headerTitles)) {
+            throw new IllegalArgumentException("csv header is required.");
+        }
+
+        if (!requiredHeader && StringUtil.isNullOrEmpty(properties)) {
+            throw new IllegalArgumentException("csv header or property is required.");
+        }
+
+        if (requiredHeader && StringUtil.hasValue(properties) && headerTitles.length != properties.length) {
+            throw new IllegalArgumentException("csv header size and property size does not match.");
+        }
+    }
 }
