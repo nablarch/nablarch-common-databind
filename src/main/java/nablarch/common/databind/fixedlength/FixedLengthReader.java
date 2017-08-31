@@ -132,6 +132,7 @@ public class FixedLengthReader implements Closeable {
 
     /**
      * ファイルから読み取られたレコードを表すクラス。
+     * 読み取ったデータを読み取り元のレコード番号をセットで保持する。
      */
     static class ReadRecord {
 
@@ -151,10 +152,18 @@ public class FixedLengthReader implements Closeable {
             this.lineNumber = lineNumber;
         }
 
+        /**
+         * レコード番号を取得する。
+         * @return レコード番号
+         */
         long getLineNumber() {
             return lineNumber;
         }
 
+        /**
+         * データを取得する。
+         * @return データ
+         */
         Map<String, Object> getData() {
             return data;
         }
