@@ -1,6 +1,7 @@
 package nablarch.common.databind.fixedlength
 
 import nablarch.common.databind.InvalidDataFormatException
+import nablarch.common.databind.LineNumber
 import nablarch.common.databind.ObjectMapperFactory
 import nablarch.common.databind.fixedlength.converter.*
 import org.hamcrest.Matchers.*
@@ -32,9 +33,11 @@ class FixedLengthBeanMapperTest {
             var text: String? = null,
             @field:Field(offset = 9, length = 3)
             @field:Lpad
-            var age: Int? = null
+            var age: Int? = null,
+            @get:LineNumber
+            var lineNumber: Long? = null
         ) {
-            constructor() : this(null, null, null)
+            constructor() : this(null, null, null, null)
         }
 
         val inputStream = listOf(
@@ -44,8 +47,8 @@ class FixedLengthBeanMapperTest {
 
         ObjectMapperFactory.create<TestBean>(TestBean::class.java, inputStream).use { sut ->
             assertThat(sut, instanceOf<Any>(FixedLengthBeanMapper::class.java))
-            assertThat(sut.read(), `is`(TestBean("ab", "あい", 3)))
-            assertThat(sut.read(), `is`(TestBean("efg", "か", null)))
+            assertThat(sut.read(), `is`(TestBean("ab", "あい", 3, 1)))
+            assertThat(sut.read(), `is`(TestBean("efg", "か", null, 2)))
             assertThat(sut.read(), `is`(nullValue()))
         }
     }
@@ -91,6 +94,9 @@ class FixedLengthBeanMapperTest {
 
             @field:Record
             var data: Data? = null
+
+            @get:LineNumber
+            var lineNumber: Long? = null
         }
 
         ObjectMapperFactory.create(Multi::class.java, "1test   \r\n2aaa 012\r\n2bb  345".toByteArray().inputStream()).use {
@@ -102,6 +108,7 @@ class FixedLengthBeanMapperTest {
                     hasProperty("id", `is`(1)),
                     hasProperty("field", `is`("test"))
             ))
+            assertThat(first.lineNumber, `is`(1L));
 
             val second = it.read()
             assertThat(second.getRecordName(), `is`<MultiLayoutConfig.RecordName>(RecordType.DATA))
@@ -111,15 +118,17 @@ class FixedLengthBeanMapperTest {
                     hasProperty("name", `is`("aaa")),
                     hasProperty("age", `is`(12))
             ))
+            assertThat(second.lineNumber, `is`(2L));
 
-            val thrid = it.read()
-            assertThat(thrid.getRecordName(), `is`<MultiLayoutConfig.RecordName>(RecordType.DATA))
-            assertThat(thrid.header, `is`(nullValue()))
-            assertThat(thrid.data, allOf(
+            val third = it.read()
+            assertThat(third.getRecordName(), `is`<MultiLayoutConfig.RecordName>(RecordType.DATA))
+            assertThat(third.header, `is`(nullValue()))
+            assertThat(third.data, allOf(
                     hasProperty("id", `is`(2)),
                     hasProperty("name", `is`("bb")),
                     hasProperty("age", `is`(345))
             ))
+            assertThat(third.lineNumber, `is`(3L));
 
             assertThat(it.read(), `is`(nullValue()))
         }
@@ -133,17 +142,19 @@ class FixedLengthBeanMapperTest {
             @field:Field(offset = 1, length = 4)
             var name: String? = null,
             @field:Field(offset = 5, length = 1)
-            var text: String? = null
+            var text: String? = null,
+            @get:LineNumber
+            var lineNumber: Long? = null
         ) {
-            constructor() : this(null, null)
+            constructor() : this(null, null, null)
         }
 
         val inputStream = listOf("1234a", "4321b").joinToString("").byteInputStream(MS932())
 
         ObjectMapperFactory.create<TestBean>(TestBean::class.java, inputStream).use { sut ->
             assertThat(sut, instanceOf<Any>(FixedLengthBeanMapper::class.java))
-            assertThat(sut.read(), `is`(TestBean("1234", "a")))
-            assertThat(sut.read(), `is`(TestBean("4321", "b")))
+            assertThat(sut.read(), `is`(TestBean("1234", "a", 1)))
+            assertThat(sut.read(), `is`(TestBean("4321", "b", 2)))
             assertThat(sut.read(), `is`(nullValue()))
         }
     }
@@ -169,14 +180,16 @@ class FixedLengthBeanMapperTest {
         @FixedLength(length = 8, charset = "MS932", lineSeparator = "\r\n")
         data class TestBean(
             @field:Field(offset = 1, length = 8)
-            var name: String? = null
+            var name: String? = null,
+            @get:LineNumber
+            var lineNumber: Long? = null
         ) {
-            constructor() : this(null)
+            constructor() : this(null, null)
         }
 
         val inputStream = "testname\r\n".byteInputStream(MS932())
         ObjectMapperFactory.create<TestBean>(TestBean::class.java, inputStream).use { sut ->
-            assertThat(sut.read(), `is`(TestBean("testname")))
+            assertThat(sut.read(), `is`(TestBean("testname", 1)))
             assertThat(sut.read(), `is`(nullValue()))
         }
     }

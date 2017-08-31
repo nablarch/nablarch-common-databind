@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.Map;
 
 import nablarch.common.databind.ObjectMapper;
+import nablarch.common.databind.fixedlength.FixedLengthReader.ReadRecord;
 import nablarch.core.util.FileUtil;
 
 /**
@@ -33,7 +34,8 @@ public class FixedLengthMapMapper implements ObjectMapper<Map<String, ?>> {
 
     @Override
     public Map<String, ?> read() {
-        return reader.readRecord();
+        ReadRecord record = reader.readRecord();
+        return record == null ? null : record.getData();
     }
 
     @Override
