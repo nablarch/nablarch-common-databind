@@ -57,12 +57,14 @@ public abstract class CsvObjectMapperSupport<T> implements ObjectMapper<T> {
     }
 
     /**
-     * ヘッダー行を読み込む。
+     * ヘッダが必須の場合、ヘッダー行を読み込む。
+     * <p>
+     * ヘッダが必須でない場合は読み込みは行わず{@code null}を返す。
      *
      * @return ヘッダー行
      */
     protected String[] readHeader() {
-        return readLine();
+        return config.isRequiredHeader() ? readLine() : null;
     }
 
     /**

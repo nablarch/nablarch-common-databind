@@ -56,24 +56,28 @@ enum MapperType {
         <T> ObjectMapper<T> createMapper(final Class<T> clazz, final DataBindConfig config,
                 final InputStream stream) {
             final CsvDataBindConfig csvDataBindConfig = CsvDataBindConfig.class.cast(config);
+            csvDataBindConfig.verify();
             return (ObjectMapper<T>) new CsvMapMapper(csvDataBindConfig, stream);
         }
 
         @Override
         <T> ObjectMapper<T> createMapper(final Class<T> clazz, final DataBindConfig config, final Reader reader) {
             final CsvDataBindConfig csvDataBindConfig = CsvDataBindConfig.class.cast(config);
+            csvDataBindConfig.verify();
             return (ObjectMapper<T>) new CsvMapMapper(csvDataBindConfig, reader);
         }
 
         @Override
         <T> ObjectMapper<T> createMapper(final Class<T> clazz, final DataBindConfig config, final OutputStream stream) {
             final CsvDataBindConfig csvDataBindConfig = CsvDataBindConfig.class.cast(config);
+            csvDataBindConfig.verify();
             return (ObjectMapper<T>) new MapCsvMapper(csvDataBindConfig, stream);
         }
 
         @Override
         <T> ObjectMapper<T> createMapper(final Class<T> clazz, final DataBindConfig config, final Writer writer) {
             final CsvDataBindConfig csvDataBindConfig = CsvDataBindConfig.class.cast(config);
+            csvDataBindConfig.verify();
             return (ObjectMapper<T>) new MapCsvMapper(csvDataBindConfig, writer);
         }
     },

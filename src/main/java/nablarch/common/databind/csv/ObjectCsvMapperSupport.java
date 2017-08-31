@@ -26,11 +26,10 @@ public abstract class ObjectCsvMapperSupport<T> implements ObjectMapper<T> {
      *
      * @param config フォーマット定義
      * @param writer 出力リソース
-     * @param properties プロパティ名リスト
      */
-    public ObjectCsvMapperSupport(final CsvDataBindConfig config, final Writer writer, final String[] properties) {
+    public ObjectCsvMapperSupport(final CsvDataBindConfig config, final Writer writer) {
         this.config = config;
-        this.writer = new CsvDataWriter(toBufferedWriter(writer), config, properties);
+        this.writer = new CsvDataWriter(toBufferedWriter(writer), config, config.getKeys());
     }
 
     /**

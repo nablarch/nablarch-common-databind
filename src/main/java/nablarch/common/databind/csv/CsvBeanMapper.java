@@ -19,9 +19,6 @@ public class CsvBeanMapper<T> extends CsvObjectMapperSupport<T> {
     /** Beanのクラス */
     private final Class<T> clazz;
 
-    /** プロパティ名の配列 */
-    private final String[] propertyNames;
-
     /** 行番号を格納するプロパティ名 */
     private final String lineNumberPropertyName;
 
@@ -46,35 +43,23 @@ public class CsvBeanMapper<T> extends CsvObjectMapperSupport<T> {
     public CsvBeanMapper(final Class<T> clazz, final CsvDataBindConfig config, final Reader reader) {
         super(config, reader);
         this.clazz = clazz;
-        propertyNames = DataBindUtil.findCsvProperties(clazz);
         lineNumberPropertyName = DataBindUtil.findLineNumberProperty(clazz);
-        readInitialize();
+        readHeader();
     }
 
     @Override
     protected T createObject(final String[] record) {
-        if (propertyNames.length != record.length) {
+        final String[] keys = config.getKeys();
+        if (keys.length != record.length) {
             throw new InvalidDataFormatException(
-                    "property size does not match. expected field count = [" + propertyNames.length + "],"
+                    "property size does not match. expected field count = [" + keys.length + "],"
                             + " actual field count = [" + record.length + "].", reader.getLineNumber());
         }
 
         if(StringUtil.isNullOrEmpty(lineNumberPropertyName)){
-            return DataBindUtil.getInstance(clazz, propertyNames, record);
+            return DataBindUtil.getInstance(clazz, keys, record);
         }else{
-            return DataBindUtil.getInstanceWithLineNumber(clazz, propertyNames, record, lineNumberPropertyName, reader.getLineNumber());
-        }
-    }
-
-    /**
-     * データ読み込み時の初期処理を行う。
-     * <p/>
-     * ヘッダーが必須の場合は、ヘッダー行を読み飛ばす必要があるのでここで読みとばす。
-     */
-    private void readInitialize() {
-        // ヘッダー行が必須の場合は読み飛ばす
-        if (config.isRequiredHeader()) {
-            readHeader();
+            return DataBindUtil.getInstanceWithLineNumber(clazz, keys, record, lineNumberPropertyName, reader.getLineNumber());
         }
     }
 }

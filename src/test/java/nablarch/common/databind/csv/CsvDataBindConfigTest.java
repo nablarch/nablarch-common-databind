@@ -1,19 +1,27 @@
 package nablarch.common.databind.csv;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.array;
+import static org.hamcrest.Matchers.emptyArray;
 import static org.junit.Assert.assertThat;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Collections;
 
 import nablarch.common.databind.csv.CsvDataBindConfig.QuoteMode;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /**
  * {@link CsvDataBindConfig}のテスト。
  */
 public class CsvDataBindConfigTest {
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void withQuote() throws Exception {
@@ -74,10 +82,32 @@ public class CsvDataBindConfigTest {
         assertThat(sut.isEmptyToNull(), is(false));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void withLineSeparator_invalid() throws Exception {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("invalid line separator. must be set '\\r\\n or \\n or \\r'");
+
         CsvDataBindConfig sut = CsvDataBindConfig.DEFAULT;
         sut.withLineSeparator("\r\n\n");
+    }
+
+    @Test
+    public void constructor_lineSeparator_invalid() throws Exception {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("invalid line separator. must be set '\\r\\n or \\n or \\r'");
+
+        CsvDataBindConfig sut = new CsvDataBindConfig(
+                ',',
+                "\r\r\n",
+                '"',
+                true,
+                true,
+                new String[0],
+                Charset.forName("UTF-8"),
+                true,
+                QuoteMode.NORMAL,
+                Collections.<String>emptyList()
+        );
     }
 
     @Test
@@ -210,5 +240,38 @@ public class CsvDataBindConfigTest {
         assertThat(sut.getQuoteMode(), is(CsvDataBindConfig.DEFAULT.getQuoteMode()));
         assertThat(sut.getQuotedColumnNames(), is(CsvDataBindConfig.DEFAULT.getQuotedColumnNames()));
         assertThat(sut.isEmptyToNull(), is(CsvDataBindConfig.DEFAULT.isEmptyToNull()));
+    }
+
+    @Test
+    public void withProperties() throws Exception {
+        CsvDataBindConfig sut = CsvDataBindConfig.DEFAULT;
+        assertThat(sut.getProperties(), is(emptyArray()));
+
+        sut = sut.withProperties("test1", "test2");
+        assertThat(sut.getProperties(), array(is("test1"), is("test2")));
+
+        assertThat(sut.getFieldSeparator(), is(CsvDataBindConfig.DEFAULT.getFieldSeparator()));
+        assertThat(sut.getLineSeparator(), is(CsvDataBindConfig.DEFAULT.getLineSeparator()));
+        assertThat(sut.getQuote(), is(CsvDataBindConfig.DEFAULT.getQuote()));
+        assertThat(sut.isIgnoreEmptyLine(), is(CsvDataBindConfig.DEFAULT.isIgnoreEmptyLine()));
+        assertThat(sut.isRequiredHeader(), is(CsvDataBindConfig.DEFAULT.isRequiredHeader()));
+        assertThat(sut.getHeaderTitles(), is(CsvDataBindConfig.DEFAULT.getHeaderTitles()));
+        assertThat(sut.getCharset(), is(CsvDataBindConfig.DEFAULT.getCharset()));
+        assertThat(sut.isEmptyToNull(), is(CsvDataBindConfig.DEFAULT.isEmptyToNull()));
+        assertThat(sut.getQuoteMode(), is(CsvDataBindConfig.DEFAULT.getQuoteMode()));
+        assertThat(sut.getQuotedColumnNames(), is(CsvDataBindConfig.DEFAULT.getQuotedColumnNames()));
+    }
+
+    @Test
+    public void getKeys() throws Exception {
+        CsvDataBindConfig sut = CsvDataBindConfig.DEFAULT.withHeaderTitles("header1", "header2");
+        assertThat(sut.getHeaderTitles(), array(is("header1"), is("header2")));
+        assertThat(sut.getProperties(), is(emptyArray()));
+        assertThat(sut.getKeys(), array(is("header1"), is("header2")));
+
+        sut = sut.withProperties("prop1", "prop2");
+        assertThat(sut.getHeaderTitles(), array(is("header1"), is("header2")));
+        assertThat(sut.getProperties(), array(is("prop1"), is("prop2")));
+        assertThat(sut.getKeys(), array(is("prop1"), is("prop2")));
     }
 }

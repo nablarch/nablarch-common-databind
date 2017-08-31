@@ -33,10 +33,7 @@ public class CsvMapMapper extends CsvObjectMapperSupport<Map<String, ?>> {
      */
     public CsvMapMapper(final CsvDataBindConfig config, final Reader reader) {
         super(config, reader);
-        checkRequiredHeader();
-
-        // 先頭はヘッダのため読み飛ばす
-        read();
+        readHeader();
     }
 
     @Override
@@ -54,10 +51,10 @@ public class CsvMapMapper extends CsvObjectMapperSupport<Map<String, ?>> {
      * @return 変換した{@link Map}
      */
     private Map<String, String> createMap(final String[] record) {
-        final String[] headers = config.getHeaderTitles();
         final Map<String, String> map = new HashMap<String, String>();
+        final String[] keys = config.getKeys();
         for (int i = 0; i < record.length; i++) {
-            map.put(headers[i], record[i]);
+            map.put(keys[i], record[i]);
         }
         return map;
     }
@@ -68,24 +65,10 @@ public class CsvMapMapper extends CsvObjectMapperSupport<Map<String, ?>> {
      * @param record 検証対象のレコード
      */
     private void verifyFieldCount(final String[] record) {
-        final String[] headers = config.getHeaderTitles();
-        if (headers.length != record.length) {
+        if (config.getKeys().length != record.length) {
             throw new InvalidDataFormatException("property size does not match."
-                    + " expected field count = [" + headers.length + "],"
+                    + " expected field count = [" + config.getKeys().length + "],"
                     + " actual field count = [" + record.length + "].", reader.getLineNumber());
-        }
-    }
-
-    /**
-     * ヘッダー行の確認を行う。
-     * <p/>
-     * ヘッダが存在すれば読み飛ばす。ヘッダが存在しなければ例外を送出する。
-     */
-    private void checkRequiredHeader() {
-        // ヘッダー行が無い場合は例外を送出
-        final String[] headers = config.getHeaderTitles();
-        if (!config.isRequiredHeader() || headers == null || headers.length == 0) {
-            throw new IllegalArgumentException("this csv is require header.");
         }
     }
 }
