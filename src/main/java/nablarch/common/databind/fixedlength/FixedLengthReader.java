@@ -28,7 +28,7 @@ public class FixedLengthReader implements Closeable {
     private final FixedLengthDataBindConfig config;
 
     /** レコード番号 */
-    private Long lineNumber = 1L;
+    private Long lineNumber = 0L;
 
     /**
      * 固定長のリーダーを構築する。
@@ -46,9 +46,10 @@ public class FixedLengthReader implements Closeable {
      *
      * @return レコード
      */
-    public Map<String, Object> readRecord() {
+    public ReadRecord readRecord() {
         final ByteBuffer buffer = ByteBuffer.allocate(config.getLength());
         try {
+            lineNumber++;
             final int readLength = readableChannel.read(buffer);
             if (readLength < 0) {
                 return null;
@@ -59,7 +60,6 @@ public class FixedLengthReader implements Closeable {
 
             skipLineSeparator();
 
-            lineNumber++;
             final Map<String, Object> map = new HashMap<String, Object>();
 
             final List<FieldConfig> fieldConfigList;
@@ -80,7 +80,7 @@ public class FixedLengthReader implements Closeable {
                     map.put(fieldConfig.getName(), readValue(buffer.array(), config, fieldConfig));
                 }
             }
-            return map;
+            return new ReadRecord(map, lineNumber);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -128,5 +128,35 @@ public class FixedLengthReader implements Closeable {
     @Override
     public void close() throws IOException {
         readableChannel.close();
+    }
+
+    /**
+     * ファイルから読み取られたレコードを表すクラス。
+     */
+    static class ReadRecord {
+
+        /** レコード番号 */
+        private final long lineNumber;
+
+        /** 読み取ったレコードのデータ */
+        private final  Map<String, Object> data;
+
+        /**
+         * コンストラクタ。
+         * @param data レコード
+         * @param lineNumber 読み取られたときの行番号
+         */
+        ReadRecord(Map<String, Object> data, long lineNumber) {
+            this.data = data;
+            this.lineNumber = lineNumber;
+        }
+
+        long getLineNumber() {
+            return lineNumber;
+        }
+
+        Map<String, Object> getData() {
+            return data;
+        }
     }
 }
