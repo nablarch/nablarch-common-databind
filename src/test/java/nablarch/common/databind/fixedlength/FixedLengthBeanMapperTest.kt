@@ -11,6 +11,7 @@ import org.junit.Test
 import org.junit.rules.ExpectedException
 import sun.nio.cs.ext.MS932
 import java.io.*
+import java.nio.charset.*
 
 /**
  * {@link FixedLengthBeanMapper}のテストクラス
@@ -43,7 +44,7 @@ class FixedLengthBeanMapperTest {
         val inputStream = listOf(
             "ab  あい003",
             "efg か　000"
-        ).joinToString("\r\n").byteInputStream(MS932())
+        ).joinToString("\r\n").byteInputStream(charset("MS932"))
 
         ObjectMapperFactory.create<TestBean>(TestBean::class.java, inputStream).use { sut ->
             assertThat(sut, instanceOf<Any>(FixedLengthBeanMapper::class.java))
@@ -149,7 +150,7 @@ class FixedLengthBeanMapperTest {
             constructor() : this(null, null, null)
         }
 
-        val inputStream = listOf("1234a", "4321b").joinToString("").byteInputStream(MS932())
+        val inputStream = listOf("1234a", "4321b").joinToString("").byteInputStream(charset("MS932"))
 
         ObjectMapperFactory.create<TestBean>(TestBean::class.java, inputStream).use { sut ->
             assertThat(sut, instanceOf<Any>(FixedLengthBeanMapper::class.java))
@@ -187,7 +188,7 @@ class FixedLengthBeanMapperTest {
             constructor() : this(null, null)
         }
 
-        val inputStream = "testname\r\n".byteInputStream(MS932())
+        val inputStream = "testname\r\n".byteInputStream(charset("MS932"))
         ObjectMapperFactory.create<TestBean>(TestBean::class.java, inputStream).use { sut ->
             assertThat(sut.read(), `is`(TestBean("testname", 1)))
             assertThat(sut.read(), `is`(nullValue()))
@@ -209,7 +210,7 @@ class FixedLengthBeanMapperTest {
 
         val inputStream = listOf(
             "testname123",
-            "invalid").joinToString("\r\n").byteInputStream(MS932())
+            "invalid").joinToString("\r\n").byteInputStream(charset("MS932"))
 
         ObjectMapperFactory.create<TestBean>(TestBean::class.java, inputStream).use { sut ->
             sut.read()
@@ -235,7 +236,7 @@ class FixedLengthBeanMapperTest {
             "34"
         ).joinToString("\r\n")
             .plus("ab45")       // 改行コード部に\r\nではなく「ab」を設定
-            .byteInputStream(MS932())
+            .byteInputStream(charset("MS932"))
 
         ObjectMapperFactory.create<TestBean>(TestBean::class.java, inputStream).use { sut ->
             assertThat("最初のレコードは正しく読み込める", sut.read(), `is`(TestBean("12")))
@@ -262,7 +263,7 @@ class FixedLengthBeanMapperTest {
             "34"
         ).joinToString("\r\n")
             .plus("\r")       // 最終レコードが\rで終わる
-            .byteInputStream(MS932())
+            .byteInputStream(charset("MS932"))
 
         ObjectMapperFactory.create<TestBean>(TestBean::class.java, inputStream).use { sut ->
             assertThat("最初のレコードは正しく読み込める", sut.read(), `is`(TestBean("12")))

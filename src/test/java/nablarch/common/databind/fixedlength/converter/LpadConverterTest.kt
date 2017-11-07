@@ -1,15 +1,12 @@
 package nablarch.common.databind.fixedlength.converter
 
-import nablarch.common.databind.fixedlength.FieldConfig
-import nablarch.common.databind.fixedlength.FixedLengthDataBindConfig
-import org.hamcrest.Matchers.`is`
-import org.junit.Assert.assertThat
-import org.junit.Rule
-import org.junit.Test
-import org.junit.experimental.runners.Enclosed
-import org.junit.rules.ExpectedException
-import org.junit.runner.RunWith
-import sun.nio.cs.ext.MS932
+import nablarch.common.databind.fixedlength.*
+import org.hamcrest.Matchers.*
+import org.junit.*
+import org.junit.Assert.*
+import org.junit.experimental.runners.*
+import org.junit.rules.*
+import org.junit.runner.*
 
 /**
  * [nablarch.common.databind.fixedlength.converter.Lpad.LpadConverter]
@@ -22,19 +19,19 @@ class LpadConverterTest {
      */
     class ConvertOfRead {
 
-        private val fixedLengthDataBindConfig = FixedLengthDataBindConfig(5, MS932(), "", ' ', mutableMapOf())
+        private val fixedLengthDataBindConfig = FixedLengthDataBindConfig(5, charset("MS932"), "", ' ', mutableMapOf())
 
         @Test
         fun トリム対象の文字がない場合はそのまま戻されること() {
             val sut = Lpad.LpadConverter('0')
-            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 4, sut), "1234".toByteArray(MS932()))
+            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 4, sut), "1234".toByteArray(charset("MS932")))
             assertThat(actual, `is`<Any>("1234"))
         }
 
         @Test
         fun デフォルトの場合半角の0が先頭からトリムされること() {
             val sut = Lpad.LpadConverter('0')
-            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 4, sut), "0034".toByteArray(MS932()))
+            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 4, sut), "0034".toByteArray(charset("MS932")))
 
             assertThat(actual, `is`<Any>("34"))
         }
@@ -42,21 +39,21 @@ class LpadConverterTest {
         @Test
         fun カスタムの場合指定した文字が先頭からトリムされること() {
             val sut = Lpad.LpadConverter('　')
-            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 6, sut), "　　あ".toByteArray(MS932()))
+            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 6, sut), "　　あ".toByteArray(charset("MS932")))
             assertThat(actual, `is`<Any>("あ"))
         }
 
         @Test
         fun 全てトリム対象の場合長さゼロの文字列となること() {
             val sut = Lpad.LpadConverter('0')
-            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 6, sut), "000000".toByteArray(MS932()))
+            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 6, sut), "000000".toByteArray(charset("MS932")))
             assertThat(actual, `is`<Any>(""))
         }
 
         @Test
         fun アノテーション情報が無い場合でも指定した値が先頭からトリムされること() {
             val sut = Lpad.LpadConverter('　')
-            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 6, sut), "　　あ".toByteArray(MS932()))
+            val actual = sut.convertOfRead(fixedLengthDataBindConfig, FieldConfig("name", 1, 6, sut), "　　あ".toByteArray(charset("MS932")))
             assertThat(actual, `is`<Any>("あ"))
         }
     }
@@ -65,20 +62,20 @@ class LpadConverterTest {
 
         @get:Rule
         val expectedException: ExpectedException = ExpectedException.none()
-        private val fixedLengthDataBindConfig = FixedLengthDataBindConfig(5, MS932(), "", ' ', mutableMapOf())
+        private val fixedLengthDataBindConfig = FixedLengthDataBindConfig(5, charset("MS932"), "", ' ', mutableMapOf())
         
         @Test
         fun パディングの必要が無い場合値がそのまま返されること() {
             val sut = Lpad.LpadConverter('0')
             val actual = sut.convertOfWrite(fixedLengthDataBindConfig, FieldConfig("name", 1, 5, sut),"12345")
-            assertThat(actual, `is`("12345".toByteArray(MS932())))
+            assertThat(actual, `is`("12345".toByteArray(charset("MS932"))))
         }
         
         @Test
         fun デフォルトの設定の場合半角0がパディングされること() {
             val sut = Lpad.LpadConverter('0')
             val actual = sut.convertOfWrite(fixedLengthDataBindConfig, FieldConfig("name", 1, 5, sut),"1")
-            assertThat(actual, `is`("00001".toByteArray(MS932())))
+            assertThat(actual, `is`("00001".toByteArray(charset("MS932"))))
         }
 
 
@@ -86,7 +83,7 @@ class LpadConverterTest {
         fun カスタムの設定の場合指定した値がパディングされること() {
             val sut = Lpad.LpadConverter('　')
             val actual = sut.convertOfWrite(fixedLengthDataBindConfig, FieldConfig("name", 1, 6, sut),"あい")
-            assertThat(actual, `is`("　あい".toByteArray(MS932())))
+            assertThat(actual, `is`("　あい".toByteArray(charset("MS932"))))
         }
 
         @Test
@@ -102,7 +99,7 @@ class LpadConverterTest {
         fun `nullの場合、空文字に変換してパディングされること`() {
             val sut = Lpad.LpadConverter('0')
            val actual = sut.convertOfWrite(fixedLengthDataBindConfig, FieldConfig("name", 1, 5, sut),null)
-            assertThat(actual, `is`("00000".toByteArray(MS932())))
+            assertThat(actual, `is`("00000".toByteArray(charset("MS932"))))
         }
     }
 

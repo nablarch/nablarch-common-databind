@@ -19,7 +19,7 @@ class BinaryConverterTest {
     
     val sut = Binary.BinaryConverter()
 
-    private val fixedLengthDataBindConfig = FixedLengthDataBindConfig(5, MS932(), "", ' ', mutableMapOf())
+    private val fixedLengthDataBindConfig = FixedLengthDataBindConfig(5, charset("MS932"), "", ' ', mutableMapOf())
 
     @Test
     fun 入力時の変換は何も行われないこと() {

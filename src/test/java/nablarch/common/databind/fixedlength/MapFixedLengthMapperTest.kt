@@ -8,7 +8,6 @@ import org.junit.Assert.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
-import sun.nio.cs.ext.MS932
 import java.io.ByteArrayOutputStream
 import java.lang.ClassCastException
 import java.lang.annotation.ElementType
@@ -32,7 +31,7 @@ class MapFixedLengthMapperTest {
 
         val config = FixedLengthDataBindConfigBuilder
                 .newBuilder()
-                .charset(MS932())
+                .charset(charset("MS932"))
                 .length(19)
                 .lineSeparator("\r\n")
                 .singleLayout()
@@ -58,7 +57,7 @@ class MapFixedLengthMapperTest {
         val stream = ByteArrayOutputStream()
         val config = FixedLengthDataBindConfigBuilder
                 .newBuilder()
-                .charset(MS932())
+                .charset(charset("MS932"))
                 .length(8)
                 .lineSeparator("\r\n")
                 .multiLayout()
@@ -99,7 +98,7 @@ class MapFixedLengthMapperTest {
         val stream = ByteArrayOutputStream()
         val config = FixedLengthDataBindConfigBuilder
                 .newBuilder()
-                .charset(MS932())
+                .charset(charset("MS932"))
                 .length(8)
                 .lineSeparator("\r\n")
                 .multiLayout()
@@ -134,7 +133,7 @@ class MapFixedLengthMapperTest {
         val stream = ByteArrayOutputStream()
         val config = FixedLengthDataBindConfigBuilder
                 .newBuilder()
-                .charset(MS932())
+                .charset(charset("MS932"))
                 .length(8)
                 .lineSeparator("\r\n")
                 .multiLayout()
@@ -171,7 +170,7 @@ class MapFixedLengthMapperTest {
 
         val config = FixedLengthDataBindConfigBuilder
                 .newBuilder()
-                .charset(MS932())
+                .charset(charset("MS932"))
                 .length(19)
                 .lineSeparator("\r\n")
                 .singleLayout()
@@ -198,7 +197,7 @@ class MapFixedLengthMapperTest {
 
         val config = FixedLengthDataBindConfigBuilder
                 .newBuilder()
-                .charset(MS932())
+                .charset(charset("MS932"))
                 .length(8)
                 .lineSeparator("\r\n")
                 .singleLayout()
