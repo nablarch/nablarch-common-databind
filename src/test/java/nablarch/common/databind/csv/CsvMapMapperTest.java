@@ -77,6 +77,8 @@ public class CsvMapMapperTest {
         resource.writeLine("20,山田太郎");
         resource.writeLine("25,田中次郎");
         resource.writeLine("30,鈴木三郎");
+        //サロゲートペア対応
+        resource.writeLine("40,🙀");
         resource.close();
 
         final ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, resource.createReader(),
@@ -93,6 +95,10 @@ public class CsvMapMapperTest {
         map  = mapper.read();
         assertThat(map.get("年齢"), is("30"));
         assertThat(map.get("氏名"), is("鈴木三郎"));
+
+        map  = mapper.read();
+        assertThat(map.get("年齢"), is("40"));
+        assertThat(map.get("氏名"), is("🙀"));
 
         map  = mapper.read();
         assertThat(map, is(nullValue()));

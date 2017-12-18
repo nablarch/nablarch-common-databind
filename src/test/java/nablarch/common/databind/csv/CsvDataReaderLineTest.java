@@ -58,7 +58,10 @@ public class CsvDataReaderLineTest {
                 new Param[] {new Param("ダブルクォート内にCSVデータ", "\"a1,b1,c1\",\"\"\"a2\"\",b2,\"\"c2\"\"\"", new String[] {"a1,b1,c1", "\"a2\",b2,\"c2\""})},
                 new Param[] {new Param("ダブルクォートありなし混在", "a1,\"b1\",c1", new String[] {"a1", "b1", "c1"})},
                 new Param[] {new Param("セパレータの間にスペース", " a1 , b1  ,  c1 ", new String[] {" a1 ", " b1  ", "  c1 "})},
-                new Param[] {new Param("セパレータの間にスペースでクォート付き", " \"a1\" , \"b1\"  ,  \"c1\" ", new InvalidDataFormatException("invalid quote character.", 1L))}
+                new Param[] {new Param("セパレータの間にスペースでクォート付き", " \"a1\" , \"b1\"  ,  \"c1\" ", new InvalidDataFormatException("invalid quote character.", 1L))},
+                //サロゲート文字対応
+                new Param[] {new Param("サロゲート文字がある場合", "🙀",  new String[] {"🙀"})}
+
         );
         // @formatter:on
     }

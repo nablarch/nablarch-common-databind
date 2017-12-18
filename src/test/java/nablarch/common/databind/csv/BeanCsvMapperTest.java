@@ -62,11 +62,14 @@ public class BeanCsvMapperTest {
         final ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, new FileOutputStream(file));
         mapper.write(new Person("あいうえお", "かきくけこ", "20100101", 9));
         mapper.write(new Person(null, null, "19800101", 5));
+        //サロゲートペア対応
+        mapper.write(new Person("🙀", "𪛊", "19990101", 1));
         mapper.close();
 
         assertThat("CSVが書き込まれていること", readFile(file, "utf-8"),
                 is("あいうえお,かきくけこ,9,20100101\r\n"
-                        + ",,5,19800101\r\n"));
+                        + ",,5,19800101\r\n"
+                        + "🙀,𪛊,1,19990101\r\n"));
     }
 
     /**
@@ -111,11 +114,14 @@ public class BeanCsvMapperTest {
         final ObjectMapper<TsvPerson> mapper = ObjectMapperFactory.create(TsvPerson.class, writer);
         mapper.write(new TsvPerson("たろう", "なぶらーく", "20100101", 5));
         mapper.write(new TsvPerson("CSV", "まっぱー", "20150605", 1));
+        //サロゲートペア対応
+        mapper.write(new TsvPerson("🙀", "𪛊", "19990101", 1));
         mapper.close();
 
         assertThat("Beanのヘッダー情報が出力されること", readFile(new StringReader(writer.toString())),
                 is("なぶらーく\tたろう\t5\t20100101\r\n"
-                        + "まっぱー\tCSV\t1\t20150605\r\n"));
+                        + "まっぱー\tCSV\t1\t20150605\r\n"
+                        + "𪛊\t🙀\t1\t19990101\r\n"));
     }
 
     /**

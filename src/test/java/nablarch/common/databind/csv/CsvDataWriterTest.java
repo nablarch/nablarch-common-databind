@@ -124,10 +124,11 @@ public class CsvDataWriterTest {
     @Test
     public void testNotAsciiCode() throws Exception {
         Assume.assumeThat(config.getQuoteMode(), is(QuoteMode.NORMAL));
-        String[] param = {"12345", "あいうえお", "ｷﾀ─wﾍ√ﾚｖ～(ﾟ∀ﾟ)─wﾍ√ﾚｖ～─!!"};
+        //サロゲートペア対応
+        String[] param = {"12345", "あいうえお", "ｷﾀ─wﾍ√ﾚｖ～(ﾟ∀ﾟ)─wﾍ√ﾚｖ～─!!","🙀"};
 
         final StringWriter actual = new StringWriter();
-        sut = new CsvDataWriter(new BufferedWriter(actual), config, new String[] {"col1", "col2", "col3"});
+        sut = new CsvDataWriter(new BufferedWriter(actual), config, new String[] {"col1", "col2", "col3", "col4"});
         sut.write(param);
         sut.close();
 
