@@ -353,4 +353,24 @@ public class CsvMapMapperTest {
         }
     }
 
+    /**
+     *
+     * ヘッダーにサロゲートペアを設定した場合にCSVのレコードを1件読み込めること
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testRead_sarogetoPea() throws Exception {
+        resource.writeLine("🙀,𪛊");
+        resource.writeLine("20,山田太郎");
+        resource.close();
+
+        final ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, resource.createInputStream(),
+                CsvDataBindConfig.DEFAULT.withHeaderTitles(new String[]{"🙀", "𪛊"}));
+        Map<String, String> map  = mapper.read();
+        mapper.close();
+
+        assertThat(map.get("🙀"), is("20"));
+        assertThat(map.get("𪛊"), is("山田太郎"));
+    }
 }

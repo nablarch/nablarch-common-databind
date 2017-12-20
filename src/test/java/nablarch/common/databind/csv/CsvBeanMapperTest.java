@@ -332,6 +332,22 @@ public class CsvBeanMapperTest {
         }
     }
 
+    /**
+     * サロゲートペアのヘッダーを読み込めること
+     */
+    @Test
+    public void testRead_SarogetoPeaHeader() throws Exception {
+        resource.writeLine("🙀");
+        resource.writeLine("𪛊");
+        resource.writeLine("");
+        resource.close();
+
+        final ObjectMapper<SarogetoPeaHeader> mapper = ObjectMapperFactory.create(SarogetoPeaHeader.class, resource.createReader());
+        final SarogetoPeaHeader person = mapper.read();
+        assertThat(person.getName(), is("𪛊"));
+        assertThat(mapper.read(), is(nullValue()));
+        mapper.close();
+    }
 
     /**
      * ヘッダなしで行番号を保持する設定で行番号を取得できること
@@ -753,6 +769,19 @@ public class CsvBeanMapperTest {
         public void setAge(Integer age) {
             this.age = age;
         }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
+    @Csv(type = Csv.CsvType.DEFAULT, properties = {"name"}, headers = {"🙀"})
+    public static class SarogetoPeaHeader    {
+        private String name;
 
         public String getName() {
             return name;

@@ -105,6 +105,24 @@ public class BeanCsvMapperTest {
     }
 
     /**
+     * サロゲートペアを含むヘッダー行が出力されること。
+     */
+    @Test
+    public void testSarogetoPeaHeaderPerson() throws Exception {
+        StringWriter writer = new StringWriter();
+
+        final ObjectMapper<SarogetoPeaHeaderPerson> mapper = ObjectMapperFactory.create(SarogetoPeaHeaderPerson.class, new BufferedWriter(writer));
+        mapper.write(new SarogetoPeaHeaderPerson("たろう", "なぶらーく", "20100101", 5));
+        mapper.write(new SarogetoPeaHeaderPerson("CSV", "まっぱー", "20150605", 1));
+        mapper.close();
+
+        assertThat("Beanのヘッダー情報が出力されること", readFile(new StringReader(writer.toString())),
+                is("性,名,家族人数,🙀の誕生日\r\n"
+                        + "なぶらーく,たろう,5,20100101\r\n"
+                        + "まっぱー,CSV,1,20150605\r\n"));
+    }
+
+    /**
      * TSVファイルが書き込めること
      */
     @Test
@@ -138,6 +156,24 @@ public class BeanCsvMapperTest {
 
         assertThat("Beanのヘッダー情報が出力されること", readFile(new StringReader(writer.toString())),
                 is("'性'\t'名'\t'家族の人数'\t'誕生日'\r\n"
+                        + "'なぶらーく'\t'たろう'\t5\t'20100101'\r\n"
+                        + "'まっぱー'\t'CSV'\t1\t'20150605'\r\n"));
+    }
+
+    /**
+     * サロゲートペアを含むヘッダー有りのTSVファイルの出力ができること。
+     */
+    @Test
+    public void testTsvSarogetoPeaHeaderPerson() throws Exception {
+        StringWriter writer = new StringWriter();
+
+        final ObjectMapper<TsvSarogetoPeaHeaderPerson> mapper = ObjectMapperFactory.create(TsvSarogetoPeaHeaderPerson.class, writer);
+        mapper.write(new TsvSarogetoPeaHeaderPerson("たろう", "なぶらーく", "20100101", 5));
+        mapper.write(new TsvSarogetoPeaHeaderPerson("CSV", "まっぱー", "20150605", 1));
+        mapper.close();
+
+        assertThat("Beanのヘッダー情報が出力されること", readFile(new StringReader(writer.toString())),
+                is("'性'\t'名'\t'家族の人数'\t'🙀の誕生日'\r\n"
                         + "'なぶらーく'\t'たろう'\t5\t'20100101'\r\n"
                         + "'まっぱー'\t'CSV'\t1\t'20150605'\r\n"));
     }
@@ -293,6 +329,22 @@ public class BeanCsvMapperTest {
             super(firstName, lastName, birthday, familySize);
         }
     }
+    @Csv(
+            type = CsvType.DEFAULT,
+            properties = {"lastName", "firstName", "familySize", "birthday"},
+            headers = {"性", "名", "家族人数", "🙀の誕生日"}
+    )
+    public static class SarogetoPeaHeaderPerson extends Person {
+
+        public SarogetoPeaHeaderPerson() {
+            super();
+        }
+
+        public SarogetoPeaHeaderPerson(String firstName, String lastName, String birthday, int familySize) {
+            super(firstName, lastName, birthday, familySize);
+        }
+    }
+
 
     @Csv(
             type = CsvType.TSV,
@@ -331,6 +383,32 @@ public class BeanCsvMapperTest {
         }
 
         public TsvWithHeaderPerson(String firstName, String lastName, String birthday, int familySize) {
+            super(firstName, lastName, birthday, familySize);
+        }
+    }
+
+    @Csv(
+            type = CsvType.CUSTOM,
+            properties = {"lastName", "firstName", "familySize", "birthday"},
+            headers = {"性", "名", "家族の人数", "🙀の誕生日"}
+    )
+    @CsvFormat(
+            fieldSeparator = '\t',
+            charset = "Windows-31j",
+            ignoreEmptyLine = false,
+            lineSeparator = "\r\n",
+            quote = '\'',
+            quoteMode = QuoteMode.NOT_NUMERIC,
+            requiredHeader = true,
+            emptyToNull = false
+    )
+    public static class TsvSarogetoPeaHeaderPerson extends Person {
+
+        public TsvSarogetoPeaHeaderPerson() {
+            super();
+        }
+
+        public TsvSarogetoPeaHeaderPerson(String firstName, String lastName, String birthday, int familySize) {
             super(firstName, lastName, birthday, familySize);
         }
     }
