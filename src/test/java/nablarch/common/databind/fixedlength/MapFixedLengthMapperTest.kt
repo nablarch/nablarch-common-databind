@@ -4,6 +4,7 @@ import nablarch.common.databind.ObjectMapperFactory
 import nablarch.common.databind.fixedlength.converter.Lpad
 import nablarch.common.databind.fixedlength.converter.Rpad
 import org.hamcrest.Matchers
+import org.hamcrest.Matchers.isA
 import org.junit.Assert.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -157,7 +158,7 @@ class MapFixedLengthMapperTest {
             assertThat(sut, Matchers.instanceOf(MapFixedLengthMapper::class.java))
 
             expectedException.expect(IllegalArgumentException::class.java)
-            expectedException.expectCause(Matchers.instanceOf(ClassCastException::class.java))
+            expectedException.expectCause(isA(ClassCastException::class.java))
             expectedException.expectMessage("record data must be java.util.Map type.")
             sut.write(mapOf("recordName" to RecordType.HEADER, "header" to "invalid"))
         }
@@ -184,7 +185,7 @@ class MapFixedLengthMapperTest {
 
             expectedException.expect(IllegalArgumentException::class.java)
             expectedException.expectMessage("record length is invalid. expected_length:19, actual_length:20")
-            expectedException.expectCause(Matchers.instanceOf(BufferOverflowException::class.java))
+            expectedException.expectCause(isA(BufferOverflowException::class.java))
             sut.write(mapOf("name" to "testname", "text" to "testtext", "age" to 1000))
 
         }
