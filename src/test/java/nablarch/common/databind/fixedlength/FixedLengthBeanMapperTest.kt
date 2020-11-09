@@ -294,7 +294,7 @@ class FixedLengthBeanMapperTest {
             }
         }).use { 
             expectedException.expect(RuntimeException::class.java)
-            expectedException.expectCause(instanceOf(IOException::class.java))
+            expectedException.expectCause(isA(IOException::class.java))
             it.read()
         }
     }

@@ -4,6 +4,7 @@ import nablarch.common.databind.ObjectMapperFactory
 import nablarch.common.databind.fixedlength.converter.Lpad
 import nablarch.common.databind.fixedlength.converter.Rpad
 import org.hamcrest.Matchers
+import org.hamcrest.Matchers.isA
 import org.junit.Assert.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -208,7 +209,7 @@ class BeanFixedLengthMapperTest {
 
             expectedException.expect(IllegalArgumentException::class.java)
             expectedException.expectMessage("record length is invalid. expected_length:19, actual_length:20")
-            expectedException.expectCause(Matchers.instanceOf(BufferOverflowException::class.java))
+            expectedException.expectCause(isA(BufferOverflowException::class.java))
             sut.write(TestBean("testname", "testtext", 1000))
 
         }
