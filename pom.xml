@@ -23,21 +23,6 @@
   <properties>
     <kotlin.version>1.7.22</kotlin.version>
   </properties>
-
-  <profiles>
-    <profile>
-      <id>java6</id>
-      <properties>
-        <kotlin.version>1.4.32</kotlin.version>
-      </properties>
-    </profile>
-    <profile>
-      <id>java7</id>
-      <properties>
-        <kotlin.version>1.4.32</kotlin.version>
-      </properties>
-    </profile>
-  </profiles>
   
   <dependencies>
     <dependency>
