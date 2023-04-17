@@ -1,9 +1,12 @@
 package nablarch.common.databind.csv;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import nablarch.common.databind.ObjectMapper;
+import nablarch.common.databind.ObjectMapperFactory;
+import nablarch.common.databind.csv.Csv.CsvType;
+import nablarch.common.databind.csv.CsvDataBindConfig.QuoteMode;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -17,18 +20,14 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import nablarch.common.databind.ObjectMapper;
-import nablarch.common.databind.ObjectMapperFactory;
-import nablarch.common.databind.csv.Csv.CsvType;
-import nablarch.common.databind.csv.CsvDataBindConfig.QuoteMode;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-
-import mockit.Expectations;
-import mockit.Injectable;
-import mockit.Mocked;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 
 /**
  * {@link BeanCsvMapper}のテスト。
@@ -191,13 +190,12 @@ public class BeanCsvMapperTest {
      * ファイル書き込み時にIOExceptionが発生するケース。
      */
     @Test
-    public void testWriteError(@Mocked final BufferedWriter mockWriter) throws Exception {
+    public void testWriteError() throws Exception {
+        final BufferedWriter mockWriter = mock(BufferedWriter.class);
         final IOException exception = new IOException("io error!");
-        new Expectations() {{
-            mockWriter.write(anyInt);
-            result = exception;
-        }};
-        final ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, new BufferedWriter(mockWriter));
+        doThrow(exception).when(mockWriter).write(anyInt());
+        
+        final ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, mockWriter);
         try {
             mapper.write(new Person("1", "2", "3", 0));
             fail("ここはとおらない");
@@ -210,12 +208,10 @@ public class BeanCsvMapperTest {
      * ヘッダー部の書き込み時にIOExceptionが発生するケース
      */
     @Test
-    public void testWriteHeaderError(@Mocked final BufferedWriter mockWriter) throws Exception {
+    public void testWriteHeaderError() throws Exception {
+        final BufferedWriter mockWriter = mock(BufferedWriter.class);
         final IOException exception = new IOException("header write error!!!  ");
-        new Expectations() {{
-            mockWriter.write(anyString);
-            result = exception;
-        }};
+        doThrow(exception).when(mockWriter).write(anyString());
 
         try {
             ObjectMapperFactory.create(HeaderPerson.class, mockWriter);
@@ -229,7 +225,8 @@ public class BeanCsvMapperTest {
      * 書き込み用オブジェクトなのでリードは失敗すること。
      */
     @Test(expected = UnsupportedOperationException.class)
-    public void testRead(@Injectable final Writer mockWriter) throws Exception {
+    public void testRead() throws Exception {
+        final Writer mockWriter = mock(Writer.class);
         final ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, mockWriter);
         mapper.read();
     }
