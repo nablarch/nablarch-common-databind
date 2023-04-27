@@ -1,19 +1,21 @@
 package nablarch.common.databind.csv;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import nablarch.test.support.reflection.ReflectionUtil;
+import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.CharBuffer;
 
-import org.junit.Test;
-
-import mockit.Deencapsulation;
-import mockit.Expectations;
-import mockit.Mocked;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * {@link CsvTokenizer}のテスト。
@@ -43,7 +45,7 @@ public class CsvTokenizerTest {
     public void unsupportedMethod() throws Exception {
 
         final CsvTokenizer sut = new CsvTokenizer(new BufferedReader(new StringReader("1,\"2\",3")), CsvDataBindConfig.DEFAULT);
-        final BufferedReader reader = Deencapsulation.getField(sut, "reader");
+        final BufferedReader reader = ReflectionUtil.getFieldValue(sut, "reader");
 
         try {
             reader.skip(1);
@@ -82,9 +84,9 @@ public class CsvTokenizerTest {
     @Test
     public void reader_readNextCharAndReset() throws Exception {
         final CsvTokenizer sut = new CsvTokenizer(new BufferedReader(new StringReader("1,\"2\",3")), CsvDataBindConfig.DEFAULT);
-        final BufferedReader reader = Deencapsulation.getField(sut, "reader");
+        final BufferedReader reader = ReflectionUtil.getFieldValue(sut, "reader");
 
-        int c = Deencapsulation.<Integer>invoke(reader, "readNextCharAndReset");
+        int c = ReflectionUtil.invokeMethod(reader, "readNextCharAndReset");
         assertThat((char) c, is('1'));
 
         c = reader.read();
@@ -101,25 +103,25 @@ public class CsvTokenizerTest {
     @Test
     public void reader_getLineNumber() throws Exception {
         final CsvTokenizer sut = new CsvTokenizer(new BufferedReader(new StringReader("1\r\n2\r\n3\r\n")), CsvDataBindConfig.DEFAULT);
-        final BufferedReader reader = Deencapsulation.getField(sut, "reader");
+        final BufferedReader reader = ReflectionUtil.getFieldValue(sut, "reader");
 
-        long lineNumber = Deencapsulation.<Long>invoke(reader, "getLineNumber");
+        long lineNumber = ReflectionUtil.invokeMethod(reader, "getLineNumber");
         assertThat(lineNumber, is(1L));
 
         reader.read();              // 1
-        lineNumber = Deencapsulation.<Long>invoke(reader, "getLineNumber");
+        lineNumber = ReflectionUtil.invokeMethod(reader, "getLineNumber");
         assertThat(lineNumber, is(1L));
 
         reader.read();              // \r
-        lineNumber = Deencapsulation.<Long>invoke(reader, "getLineNumber");
+        lineNumber = ReflectionUtil.invokeMethod(reader, "getLineNumber");
         assertThat(lineNumber, is(1L));
 
         reader.read();              // \n
-        lineNumber = Deencapsulation.<Long>invoke(reader, "getLineNumber");
+        lineNumber = ReflectionUtil.invokeMethod(reader, "getLineNumber");
         assertThat(lineNumber, is(1L));
 
         reader.read();              // 2
-        lineNumber = Deencapsulation.<Long>invoke(reader, "getLineNumber");
+        lineNumber = ReflectionUtil.invokeMethod(reader, "getLineNumber");
         assertThat(lineNumber, is(2L));
     }
 
@@ -127,16 +129,14 @@ public class CsvTokenizerTest {
      * 行番号の取得に失敗するケース
      */
     @Test(expected = RuntimeException.class)
-    public void reader_getLineNumber_fail(@Mocked final BufferedReader mockReader) throws Exception {
-        new Expectations() {{
-            mockReader.read();
-            result = new IOException("io error");
-        }};
-
+    public void reader_getLineNumber_fail() throws Exception {
+        final BufferedReader mockReader = mock(BufferedReader.class);
+        when(mockReader.read(any(), anyInt(), anyInt())).thenThrow(new IOException("io error"));
+        
         final CsvTokenizer sut = new CsvTokenizer(mockReader, CsvDataBindConfig.DEFAULT);
 
-        final BufferedReader reader = Deencapsulation.getField(sut, "reader");
-        Deencapsulation.setField(reader, "lastChar", '\r');
-        Deencapsulation.<Integer>invoke(reader, "getLineNumber");
+        final BufferedReader reader = ReflectionUtil.getFieldValue(sut, "reader");
+        ReflectionUtil.setFieldValue(reader, "lastChar", '\r');
+        ReflectionUtil.invokeMethod(reader, "getLineNumber");
     }
 }
