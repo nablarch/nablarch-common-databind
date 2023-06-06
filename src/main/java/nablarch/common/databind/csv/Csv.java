@@ -102,10 +102,13 @@ public @interface Csv {
     String[] properties();
 
     /**
-     * CSVのヘッダーのリスト。
+     * CSVのヘッダー。
      * <p/>
-     * {@link CsvType#properties()} と同じ要素数でヘッダーを指定する。
-     * {@link CsvFormat#requiredHeader()}が{@code true}である場合は、必ず指定すること。</br>
+     * {@link CsvType#type} にヘッダー必須のものを指定した場合は、
+     * 必ず指定すること。</br>
+     * 任意の場合は、ヘッダーが必要な際に指定すること。
+     * 設定された順序で読込・出力されるため、
+     * CSVの項目順にヘッダー名を列挙する。
      */
     String[] headers() default {};
 }
