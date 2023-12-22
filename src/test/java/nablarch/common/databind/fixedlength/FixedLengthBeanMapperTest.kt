@@ -9,7 +9,6 @@ import org.junit.Assert.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
-import sun.nio.cs.ext.MS932
 import java.io.*
 import java.nio.charset.*
 
