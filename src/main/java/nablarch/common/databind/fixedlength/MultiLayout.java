@@ -1,12 +1,14 @@
 package nablarch.common.databind.fixedlength;
 
 import nablarch.common.databind.fixedlength.MultiLayoutConfig.RecordIdentifier;
+import nablarch.core.util.annotation.Published;
 
 /**
  * マルチレイアウトな固定長データを表すクラス。
  *
  * @author Naoki Yamamoto
  */
+@Published
 public abstract class MultiLayout {
 
     /** レコード名 */
